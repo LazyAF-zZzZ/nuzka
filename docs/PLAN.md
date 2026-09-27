@@ -358,12 +358,11 @@ docs/v2/            v2's plan, guide and notes, for reference
 | M6 | Import from v2: read its database and images, merge them in, never write to its folder | done, commit after `3fcb2a9` |
 | M7 | Packaging: bundled node, Velopack installer, updates, notice feed, licence dialog | done, commit after `c615d39` |
 | M8 | Release 3.0.0 | done. 3.0.0 could not open a window; **3.0.5** was the first published release and **3.0.6** the first that reached anyone by updating itself |
-| A0 | Accounts: user creates Supabase project, Discord app, Google OAuth client (§10) | not started |
-| A1 | Sign-in in the desktop app, profile, 2-PC limit, offline pass (§10) | not started |
-| A2 | Supporter status, watermark, Garena/Tencent disclaimer, manual supporter grants (§10). Ships **together with A1** | not started |
-| A3 | Website on Cloudflare Pages: sales page, account page, privacy policy | not started |
-| A4 | Payment gateway: card auto-renewal, PromptPay one-off | not started |
-| A5 | Online extras: settings backup, organiser profiles, public tournament pages | not started |
+| S1 | Supporter key check in the backend (Ed25519, offline) + API + tests (§10) | not started |
+| S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | not started |
+| S3 | Settings: Supporter section, expiry reminder, Garena/Tencent disclaimer (§10). S1-S3 ship **together** | not started |
+| S4 | Key generator on the maker's PC (secret key outside the repo); manual PromptPay sales (§10) | not started |
+| S5 | Later: sales website on Cloudflare Pages; a gateway issuing the same keys automatically | not started |
 
 ## 8. Open items
 
@@ -542,47 +541,44 @@ docs/v2/            v2's plan, guide and notes, for reference
 
 ---
 
-## 10. Accounts and supporters (planned 2026-09-27, not started)
+
+## 10. Supporter keys (planned 2026-09-27, not started)
 
 **Why.** The user wants income from the app without selling it, which the free licence
 forbids for others and which would mean selling Garena/Tencent's hero art. The model is
-Spectra's (Valorant): the app stays free with every feature; a paid **supporter**
-subscription removes a watermark from the overlays and adds perks. Supporters pay for the
-maker's branding going away, never for game content. A separate paid "Pro" copy was
-started in `../rov_overlay_pro` the same day and **paused**; this plan replaces it.
-
-**Confirmed by the user, 2026-09-27:**
-- **Login for everyone**, with **Discord and Google** sign-in (no passwords of our own).
-- **Supabase** for accounts, database and server functions; **Cloudflare Pages** for the website.
-- **2 PCs** per account.
-- Accounts exist for auto-renewal and stopping sharing now, and later for online settings,
-  organiser profiles and public tournament pages (A5).
-
-**Not decided yet:** prices and tiers (Spectra: EUR 15/25/40 a month; Thai guess THB 99-199
-a month or 990-1,990 a year), watermark text and corner, perks beyond the watermark,
-whether the free licence should require shared modified copies to keep the watermark
-(changing it bumps `LicenceVersion`), and the one NuGet package for DPAPI
-(`System.Security.Cryptography.ProtectedData`) - ask before adding it. The payment gateway
-(Opn/Omise or Stripe) is chosen in A4.
+Spectra's (Valorant): the app stays free with every feature; a paid **supporter** plan
+removes a watermark from the overlays and adds perks. Supporters pay for the maker's
+branding going away, never for game content. A paid "Pro" copy (`../rov_overlay_pro`) and
+then a login system (Supabase, Discord/Google) were both considered the same day and
+dropped: **the user chose keys only, no accounts and no server.**
 
 **Design.**
-- Sign-in in the **desktop app (C#)**, not the backend: accounts are not tournament logic.
-  OAuth with PKCE in the system browser, redirected back to a loopback address on this PC.
-  Session stored encrypted with DPAPI.
-- The server issues a **signed pass** (user id, plan, supporter-until, device id). The
-  desktop hands it to the local backend, which **verifies the signature itself** and pushes
-  `supporter: true/false` to the overlays over the existing socket.
-- **A broadcast never depends on the internet.** After the first sign-in the app always
-  starts and works offline; login is never checked mid-match; a supporter pass stays valid
-  **7 days offline** and is refreshed quietly every few hours.
-- **Device limit:** a `devices` table, 2 active per account; a third sign-in asks the user
-  to sign one out from the website.
+- A key carries its own data and an **Ed25519 signature**: key id, supporter name, plan,
+  expiry date, e.g. `RVS1-....`. The app holds only the **public** key, so checking is
+  **offline**, with nothing of ours online. A broadcast never depends on the internet.
+- The **backend** checks keys (Node's built-in `crypto`, no package): signature, then
+  expiry. The key is stored in the user data folder; an API saves, reads and removes it;
+  `supporter: true/false` reaches the overlays over the existing socket.
 - **Watermark** lives in `public/js/overlay-size.js`, which every overlay already loads, so
-  all ten get it from one place; each page may move it with a data attribute. Looks can
-  only be confirmed by the user in OBS.
-- **Renewal:** cards renew automatically. **PromptPay cannot recur**: those supporters get
-  reminders before expiry and pay again. Until A4, the maker grants supporter status by
-  hand from an admin page after checking a PromptPay payment.
-- **PDPA:** privacy policy, account deletion, store only name, email and provider id.
-- **Existing users** see a sign-in screen after the update: announce it through
-  `notices.json` first, and say on the screen why it is there.
+  all ten get it from one place; a page may move it with a data attribute. Looks can only
+  be confirmed by the user in OBS.
+- **Settings** gets a Supporter section: key box, "Supporter: <name> until <date>",
+  remove, and a button to the maker's page. A reminder 7 days before expiry; after expiry
+  the watermark returns and nothing else changes.
+- **Key generator** (`make-key --name "Team X" --months 12`) runs on the maker's PC. The
+  **secret key never enters this repo**, which is public: it lives in the maker's profile
+  folder, with a backup they keep themselves. Lose it and no new keys can be made that
+  existing apps accept.
+- **Sharing.** Offline keys cannot count PCs, so the "2 PCs" the user wanted is a licence
+  term, not something the app enforces. What helps: the supporter's name shows in the app,
+  and a **revoked-keys list** (key ids in the public repo, next to `notices.json`) is read
+  when online, so a leaked key can be switched off.
+- **Payment** starts as PromptPay checked by hand, key sent by the maker. Later a gateway
+  (Opn/Omise or Stripe) can issue the same keys automatically; the app does not change.
+- **Honest limit:** the source is public, so someone who codes can remove the watermark.
+  Spectra has the same limit; supporters pay mostly to support the maker.
+
+**Not decided yet:** prices and tiers (Spectra: EUR 15/25/40 a month; Thai guess THB 99-199
+a month or 990-1,990 a year), watermark text and corner, perks beyond the watermark, and
+whether the free licence should require shared modified copies to keep the watermark
+(changing it bumps `LicenceVersion`).
