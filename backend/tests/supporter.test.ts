@@ -273,6 +273,33 @@ test('API: a bad key gets a 400 with a reason a person can act on', async () => 
   assert.strictEqual(missing.status, 400);
 });
 
+// --- the watermark (S2) ---------------------------------------------------------
+
+test('every broadcast graphic carries the watermark script, after the script that opens its socket', () => {
+  const { PAGES } = require('../server/http/pages') as typeof import('../server/http/pages');
+  const publicDir = path.join(__dirname, '..', '..', 'public');
+  // Derived from PAGES, like the theme test, so a new overlay cannot be left out.
+  const broadcast = Object.entries(PAGES).filter(([route]) => route.startsWith('/overlay') || route === '/result');
+  assert.ok(broadcast.length >= 10, 'all ten broadcast graphics are checked');
+
+  for (const [route, file] of broadcast) {
+    const html = fs.readFileSync(path.join(publicDir, file), 'utf8');
+    const size = html.search(/src="\/?js\/overlay-size\.js"/);
+    assert.ok(size > 0, `${route} loads overlay-size.js, where the watermark lives`);
+    const scripts = [...html.matchAll(/src="(\/?js\/[^"]+\.js)"/g)].map((m) => m[1] as string);
+    const own = scripts.filter((s) => !/overlay-size|overlay-sfx|\/lib\//.test(s));
+    for (const s of own) assert.ok(html.indexOf(s) < size, `${route}: ${s} declares the socket before overlay-size.js reads it`);
+  }
+});
+
+test('the watermark starts hidden and only the server can show it', () => {
+  const js = fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'js', 'overlay-size.js'), 'utf8');
+  // Shown first and hidden later would flash it on a supporter's stream at every load.
+  assert.match(js, /watermark\.hidden = true;/);
+  assert.match(js, /socket\.on\('supporter'/);
+  assert.ok(js.includes('ROV Overlay Tool · by LazyAF'), 'the watermark text');
+});
+
 test('the real maker key in the code is a valid Ed25519 public key', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', '..', 'server', 'domain', 'supporter.ts'), 'utf8');
   const pem = source.match(/-----BEGIN PUBLIC KEY-----[\s\S]+?-----END PUBLIC KEY-----/);

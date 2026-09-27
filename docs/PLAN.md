@@ -8,7 +8,7 @@ session with no conversation history should be able to continue from here and
 
 ## 0. Where things stand
 
-**Last updated 2026-09-27: supporter keys S1 done (§10), S2-S3 next. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
+**Last updated 2026-09-27: supporter keys S1 and S2 done (§10), S3 next. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
 
 | Area | State |
 |---|---|
@@ -359,7 +359,7 @@ docs/v2/            v2's plan, guide and notes, for reference
 | M7 | Packaging: bundled node, Velopack installer, updates, notice feed, licence dialog | done, commit after `c615d39` |
 | M8 | Release 3.0.0 | done. 3.0.0 could not open a window; **3.0.5** was the first published release and **3.0.6** the first that reached anyone by updating itself |
 | S1 | Supporter key check in the backend (Ed25519, offline) + API + tests (§10) | **done 2026-09-27**, commit after `b493e35`. `domain/supporter.ts`, `store/supporter.ts`, `http/api-supporter.ts`, `tests/supporter.test.ts` (18 tests; 420 in all) |
-| S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | not started |
+| S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | **done 2026-09-27**, commit after `2a1fa96`. In `overlay-size.js`, starts hidden; `data-watermark` per page (draft overlays: `above-draft`, result: `bottom-left`). Placement checked in a browser; **look in OBS not yet confirmed by the user** |
 | S3 | Settings: Supporter section, expiry reminder, Garena/Tencent disclaimer (§10). S1-S3 ship **together** | not started |
 | S4 | Key generator on the maker's PC (secret key outside the repo); manual PromptPay sales (§10) | **tool done** in S1 (`backend/tools/supporter-keys.js`, the real pair made 2026-09-27); PromptPay process not started |
 | S5 | Later: sales website on Cloudflare Pages; a gateway issuing the same keys automatically | not started |
@@ -603,6 +603,25 @@ dropped: **the user chose keys only, no accounts and no server.**
   asserts no private key ever appears in `supporter.ts`.
 - `revoked-keys.json` is not on GitHub until the repo is pushed; until then every fetch
   404s, which is harmless.
+
+**Built in S2 (2026-09-27).**
+- The watermark is created and styled by `public/js/overlay-size.js`, which all ten
+  broadcast graphics load after the script that declares `socket`. Styles are injected
+  from there because broadcast pages share no stylesheet. Text "ROV Overlay Tool · by
+  LazyAF", 15px, white at 60% with a shadow, `pointer-events: none`, scaled 4/3 at 1440.
+- **It starts hidden** and appears only when the `supporter` event says inactive. Showing
+  it first would flash it on a supporter's stream every time OBS loads a source. The flip
+  side: an overlay that never reaches the server shows no watermark, which is acceptable
+  because such an overlay shows nothing else either.
+- Position is bottom-right unless `<body data-watermark>` says otherwise. Checked with
+  `elementsFromPoint` on all ten pages at 1920x1080 (2560x1440 for `/overlay-1440`):
+  bottom-right sat on red player 5's name on the draft overlay, so `/overlay` and
+  `/overlay-1440` use `above-draft` (438px up, 584px at 1440: 8px above the 430px panel,
+  **a hard-coded number that must follow the panel if its height changes**); `/result` uses
+  `bottom-left` (empty lower part of the red side panel). The stage graphics all keep 62px
+  or more of bottom padding, so bottom-right is clear on them.
+- Tests: every `/overlay*` route and `/result` (derived from `PAGES`) loads
+  `overlay-size.js` after its own script; the watermark starts hidden.
 
 **Not decided yet:** prices and tiers (Spectra: EUR 15/25/40 a month; Thai guess THB 99-199
 a month or 990-1,990 a year), watermark text and corner, perks beyond the watermark, and

@@ -96,6 +96,53 @@
     // เปลี่ยนขนาดแล้วต้องสลับไฟล์ภาพตามด้วย
     window.reapplySkin = () => applySkin(window.__lastSkin);
 
+    // --- Watermark (docs/PLAN.md §10) ------------------------------
+    // Every broadcast graphic loads this file, so this is the one place the watermark
+    // lives. A supporter key hides it; the server says which through the 'supporter'
+    // socket event, on connect and on every change.
+    //
+    // It starts HIDDEN and appears only once the server has said "not a supporter".
+    // Showing it first and hiding it after would flash it on a supporter's stream every
+    // time OBS loads the source, which is exactly what they paid to be rid of.
+    //
+    // Its styles are injected here rather than put in each page's CSS: broadcast pages
+    // share no stylesheet, and ten copies would drift. A page can move it with
+    // <body data-watermark="top-right | top-left | bottom-left | above-draft"> if
+    // bottom-right covers something on that graphic.
+    const WATERMARK_TEXT = 'ROV Overlay Tool · by LazyAF';
+    const watermarkStyle = document.createElement('style');
+    watermarkStyle.textContent = `
+        .rov-watermark {
+            position: fixed; right: 18px; bottom: 14px; z-index: 2147483647;
+            font: 600 15px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.6); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+            pointer-events: none; user-select: none; white-space: nowrap;
+            transform-origin: bottom right;
+        }
+        .rov-watermark[hidden] { display: none; }
+        body[data-watermark="top-right"] .rov-watermark { top: 14px; bottom: auto; transform-origin: top right; }
+        body[data-watermark="top-left"] .rov-watermark { top: 14px; bottom: auto; left: 18px; right: auto; transform-origin: top left; }
+        body[data-watermark="bottom-left"] .rov-watermark { left: 18px; right: auto; transform-origin: bottom left; }
+        body[data-size="1440"] .rov-watermark { transform: scale(calc(4 / 3)); }
+        /* The draft overlay's panel fills the bottom 430px (573 at 1440), and bottom-right
+           sat on red player 5's name. This parks it 8px above the panel's right end. */
+        body[data-watermark="above-draft"] .rov-watermark { bottom: 438px; }
+        body[data-watermark="above-draft"][data-size="1440"] .rov-watermark { bottom: 584px; }
+    `;
+    document.head.appendChild(watermarkStyle);
+
+    const watermark = document.createElement('div');
+    watermark.className = 'rov-watermark';
+    watermark.textContent = WATERMARK_TEXT;
+    watermark.hidden = true;
+    body.appendChild(watermark);
+
+    if (typeof socket !== 'undefined') {
+        socket.on('supporter', (status) => {
+            watermark.hidden = Boolean(status && status.active);
+        });
+    }
+
     applySize(locked || '1080');
     if (locked) {
         // หน้าที่ล็อกขนาดไว้ ยังต้องรับภาพพื้นหลังตามปกติ
