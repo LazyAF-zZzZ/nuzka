@@ -21,6 +21,8 @@ import { tournamentRoutes } from './http/api-tournaments';
 import { teamRoutes } from './http/api-teams';
 import { hotkeyRoutes } from './http/api-hotkeys';
 import { backupRoutes } from './http/api-backup';
+import { supporterRoutes } from './http/api-supporter';
+import { supporterStatus, onSupporterChange, startSupporterWatch } from './store/supporter';
 import { registerHandlers } from './sockets/handlers';
 import { attachDraftCapture } from './services/live-match';
 
@@ -92,6 +94,7 @@ export function createApp(): Express {
   app.use(tournamentRoutes());
   app.use(teamRoutes());
   app.use(hotkeyRoutes());
+  app.use(supporterRoutes());
 
   // ตัวจับ error ตัวสุดท้าย ต้องมาหลัง route ทั้งหมด และต้องรับสี่พารามิเตอร์
   // ไม่งั้น express จะนับมันเป็น middleware ธรรมดา ไม่ใช่ตัวจับ error
@@ -137,6 +140,11 @@ export function createServer(): {
   attachIo(io);
   io.on('connection', registerHandlers);
 
+  // Every overlay learns on connect whether to show the watermark, and again whenever
+  // that changes: a key pasted, removed, run out or revoked (docs/PLAN.md §10).
+  io.on('connection', (socket) => socket.emit('supporter', supporterStatus()));
+  onSupporterChange((status) => io.emit('supporter', status));
+
   // ต้องเกาะก่อนรับคำสั่งแรก ไม่งั้นดราฟต์ช่วงต้นของเกมแรกจะไม่ถูกบันทึก
   // และเกมที่ดราฟต์ไปแล้วก่อนตัวบันทึกจะมี กู้คืนไม่ได้เลย
   attachDraftCapture();
@@ -154,6 +162,10 @@ export function start(
   // โฟลเดอร์เสียงต้องมีอยู่ก่อนที่ผู้ใช้จะไปหา และต้องบอกที่อยู่เต็มๆ ด้วย
   // มันอยู่คนละที่กันระหว่างรันจาก source กับรันจาก .exe ที่ติดตั้งแล้ว
   const soundDir = ensureSoundDir();
+
+  // The revoked-keys download and the hourly expiry check. Here and not in
+  // createServer, so tests never reach the network.
+  startSupporterWatch();
 
   server.listen(port, host, () => {
     console.log('===========================================');

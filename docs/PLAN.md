@@ -8,7 +8,7 @@ session with no conversation history should be able to continue from here and
 
 ## 0. Where things stand
 
-**Last updated 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
+**Last updated 2026-09-27: supporter keys S1 done (§10), S2-S3 next. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
 
 | Area | State |
 |---|---|
@@ -358,10 +358,10 @@ docs/v2/            v2's plan, guide and notes, for reference
 | M6 | Import from v2: read its database and images, merge them in, never write to its folder | done, commit after `3fcb2a9` |
 | M7 | Packaging: bundled node, Velopack installer, updates, notice feed, licence dialog | done, commit after `c615d39` |
 | M8 | Release 3.0.0 | done. 3.0.0 could not open a window; **3.0.5** was the first published release and **3.0.6** the first that reached anyone by updating itself |
-| S1 | Supporter key check in the backend (Ed25519, offline) + API + tests (§10) | not started |
+| S1 | Supporter key check in the backend (Ed25519, offline) + API + tests (§10) | **done 2026-09-27**, commit after `b493e35`. `domain/supporter.ts`, `store/supporter.ts`, `http/api-supporter.ts`, `tests/supporter.test.ts` (18 tests; 420 in all) |
 | S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | not started |
 | S3 | Settings: Supporter section, expiry reminder, Garena/Tencent disclaimer (§10). S1-S3 ship **together** | not started |
-| S4 | Key generator on the maker's PC (secret key outside the repo); manual PromptPay sales (§10) | not started |
+| S4 | Key generator on the maker's PC (secret key outside the repo); manual PromptPay sales (§10) | **tool done** in S1 (`backend/tools/supporter-keys.js`, the real pair made 2026-09-27); PromptPay process not started |
 | S5 | Later: sales website on Cloudflare Pages; a gateway issuing the same keys automatically | not started |
 
 ## 8. Open items
@@ -542,7 +542,7 @@ docs/v2/            v2's plan, guide and notes, for reference
 ---
 
 
-## 10. Supporter keys (planned 2026-09-27, not started)
+## 10. Supporter keys (planned 2026-09-27; S1 done the same day)
 
 **Why.** The user wants income from the app without selling it, which the free licence
 forbids for others and which would mean selling Garena/Tencent's hero art. The model is
@@ -577,6 +577,32 @@ dropped: **the user chose keys only, no accounts and no server.**
   (Opn/Omise or Stripe) can issue the same keys automatically; the app does not change.
 - **Honest limit:** the source is public, so someone who codes can remove the watermark.
   Spectra has the same limit; supporters pay mostly to support the maker.
+
+**Built in S1 (2026-09-27).**
+- Key: `RVS1-<base64url JSON {v,id,n,p,i,e}>.<base64url Ed25519 signature>`, about 215
+  characters. The signature covers the prefix too. Whitespace is stripped before checking,
+  because keys arrive through LINE and email. `e` is the last valid day, **Bangkok time**
+  (`expiresAt` = 23:59:59.999 +07:00).
+- `domain/supporter.ts` is pure (`readKey`, `checkKey`, `signKey`) and holds the maker's
+  **public** key. Tests swap it with `useVerifyKeyForTests`, **deliberately not an env var**:
+  an env override would let anyone self-sign keys without touching the code.
+- `store/supporter.ts` keeps `supporter.json` (the key) and `revoked-keys.json` (last
+  downloaded list) in the data folder. Only a key that works today is saved; a bad or
+  expired paste never replaces a good key. A download that is not a JSON array (offline,
+  404, captive portal) leaves the old list in force, so going offline never un-revokes.
+- API: `GET /api/supporter` (no token, never returns the key), `PUT` `{ key }` (400 with
+  `problem`: format / signature / expired / revoked and a readable `error`), `DELETE`.
+  Socket event **`supporter`** on connect and on every visible change; overlays use it in S2.
+- `startSupporterWatch()` runs from `start()` only (tests never reach the network):
+  revoked list from `REVOKED_LIST_URL` (`revoked-keys.json` at the repo root) every 6 h,
+  expiry re-check every hour.
+- **The maker's secret key is at `%USERPROFILE%\.rov-supporter\signing-key.pem`**, made
+  with `node backend/tools/supporter-keys.js init`, which refuses to overwrite it. Keys:
+  `make --name "Team X" --months 12` (or `--until YYYY-MM-DD`); `read <key>` checks one.
+  The tool signs with the compiled `build/` code, so run `npm run build` first. A test
+  asserts no private key ever appears in `supporter.ts`.
+- `revoked-keys.json` is not on GitHub until the repo is pushed; until then every fetch
+  404s, which is harmless.
 
 **Not decided yet:** prices and tiers (Spectra: EUR 15/25/40 a month; Thai guess THB 99-199
 a month or 990-1,990 a year), watermark text and corner, perks beyond the watermark, and
