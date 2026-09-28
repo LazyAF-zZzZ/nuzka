@@ -1,0 +1,187 @@
+<UserControl x:Class="RovOverlay.Desktop.Views.SupportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:RovOverlay.Desktop.Services">
+    <UserControl.Resources>
+        <!-- A gold tick before each thing a supporter gets -->
+        <Style x:Key="Tick" TargetType="TextBlock" BasedOn="{StaticResource Icon}">
+            <Setter Property="Text" Value="&#xE73E;"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource GoldBrush}"/>
+            <Setter Property="Margin" Value="0,2,10,0"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+        <!-- The step number in "how to get a key" -->
+        <Style x:Key="StepNumber" TargetType="Border">
+            <Setter Property="Width" Value="22"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="CornerRadius" Value="11"/>
+            <Setter Property="Background" Value="{StaticResource Surface3Brush}"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+        <Style x:Key="Question" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,10,0,3"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="22,18,22,24" MaxWidth="860" HorizontalAlignment="Left">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource Icon}" Text="&#xEB51;" FontSize="18" Foreground="{StaticResource GoldBrush}"
+                           VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock Style="{StaticResource PageTitle}" Text="{svc:T Support.Title}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Style="{StaticResource MutedText}" Text="{svc:T Support.Lead}" TextWrapping="Wrap" Margin="0,10,0,0"/>
+
+            <!-- Your key: the same panel as in Settings -->
+            <TextBlock Style="{StaticResource SectionTitle}" Text="{svc:T Support.YourKey}" Margin="0,22,0,8"/>
+            <Border Style="{StaticResource Card}" Padding="16,12" DataContext="{Binding Supporter}">
+                <StackPanel>
+                    <TextBlock Text="{svc:T Support.Thanks}" FontWeight="SemiBold" Foreground="{StaticResource GoldBrush}" Margin="0,0,0,8"
+                               Visibility="{Binding IsSupporter, Converter={StaticResource BoolToVis}}"/>
+                    <DockPanel Margin="0,0,0,10">
+                        <TextBlock DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="&#xE735;" FontSize="14" Margin="0,0,8,0"
+                                   VerticalAlignment="Center" Foreground="{StaticResource GoldBrush}"
+                                   Visibility="{Binding IsSupporter, Converter={StaticResource BoolToVis}}"/>
+                        <Button DockPanel.Dock="Right" Content="{svc:T Supporter.Remove}" Command="{Binding RemoveKeyCommand}"
+                                Margin="8,0,0,0" Visibility="{Binding HasKey, Converter={StaticResource BoolToVis}}"/>
+                        <TextBlock Text="{Binding Text}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </DockPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Content="{svc:T Supporter.Use}"
+                                Command="{Binding UseKeyCommand}" Margin="8,0,0,0" MinWidth="110"/>
+                        <Grid>
+                            <TextBox x:Name="KeyBox" Text="{Binding KeyInput, UpdateSourceTrigger=PropertyChanged}"
+                                     FontFamily="{StaticResource MonoFont}" FontSize="11.5"/>
+                            <TextBlock Text="{svc:T Supporter.Paste}" IsHitTestVisible="False" Margin="10,0,0,0"
+                                       VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=KeyBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- What you get, and what it costs, side by side -->
+            <Grid Margin="0,24,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="{svc:T Support.Get}" Margin="0,0,0,8"/>
+                    <Border Style="{StaticResource Card}" Padding="16,12">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource Tick}"/>
+                                <TextBlock Text="{svc:T Support.Get1}" TextWrapping="Wrap"/>
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource Tick}"/>
+                                <TextBlock Text="{svc:T Support.Get2}" TextWrapping="Wrap"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Style="{StaticResource Tick}"/>
+                                <TextBlock Text="{svc:T Support.Get3}" TextWrapping="Wrap"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Style="{StaticResource SectionTitle}" Text="{svc:T Support.Price}" Margin="0,0,0,8"/>
+                    <Border Style="{StaticResource Card}" Padding="16,12">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,10">
+                                <TextBlock Text="{svc:T Support.Monthly}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding MonthlyPrice}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="{svc:T Support.Yearly}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding YearlyPrice}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- How to get a key: the QR on the left, the steps on the right -->
+            <TextBlock Style="{StaticResource SectionTitle}" Text="{svc:T Support.How}" Margin="0,24,0,8"/>
+            <Border Style="{StaticResource Card}" Padding="16,14">
+                <DockPanel>
+                    <Border DockPanel.Dock="Left" Width="168" Height="168" Margin="0,0,20,0" VerticalAlignment="Top"
+                            CornerRadius="6" Background="White" Padding="8"
+                            Visibility="{Binding HasQr, Converter={StaticResource BoolToVis}}">
+                        <Image Source="{Binding QrImage}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                    </Border>
+                    <Border DockPanel.Dock="Left" Width="168" Height="168" Margin="0,0,20,0" VerticalAlignment="Top"
+                            CornerRadius="6" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}"
+                            Background="{StaticResource Surface2Brush}"
+                            Visibility="{Binding HasQr, Converter={StaticResource BoolToVisInv}}">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="12">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xED14;" FontSize="28" HorizontalAlignment="Center"
+                                       Foreground="{StaticResource MutedBrush}"/>
+                            <TextBlock Text="{svc:T Support.QrSoon}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
+                                       TextAlignment="Center" Margin="0,8,0,0" FontSize="11.5"/>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,10">
+                            <Border Style="{StaticResource StepNumber}"><TextBlock Text="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
+                            <TextBlock Text="{svc:T Support.Step1}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,0,0,6">
+                            <Border Style="{StaticResource StepNumber}"><TextBlock Text="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
+                            <TextBlock Text="{svc:T Support.Step2}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <Button Content="{Binding ContactText}" Command="{Binding ContactCommand}" HorizontalAlignment="Left"
+                                Margin="32,0,0,10" Style="{StaticResource PrimaryButton}"
+                                Visibility="{Binding HasContact, Converter={StaticResource BoolToVis}}"/>
+                        <TextBlock Text="{Binding ContactText}" Foreground="{StaticResource MutedBrush}" Margin="32,0,0,10"
+                                   Visibility="{Binding HasContact, Converter={StaticResource BoolToVisInv}}"/>
+                        <DockPanel Margin="0,0,0,10">
+                            <Border Style="{StaticResource StepNumber}"><TextBlock Text="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
+                            <TextBlock Text="{svc:T Support.Step3}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <DockPanel>
+                            <Border Style="{StaticResource StepNumber}"><TextBlock Text="4" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
+                            <TextBlock Text="{svc:T Support.Step4}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource SectionTitle}" Text="{svc:T Support.Faq}" Margin="0,24,0,8"/>
+            <Border Style="{StaticResource Card}" Padding="16,4,16,14">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Question}" Text="{svc:T Support.Q1}"/>
+                    <TextBlock Style="{StaticResource MutedText}" Text="{svc:T Support.A1}" TextWrapping="Wrap"/>
+                    <TextBlock Style="{StaticResource Question}" Text="{svc:T Support.Q2}"/>
+                    <TextBlock Style="{StaticResource MutedText}" Text="{svc:T Support.A2}" TextWrapping="Wrap"/>
+                    <TextBlock Style="{StaticResource Question}" Text="{svc:T Support.Q3}"/>
+                    <TextBlock Style="{StaticResource MutedText}" Text="{svc:T Support.A3}" TextWrapping="Wrap"/>
+                    <TextBlock Style="{StaticResource Question}" Text="{svc:T Support.Q4}"/>
+                    <TextBlock Style="{StaticResource MutedText}" Text="{svc:T Support.A4}" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource MutedText}" Text="{svc:T Settings.Disclaimer}" TextWrapping="Wrap"
+                       FontSize="11" Margin="0,18,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

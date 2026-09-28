@@ -81,7 +81,9 @@ public sealed class ShellViewModel : ObservableObject
             new NavItem(this, "Hotkeys", "\uE765", () => new HotkeysViewModel(services)),
             new NavItem(this, "Guide", "\uE897", () => new GuideViewModel(services))
         ];
-        SettingsItem = new NavItem(this, "Settings", "\uE713", () => new SettingsViewModel(services));
+        // Support sits just above Settings, apart from the working screens (docs/PLAN.md \u00A710).
+        SupportItem = new NavItem(this, "Support", "\uEB51", () => new SupportViewModel(services));
+        SettingsItem = new NavItem(this, "Settings", "\uE713", () => new SettingsViewModel(services, this));
         ObsSources = ObsSourceRow.Create(services);
 
         RetryCommand = new AsyncRelayCommand(StartAsync);
@@ -141,6 +143,7 @@ public sealed class ShellViewModel : ObservableObject
     }
 
     public IReadOnlyList<NavItem> NavItems { get; }
+    public NavItem SupportItem { get; }
     public NavItem SettingsItem { get; }
     public IReadOnlyList<ObsSourceRow> ObsSources { get; }
     public ObservableCollection<Toast> ToastItems => Toasts.Items;
@@ -360,7 +363,7 @@ public sealed class ShellViewModel : ObservableObject
         CurrentPage = target.Page;
     }
 
-    private IEnumerable<NavItem> AllItems() => NavItems.Append(SettingsItem);
+    private IEnumerable<NavItem> AllItems() => NavItems.Append(SupportItem).Append(SettingsItem);
 
     private void ApplyState(JsonNode state)
     {

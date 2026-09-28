@@ -272,6 +272,11 @@
                                      Style="{StaticResource NavButton}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                      Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                      CommandParameter="{Binding}"/>
+                        <!-- Docked after Settings, so it sits just above it -->
+                        <RadioButton DockPanel.Dock="Bottom" DataContext="{Binding SupportItem}" GroupName="nav"
+                                     Style="{StaticResource NavButton}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                     Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                     CommandParameter="{Binding}"/>
                         <ItemsControl ItemsSource="{Binding NavItems}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>

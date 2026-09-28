@@ -679,9 +679,27 @@ no `-Publish`): `releases/RovOverlayTool3-beta-Setup.exe` and `-beta-Portable.zi
 the csproj still say 3.1.2 (pack passes the version to dotnet only); bump both before a real release.
 The user is trying it with a one-month test key. **3.2.0-beta.2** (same way, 2026-09-28) moves the draft overlay's watermark into the banner with the logo behind the title; not smoke-tested because the user's installed app held the single-instance lock, and only overlay files changed since beta.1 passed. **3.2.0-beta.3** (2026-09-28): the logo moves behind the score at 150px; same build, same caveat. **3.2.0-beta.4** (2026-09-28): the logo becomes a small shield inside the mark, before the text. **3.2.0-beta.5** (2026-09-28): the app is renamed Nuzka.
 
-**Before S1-S3 can ship:** the user sees the watermark in OBS; prices are chosen; a way to pay
-exists (manual PromptPay is enough); ideally a page for "Become a supporter"; the commits
-are pushed, which also publishes `revoked-keys.json`.
+**Support screen, in the app (2026-09-28, user's request instead of a web page).**
+- Sidebar item **Support** (heart, ``), docked just above Settings: `ShellViewModel.SupportItem`,
+  `SupportViewModel` / `SupportView`, `--page Support`. Settings' "Become a supporter" button is
+  now always shown and selects it (`shell.NavigateTo("Support")`); `SettingsViewModel` takes the
+  shell for that. `SettingsViewModel.SupporterPageUrl` is gone.
+- The key box, status line and remove button moved out of Settings into **`SupporterPanel`**
+  (`ViewModels/SupportViewModels.cs`); Settings and Support each hold one and bind `Supporter.*`.
+- The screen: lead line, your key, what you get, price, how to get a key (PromptPay QR, send
+  slip, receive key, paste), questions, the Garena/Tencent line. Text in `Loc.Supporter.cs`.
+- **What the maker fills in** lives in one file, `Services/SupporterOffer.cs`: `MonthlyPrice`,
+  `YearlyPrice`, `ContactUrl`, `ContactLabel`. Empty shows "Coming soon" / "Contact details
+  coming soon". The QR is a picture: **`desktop/RovOverlay.Desktop/Assets/promptpay-qr.png`**,
+  copied beside the exe by the csproj (`None Include="Assets\**"`), so pack.ps1 ships it; no
+  file shows a "QR coming soon" box. Changing any of these needs an app update.
+- Verified by snapshots in both languages, empty and filled (sample prices, a contact, a
+  stand-in QR, all reverted). The Settings button was not clicked in a live window: the user's
+  installed app held the single-instance lock.
+
+**Before S1-S3 can ship:** the user sees the watermark in OBS; prices, the PromptPay QR and a
+contact for slips go into the Support screen; the commits are pushed, which also publishes
+`revoked-keys.json`.
 
 **Not decided yet:** prices and tiers (Spectra: EUR 15/25/40 a month; Thai guess THB 99-199
 a month or 990-1,990 a year), watermark text and corner, perks beyond the watermark, and
