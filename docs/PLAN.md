@@ -647,6 +647,13 @@ dropped: **the user chose keys only, no accounts and no server.**
   accepted with the thank-you; Remove → confirm → gone. The user's real data folder was
   never written.
 
+**3.2.0-beta.1 built locally 2026-09-28, not published** (`pack.ps1 -Version 3.2.0-beta.1 -Channel beta`,
+no `-Publish`): `releases/RovOverlayTool3-beta-Setup.exe` and `-beta-Portable.zip`, notes in
+`docs/release-notes/3.2.0-beta.1.md`. The portable copy passed `smoke.ps1`; the bundle holds
+`supporter.js` and the watermark, and neither the key tool nor the secret key. `package.json` and
+the csproj still say 3.1.2 (pack passes the version to dotnet only); bump both before a real release.
+The user is trying it with a one-month test key.
+
 **Before S1-S3 can ship:** the user sees the watermark in OBS; prices are chosen; a way to pay
 exists (manual PromptPay is enough); ideally a page for "Become a supporter"; the commits
 are pushed, which also publishes `revoked-keys.json`.
