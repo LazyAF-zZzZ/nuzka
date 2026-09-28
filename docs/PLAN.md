@@ -740,5 +740,8 @@ only cropped square (1123 px) and resized with WPF (`HighQuality` scaling) into:
 installer icon via pack.ps1), `backend/public/images/watermark-logo.png` (128 px, the mark in the
 overlay watermark, replacing the gold shield), and `docs/brand/nuzka-logo-1024.png` /
 `-512.png` (masters; 512 is small enough for Stripe's branding upload). At 16 px the artwork
-turns into a red-and-black blob; a simplified 16 px frame (the face and crown only) would
-fix that if it bothers anyone.
+turns into a red-and-black blob, so **16, 20 and 24 px use `docs/brand/nuzka-icon-small.png`**:
+the cream face and the red crown cut out of the artwork (largest red shape in the crown box;
+the face flood-filled from its middle with its holes filled), the crown stacked just above,
+a 26 px dark outline round the face so it shows on light backgrounds, and the eyes grown
+by 11 px so they survive at 16 px. 32 px and up keep the full artwork (user's request).
