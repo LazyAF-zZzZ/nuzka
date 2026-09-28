@@ -139,7 +139,7 @@ function render(data) {
         params.get('title') || `${data.a.name} vs ${data.b.name}`;
     document.getElementById('subtitle').textContent =
         params.get('subtitle') || data.tournament.name || 'Picks and bans';
-    document.title = `${data.a.name} vs ${data.b.name} - ROV Overlay`;
+    document.title = `${data.a.name} vs ${data.b.name} - Nuzka`;
 
     document.getElementById('nameA').textContent = data.a.name || 'BLUE';
     document.getElementById('nameB').textContent = data.b.name || 'RED';

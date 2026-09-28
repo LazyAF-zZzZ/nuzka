@@ -298,7 +298,7 @@ function render(state) {
     if (headingKey !== lastHeading) {
         document.getElementById('title').textContent = heading.title;
         document.getElementById('subtitle').textContent = heading.subtitle;
-        document.title = `${heading.title} - ROV Overlay`;
+        document.title = `${heading.title} - Nuzka`;
         lastHeading = headingKey;
     }
 

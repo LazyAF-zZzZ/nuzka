@@ -233,10 +233,10 @@ test('an oversized image is refused rather than written', () => {
 
 test('anything that is not one of our backups is turned away by name', () => {
   const cases: [unknown, RegExp][] = [
-    [null, /not a ROV Overlay backup/i],
-    ['a string', /not a ROV Overlay backup/i],
-    [{}, /not a ROV Overlay backup/i],
-    [{ format: 'something-else' }, /not a ROV Overlay backup/i],
+    [null, /not a Nuzka backup/i],
+    ['a string', /not a Nuzka backup/i],
+    [{}, /not a Nuzka backup/i],
+    [{ format: 'something-else' }, /not a Nuzka backup/i],
     [{ format: BACKUP_FORMAT }, /no version/i],
     [{ format: BACKUP_FORMAT, version: 0 }, /no version/i],
     [{ format: BACKUP_FORMAT, version: 99, kind: 'full' }, /newer version/i],

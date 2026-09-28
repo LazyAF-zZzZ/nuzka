@@ -121,7 +121,7 @@ async function boot() {
     report = await (await fetch('/api/sounds')).json();
   } catch (error) {
     setVerdict('bad', 'Cannot reach the app', [
-      'This page loaded but the app did not answer. Is the ROV Overlay Tool still running?'
+      'This page loaded but the app did not answer. Is Nuzka still running?'
     ]);
     return;
   }

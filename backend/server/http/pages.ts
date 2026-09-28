@@ -22,8 +22,8 @@ margin:0;height:100vh;display:grid;place-items:center;text-align:center;line-hei
 p{max-width:34rem;margin:.5rem 1.5rem}b{color:#e3c07b}small{color:#8b8f98}
 </style>
 <div>
-<p><b>หน้านี้ย้ายเข้าไปอยู่ในแอพแล้ว</b><br>เปิด ROV Overlay Tool แล้วใช้เมนูด้านซ้าย</p>
-<p>This screen is part of the app now. Open ROV Overlay Tool and use the sidebar.</p>
+<p><b>หน้านี้ย้ายเข้าไปอยู่ในแอพแล้ว</b><br>เปิด Nuzka แล้วใช้เมนูด้านซ้าย</p>
+<p>This screen is part of the app now. Open Nuzka and use the sidebar.</p>
 <p><small>ลิงก์ overlay สำหรับ OBS ไม่เปลี่ยน / Overlay URLs for OBS are unchanged.</small></p>
 </div>`;
 

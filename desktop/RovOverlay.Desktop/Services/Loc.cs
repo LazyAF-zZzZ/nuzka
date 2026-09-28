@@ -169,7 +169,7 @@ public sealed partial class Loc : INotifyPropertyChanged
         ["Error.Crashed"] = "The server stopped while starting. The last lines it wrote:",
         ["Error.Timeout"] = "The server didn't answer within 20 seconds.",
         ["Error.Exited"] = "The server stopped. The overlays in OBS are offline until it runs again.",
-        ["App.AlreadyOpen"] = "ROV Overlay Tool is already open."
+        ["App.AlreadyOpen"] = "Nuzka is already open."
     };
 
     private static readonly Dictionary<string, string> Th = new()
@@ -273,7 +273,7 @@ public sealed partial class Loc : INotifyPropertyChanged
         ["Error.Crashed"] = "เซิร์ฟเวอร์หยุดทำงานระหว่างเปิด บรรทัดสุดท้ายที่มันเขียนไว้:",
         ["Error.Timeout"] = "เซิร์ฟเวอร์ไม่ตอบภายใน 20 วินาที",
         ["Error.Exited"] = "เซิร์ฟเวอร์หยุดทำงาน overlay ใน OBS จะดับจนกว่าจะเปิดใหม่",
-        ["App.AlreadyOpen"] = "ROV Overlay Tool เปิดอยู่แล้ว"
+        ["App.AlreadyOpen"] = "Nuzka เปิดอยู่แล้ว"
     };
 }
 

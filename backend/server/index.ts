@@ -169,7 +169,7 @@ export function start(
 
   server.listen(port, host, () => {
     console.log('===========================================');
-    console.log('ROV Overlay Tool Server Running');
+    console.log('Nuzka Server Running');
     console.log('===========================================');
     console.log(`Home: http://${host}:${port}`);
     console.log(`Control Panel: http://${host}:${port}/control`);

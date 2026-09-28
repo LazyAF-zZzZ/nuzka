@@ -115,7 +115,7 @@
     //
     // A page with a banner marks it <... data-watermark-slot>, and the mark goes inside
     // it instead of in a corner. Being inside the panel, it scales with it at 1440.
-    const WATERMARK_TEXT = 'ROV Overlay Tool · by LazyAF';
+    const WATERMARK_TEXT = 'Nuzka · by LazyAF';
     const watermarkStyle = document.createElement('style');
     watermarkStyle.textContent = `
         .rov-watermark {

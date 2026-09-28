@@ -70,7 +70,7 @@ public class RovSmokeProbe {
 # the new one show "already open" and exit - which is not what this is testing.
 $already = Get-Process RovOverlayTool -ErrorAction SilentlyContinue
 if ($already) {
-    throw "ROV Overlay Tool is already running (pid $($already.Id -join ', ')). Close it first."
+    throw "Nuzka is already running (pid $($already.Id -join ', ')). Close it first."
 }
 
 $settings = Join-Path $env:APPDATA 'RovOverlayTool3\settings.json'

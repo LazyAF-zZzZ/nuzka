@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:svc="clr-namespace:RovOverlay.Desktop.Services"
-        Title="ROV Overlay Tool" Width="1360" Height="840" MinWidth="1040" MinHeight="620"
+        Title="Nuzka" Width="1360" Height="840" MinWidth="1040" MinHeight="620"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BgBrush}" Foreground="{StaticResource TextBrush}"
         FontFamily="Segoe UI" FontSize="12.5" UseLayoutRounding="True"
@@ -43,11 +43,7 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="ROV" FontWeight="Bold" FontSize="13" Foreground="{StaticResource GoldBrush}"/>
-                        <TextBlock Text="OVERLAY TOOL" FontWeight="SemiBold" FontSize="13" Margin="7,0,0,0"/>
-                        <Border Style="{StaticResource Pill}" Margin="10,0,0,0" Padding="6,0,6,1">
-                            <TextBlock Text="v3" FontSize="10.5" Foreground="{StaticResource Muted2Brush}"/>
-                        </Border>
+                        <TextBlock Text="NUZKA" FontWeight="Bold" FontSize="13" Foreground="{StaticResource GoldBrush}"/>
                     </StackPanel>
 
                     <!-- What the viewers see right now -->

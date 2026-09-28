@@ -125,7 +125,7 @@
     'That file is not readable JSON': 'ไฟล์นี้อ่านเป็น JSON ไม่ได้',
     // คำปฏิเสธจากเซิร์ฟเวอร์ ต้องสะกดตรงกับ server/domain/backup.ts เป๊ะๆ
     // เพราะข้อความทั้งประโยคคือกุญแจ (ดู readBackup)
-    'That file is not a ROV Overlay backup': 'ไฟล์นี้ไม่ใช่ไฟล์สำรองของ ROV Overlay',
+    'That file is not a Nuzka backup': 'ไฟล์นี้ไม่ใช่ไฟล์สำรองของ Nuzka',
     'That backup file has no version': 'ไฟล์สำรองนี้ไม่มีเลขเวอร์ชัน',
     'That backup was made by a newer version of the app':
       'ไฟล์สำรองนี้ถูกสร้างจากแอพเวอร์ชันที่ใหม่กว่า',

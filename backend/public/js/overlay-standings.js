@@ -221,7 +221,7 @@ function render(tournament, groups) {
     const finished = groups.every((g) => g.remaining === 0);
     document.getElementById('subtitle').textContent =
         params.get('subtitle') || (finished ? 'Final standings' : 'Group standings');
-    document.title = `${tournament.name || 'Standings'} - ROV Overlay`;
+    document.title = `${tournament.name || 'Standings'} - Nuzka`;
 
     box.style.setProperty('--st-cols', String(columnsFor(groups.length)));
     box.style.setProperty('--st-stagger', `${STAGGER_MS}ms`);

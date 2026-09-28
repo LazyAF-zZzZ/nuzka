@@ -361,7 +361,7 @@ export function readBackup(raw: unknown): ReadResult {
   const file = asRecord(raw);
 
   if (file.format !== BACKUP_FORMAT) {
-    return { error: 'That file is not a ROV Overlay backup' };
+    return { error: 'That file is not a Nuzka backup' };
   }
   const version = Number(file.version);
   if (!Number.isFinite(version) || version < 1) {

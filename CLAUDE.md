@@ -1,4 +1,4 @@
-# ROV Overlay Tool v3
+# Nuzka (formerly ROV Overlay Tool v3)
 
 Native Windows operator app (WPF, .NET 10) in front of v2's Node backend, which still
 serves the HTML overlays to OBS. The design, decisions, status and traps are in

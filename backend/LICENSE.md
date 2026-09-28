@@ -1,8 +1,8 @@
-# ROV Overlay Tool Free Non-Commercial License
+# Nuzka Free Non-Commercial License
 
 Copyright (c) 2026 LazyAF
 
-ROV Overlay Tool is provided free of charge for tournament, community, education, and personal broadcast use.
+Nuzka (formerly ROV Overlay Tool) is provided free of charge for tournament, community, education, and personal broadcast use.
 
 ## You May
 
@@ -31,7 +31,7 @@ If you share this application or a modified version, you must:
 
 ## Third-Party Assets
 
-Game names, hero images, logos, artwork, and other third-party assets belong to their respective owners. This license only covers the ROV Overlay Tool code and project files created for this tool.
+Game names, hero images, logos, artwork, and other third-party assets belong to their respective owners. This license only covers the Nuzka code and project files created for this tool.
 
 ## No Warranty
 

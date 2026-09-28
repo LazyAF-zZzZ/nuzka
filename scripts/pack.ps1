@@ -1,4 +1,4 @@
-# Builds an installable ROV Overlay Tool and, optionally, publishes it as the update
+# Builds an installable Nuzka and, optionally, publishes it as the update
 # feed users receive.
 #
 #   .\scripts\pack.ps1 -Version 3.0.0
@@ -59,7 +59,7 @@ $operatorPages = @(
     'hotkeys.html'
 )
 
-Write-Host "ROV Overlay Tool $Version ($Channel)" -ForegroundColor Cyan
+Write-Host "Nuzka $Version ($Channel)" -ForegroundColor Cyan
 
 # --- 1. A clean stage -------------------------------------------------------------
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
@@ -141,7 +141,7 @@ Write-Host '  packing…'
     --packId RovOverlayTool3 `
     --packVersion $Version `
     --packDir $app `
-    --packTitle 'ROV Overlay Tool' `
+    --packTitle 'Nuzka' `
     --packAuthors 'LazyAF' `
     --mainExe RovOverlayTool.exe `
     --icon (Join-Path $root 'backend\public\images\app-icon.ico') `
@@ -161,7 +161,7 @@ if ($Publish) {
         --channel $vpkChannel `
         --outputDir $releases `
         --tag "v$Version" `
-        --releaseName "ROV Overlay Tool $Version" `
+        --releaseName "Nuzka $Version" `
         --publish true `
         --token $env:GITHUB_TOKEN
     if ($LASTEXITCODE -ne 0) { throw 'vpk upload failed' }

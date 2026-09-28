@@ -198,7 +198,7 @@ function render(data) {
     document.getElementById('name').textContent = params.get('title') || data.team.name;
     document.getElementById('subtitle').textContent =
         params.get('subtitle') || (data.tournament ? data.tournament.name : 'All tournaments');
-    document.title = `${data.team.name} - ROV Overlay`;
+    document.title = `${data.team.name} - Nuzka`;
 
     const tiles = document.getElementById('tiles');
     tiles.textContent = '';

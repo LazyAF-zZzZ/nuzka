@@ -1,4 +1,4 @@
-# Drives one running RovOverlayTool process through UI Automation, the way a person would:
+# Drives one running Nuzka (RovOverlayTool.exe) process through UI Automation, the way a person would:
 # finds a control by the text on it and presses it. Never touches any other process.
 #
 #   -Action click           press the button showing -Text, in the main window (not in a dialog)
@@ -54,14 +54,14 @@ function Get-TopWindows {
 }
 
 function Get-MainWindow {
-    Get-TopWindows | Where-Object { $_.Current.Name -eq 'ROV Overlay Tool' } | Select-Object -First 1
+    Get-TopWindows | Where-Object { $_.Current.Name -eq 'Nuzka' } | Select-Object -First 1
 }
 
 function Get-Dialogs {
     $found = @()
     $main = Get-MainWindow
     if ($main) { $found += @($main.FindAll($Scope::Descendants, $windowCondition)) }
-    $found += @(Get-TopWindows | Where-Object { $_.Current.Name -ne 'ROV Overlay Tool' })
+    $found += @(Get-TopWindows | Where-Object { $_.Current.Name -ne 'Nuzka' })
     $found
 }
 

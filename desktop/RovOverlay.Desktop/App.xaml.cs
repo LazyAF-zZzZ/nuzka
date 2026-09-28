@@ -28,7 +28,7 @@ public partial class App : Application
         _singleInstance = new Mutex(true, args.SnapshotPath is null ? "RovOverlayTool3.Desktop" : "RovOverlayTool3.Snapshot", out var first);
         if (!first)
         {
-            MessageBox.Show(Loc.T("App.AlreadyOpen"), "ROV Overlay Tool", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(Loc.T("App.AlreadyOpen"), "Nuzka", MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;
         }
@@ -140,8 +140,8 @@ public partial class App : Application
         // Deliberately not translated: Loc itself is one of the things that can fail this
         // early, and a crash handler must not depend on what may have crashed.
         MessageBox.Show(
-            $"ROV Overlay Tool could not start.\nเปิดโปรแกรมไม่สำเร็จ\n\n{error.Message}\n\n{path}",
-            "ROV Overlay Tool", MessageBoxButton.OK, MessageBoxImage.Error);
+            $"Nuzka could not start.\nเปิดโปรแกรมไม่สำเร็จ\n\n{error.Message}\n\n{path}",
+            "Nuzka", MessageBoxButton.OK, MessageBoxImage.Error);
         Shutdown();
     }
 

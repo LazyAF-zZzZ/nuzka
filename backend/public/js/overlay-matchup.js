@@ -116,7 +116,7 @@ function render(matchup) {
     document.getElementById('title').textContent =
         params.get('title') || `${matchup.a.name} vs ${matchup.b.name}`;
     document.getElementById('subtitle').textContent = params.get('subtitle') || 'Head to head';
-    document.title = `${matchup.a.name} vs ${matchup.b.name} - ROV Overlay`;
+    document.title = `${matchup.a.name} vs ${matchup.b.name} - Nuzka`;
 
     document.getElementById('nameA').textContent = matchup.a.name || 'BLUE';
     document.getElementById('nameB').textContent = matchup.b.name || 'RED';

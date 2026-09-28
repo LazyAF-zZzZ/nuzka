@@ -297,7 +297,7 @@ test('the watermark starts hidden and only the server can show it', () => {
   // Shown first and hidden later would flash it on a supporter's stream at every load.
   assert.match(js, /watermark\.hidden = true;/);
   assert.match(js, /socket\.on\('supporter'/);
-  assert.ok(js.includes('ROV Overlay Tool · by LazyAF'), 'the watermark text');
+  assert.ok(js.includes('Nuzka · by LazyAF'), 'the watermark text');
   // The shield is a child of the watermark, so hiding the one hides the other: no second
   // element for a key to forget.
   assert.match(js, /watermark\.append\(watermarkLogo, watermarkText\);/, 'the logo sits inside the watermark');

@@ -8,7 +8,7 @@ session with no conversation history should be able to continue from here and
 
 ## 0. Where things stand
 
-**Last updated 2026-09-28: supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
+**Last updated 2026-09-28: the app is renamed **Nuzka** (§1). Supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
 
 | Area | State |
 |---|---|
@@ -174,6 +174,16 @@ Settled with the user on 2026-09-11. Do not re-litigate.
 - **v3 is a new app in its own folder** (`rov_overlay_v3`). **`../rov_pickban_overlay`
   (v2) is never modified**: no builds, no `npm start`, no edits. Read from it only.
   Running `npm start` there rebuilds its `build/` and opens its database.
+- **The app is called Nuzka** (user's choice, 2026-09-28): one casual, made-up word that
+  searches showed was barely used (only a GitHub username), and no "ROV" in the name, which
+  is Garena's trademark; "for Arena of Valor (RoV)" goes in descriptions instead. Only what
+  people *see* was renamed: window title, title bar, installer title (`--packTitle`),
+  watermark, licence, messages, guide, README. **The IDs stay**: packId `RovOverlayTool3`,
+  `RovOverlayTool.exe`, `%APPDATA%\RovOverlayTool3`, the `rov_overlay_v3` repo and its
+  update feed, `APP_ID` `rov-overlay-v3`, so installed copies keep updating and keep their
+  data. **"ROV Overlay Tool" stays wherever it names v2**, which really has that name: the
+  v2 importer, "most likely ROV Overlay Tool v2" on a busy port, the guide's moving-from-v2
+  section. The unshipped HTML operator pages were left alone.
 - **The overlays stay HTML/CSS/JS**, served to OBS as browser sources, unchanged from v2.
 - **The operator UI is native C#** (WPF). The user picked native over a React shell
   inside Electron.
