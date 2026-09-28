@@ -11,7 +11,7 @@ page. The app updates itself after that.
 
 ## Free, with an optional supporter key
 
-Every feature is free. The overlays carry a small "Nuzka · by LazyAF" watermark.
+Every feature is free. The overlays carry a small "Powered by Nuzka" watermark.
 
 A **supporter key** removes the watermark and helps pay for new features and updates.
 

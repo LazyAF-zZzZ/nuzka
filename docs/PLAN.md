@@ -641,7 +641,7 @@ dropped: **the user chose keys only, no accounts and no server.**
 **Built in S2 (2026-09-27).**
 - The watermark is created and styled by `public/js/overlay-size.js`, which all ten
   broadcast graphics load after the script that declares `socket`. Styles are injected
-  from there because broadcast pages share no stylesheet. Text "ROV Overlay Tool · by
+  from there because broadcast pages share no stylesheet. Text **"Powered by Nuzka"** (user, 2026-09-28; before that "Nuzka · by LazyAF", and "ROV Overlay Tool · by
   LazyAF", 23px bold (21px in the draft banner), pure white with a dark shadow, the logo at full strength and 2.1 × the text height (48 px in corners, 44 in the banner, which exactly spans the red ban slots) with a 0.55 em gap (was 15px at 60% in beta.1, then 19/17px at 85%; the user asked twice for bigger and brighter), `pointer-events: none`, scaled 4/3 at 1440.
 - **It starts hidden** and appears only when the `supporter` event says inactive. Showing
   it first would flash it on a supporter's stream every time OBS loads a source. The flip
