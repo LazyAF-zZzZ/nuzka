@@ -9,7 +9,7 @@
 //   ?subtitle=         เปลี่ยนบรรทัดรอง ไม่ใส่ = จำนวนทีม
 //   ?columns=1..6      บังคับจำนวนคอลัมน์ ไม่ใส่ = เลือกให้ตามจำนวนทีม
 //   ?roster=off        ไม่ต้องแสดงรายชื่อผู้เล่น
-//   ?stagger=<ms>      ไม่มีผลแล้ว: ตั้งแต่ 3.2.0 การ์ดจางเข้าทั้งชุดพร้อมกัน ไม่ไล่ทีละใบ
+//   ?stagger=<ms>      ระยะห่างของการไล่เข้าทีละใบ ไม่ใส่ = 90ms
 //   ?perSet=4..64      ทีมสูงสุดต่อชุด ไม่ใส่ = ค่าในแอพ (ดีไซน์ > รายชื่อทีม) ซึ่งเริ่มที่ 32
 //   ?seconds=3..120    ชุดหนึ่งค้างบนจอกี่วินาทีก่อนสลับ ไม่ใส่ = 12
 //   ?set=<n>           แสดงชุดที่ n ชุดเดียว ไม่วน
@@ -62,7 +62,7 @@ socket.on('stateUpdate', (state) => {
     if (shown) showSets(shown.tournament, shown.teams);
 });
 const holdMs = window.RovOverlay.intParam(params, 'seconds', 12, 3, 120) * 1000;
-const FADE_MS = 500;          // ต้องตรงกับ tlCardFadeOut / tlCardFadeIn ใน overlay-teams.css
+const FADE_MS = 500;          // ต้องตรงกับ tlCardFadeOut ใน overlay-teams.css
 const cycling = params.get('edit') !== '1';
 
 function splitIntoSets(teams) {
@@ -257,8 +257,7 @@ function fitToStage() {
     grid.style.transform = 'scale(' + scale + ')';
 }
 // วาดหนึ่งชุด total คือจำนวนทีมทั้งทัวร์นาเมนต์ ไม่ใช่ของชุดนี้
-// fade = ชุดที่สลับเข้ามา จางเข้าทั้งชุดพร้อมกันแทนการไล่เข้าทีละใบ
-function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1, fade = false) {
+function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1) {
     const grid = document.getElementById('grid');
     const stage = document.getElementById('stage');
     grid.textContent = '';
@@ -266,7 +265,6 @@ function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1
     if (stage.classList.contains('settled')) document.getElementById('head').classList.add('settled');
     // ชุดก่อนถูกบังคับจบอนิเมชันไว้แล้ว ต้องถอดออก ไม่งั้นชุดใหม่โผล่มาเฉยๆ ไม่ไล่เข้า
     stage.classList.remove('settled', 'leaving');
-    stage.classList.toggle('fading', fade);
 
     const step = staggerFor(teams.length);
     stage.style.setProperty('--stagger', step + 'ms');
@@ -284,11 +282,12 @@ function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1
 
     window.RovOverlay.note(teams.length === 0 ? 'No teams have been added to this tournament yet.' : '');
     fitToStage();
-    // จางเข้าทั้งชุดพร้อมกัน ตัวสำรองจึงนับเหมือนการ์ดใบเดียว
-    settleSoon(fade ? 1 : teams.length, step);
+    settleSoon(teams.length, step);
 }
 
-// ชุดปัจจุบันจางออก แล้วชุดถัดไปจางเข้า ทั้งชุดพร้อมกัน
+// ชุดปัจจุบันจางออกพร้อมกันทั้งชุด แล้วชุดถัดไปไล่เข้าจากซ้ายทีละใบเหมือนตอนเปิดหน้า
+//
+// ผู้ใช้ลองแบบจางเข้าทั้งชุด (beta.20-23) แล้วขอกลับมาไล่เข้าทีละใบ แต่ขาออกยังจาง
 //
 // ใช้ตัวจับเวลาล้วนๆ ไม่รอ animationend เหตุผลเดียวกับ settleSoon:
 // OBS หยุด source ที่ไม่ได้ออกอากาศ อนิเมชันขาออกอาจไม่จบ แต่ชุดต้องสลับต่อได้
@@ -299,20 +298,24 @@ function showSets(tournament, teams) {
     const only = window.RovOverlay.intParam(params, 'set', 0, 0, sets.length);
     let index = only ? only - 1 : 0;
 
-    const draw = (fade) => render(tournament, sets[index], teams.length, index + 1, sets.length, fade);
-    // ตอนเปิดหน้าก็จางเข้าทั้งชุดเหมือนตอนสลับ (ผู้ใช้ขอ)
-    draw(true);
+    const draw = () => render(tournament, sets[index], teams.length, index + 1, sets.length);
+    draw();
     if (only || sets.length < 2 || !cycling) return;
 
     const next = () => {
         document.getElementById('stage').classList.add('leaving');
         cycleTimer = setTimeout(() => {
             index = (index + 1) % sets.length;
-            draw(true);
-            cycleTimer = setTimeout(next, FADE_MS + holdMs);
+            draw();
+            cycleTimer = setTimeout(next, entranceMs(sets[index].length) + holdMs);
         }, FADE_MS);
     };
-    cycleTimer = setTimeout(next, FADE_MS + holdMs);
+    cycleTimer = setTimeout(next, entranceMs(sets[index].length) + holdMs);
+}
+
+// นับเวลาค้างจากตอนที่ใบสุดท้ายเข้ามาครบ ไม่ใช่จากตอนเริ่มวาด
+function entranceMs(count) {
+    return staggerFor(count) * Math.max(0, count - 1) + ENTER_MS;
 }
 
 async function load() {
