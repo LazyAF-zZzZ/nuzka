@@ -304,6 +304,14 @@ test('the watermark starts hidden and only the server can show it', () => {
   assert.ok(!/watermarkLogo\.hidden/.test(js), 'the logo has no visibility of its own');
 });
 
+test('on full-screen graphics the watermark picks a free corner, and looks again when the page changes', () => {
+  const js = fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'js', 'overlay-size.js'), 'utf8');
+  // A fixed corner was covered by the last row of a 32-team standings table (2026-09-28).
+  assert.match(js, /const CORNERS = \['bottom-right', 'bottom-left', 'top-right', 'top-left'\];/);
+  assert.match(js, /new MutationObserver\(\(\) => placeSoon\(/, 'placement follows content changes');
+  assert.match(js, /if \(slot\) return;/, 'the draft banner keeps its fixed place');
+});
+
 test('the draft overlays carry the watermark in their banner, and the logo it shows is shipped', () => {
   const publicDir = path.join(__dirname, '..', '..', 'public');
   for (const file of ['overlay.html', 'overlay-1440.html']) {

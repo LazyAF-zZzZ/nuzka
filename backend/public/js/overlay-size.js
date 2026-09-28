@@ -106,9 +106,13 @@
     // time OBS loads the source, which is exactly what they paid to be rid of.
     //
     // Its styles are injected here rather than put in each page's CSS: broadcast pages
-    // share no stylesheet, and ten copies would drift. A page can move it with
-    // <body data-watermark="top-right | top-left | bottom-left"> if bottom-right covers
-    // something on that graphic.
+    // share no stylesheet, and ten copies would drift.
+    //
+    // Where it goes depends on the data, not the page: 32 teams fill the standings to
+    // the bottom edge where 8 teams leave half the screen empty. So it tries the corners
+    // in order (the page's <body data-watermark> first, else bottom-right) and takes the
+    // first one where nothing drawn sits under it, checking again whenever the page
+    // changes. If every corner is busy it takes the one it covers least.
     //
     // The app's shield sits just before the text, a little taller than a capital
     // letter, so the two read as one mark (user's request, 2026-09-28).
@@ -134,9 +138,9 @@
             height: 2.1em; width: auto;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
         }
-        body[data-watermark="top-right"] .rov-watermark { top: 14px; bottom: auto; transform-origin: top right; }
-        body[data-watermark="top-left"] .rov-watermark { top: 14px; bottom: auto; left: 18px; right: auto; transform-origin: top left; }
-        body[data-watermark="bottom-left"] .rov-watermark { left: 18px; right: auto; transform-origin: bottom left; }
+        .rov-watermark[data-corner="top-right"] { top: 14px; bottom: auto; transform-origin: top right; }
+        .rov-watermark[data-corner="top-left"] { top: 14px; bottom: auto; left: 18px; right: auto; transform-origin: top left; }
+        .rov-watermark[data-corner="bottom-left"] { left: 18px; right: auto; transform-origin: bottom left; }
         body[data-size="1440"] .rov-watermark { transform: scale(calc(4 / 3)); }
         /* Inside the draft overlay's banner (the top strip of .pick-section, 1080 layout
            pixels): right-aligned just left of the red ban slots (x 1600-1906, y 12-70),
@@ -167,9 +171,87 @@
         body.appendChild(watermark);
     }
 
+    // --- Picking a free corner (full-screen graphics only) -------------------------
+    const CORNERS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
+    const preferred = CORNERS.indexOf(body.dataset.watermark || '') >= 0 ? body.dataset.watermark : 'bottom-right';
+    const cornerOrder = [preferred].concat(CORNERS.filter((c) => c !== preferred));
+
+    // Rectangles of everything drawn: text, pictures, and boxes with a fill, a picture or
+    // a border. Anything covering a quarter of the screen or more is a backdrop (the
+    // stage, a panel behind a table), not something the mark would hide. Elements still
+    // at opacity 0 count: that is an entrance animation about to show them.
+    function drawnBoxes() {
+        const screen = window.innerWidth * window.innerHeight;
+        const boxes = [];
+        body.querySelectorAll('*').forEach((el) => {
+            if (el === watermark || watermark.contains(el)) return;
+            const r = el.getBoundingClientRect();
+            if (r.width < 1 || r.height < 1 || r.width * r.height >= screen / 4) return;
+            const cs = getComputedStyle(el);
+            if (cs.visibility === 'hidden') return;
+            const text = Array.prototype.some.call(el.childNodes, (n) => n.nodeType === 3 && n.textContent.trim() !== '');
+            const media = /^(IMG|SVG|CANVAS|VIDEO|svg)$/.test(el.tagName);
+            const painted = cs.backgroundImage !== 'none'
+                || (cs.backgroundColor !== 'transparent' && !/rgba\(.*,\s*0\)$/.test(cs.backgroundColor))
+                || parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderBottomWidth) > 0;
+            if (text || media || painted) boxes.push(r);
+        });
+        return boxes;
+    }
+
+    function covered(boxes) {
+        const r = watermark.getBoundingClientRect();
+        const pad = 8;
+        let area = 0;
+        boxes.forEach((b) => {
+            const w = Math.min(r.right + pad, b.right) - Math.max(r.left - pad, b.left);
+            const h = Math.min(r.bottom + pad, b.bottom) - Math.max(r.top - pad, b.top);
+            if (w > 0 && h > 0) area += w * h;
+        });
+        return area;
+    }
+
+    function placeWatermark() {
+        if (slot) return;
+        // A hidden mark has no size to measure; lay it out invisibly for the check.
+        const wasHidden = watermark.hidden;
+        if (wasHidden) { watermark.hidden = false; watermark.style.visibility = 'hidden'; }
+        const boxes = drawnBoxes();
+        let best = cornerOrder[0];
+        let bestArea = Infinity;
+        for (const corner of cornerOrder) {
+            watermark.dataset.corner = corner;
+            const area = covered(boxes);
+            if (area < bestArea) { best = corner; bestArea = area; }
+            if (area === 0) break;
+        }
+        watermark.dataset.corner = best;
+        if (wasHidden) { watermark.hidden = true; watermark.style.visibility = ''; }
+    }
+
+    // Pages fill themselves from the server after load and again on every change, and
+    // their rows animate in, so place now, then again a moment after the page stops
+    // changing. Only content changes count: moving the mark itself changes an attribute,
+    // which is not watched, so it cannot set off another round.
+    /** @type {ReturnType<typeof setTimeout> | undefined} */
+    let placeTimer;
+    function placeSoon(delay) {
+        clearTimeout(placeTimer);
+        placeTimer = setTimeout(placeWatermark, delay);
+    }
+    if (!slot) {
+        watermark.dataset.corner = preferred;
+        new MutationObserver(() => placeSoon(600)).observe(body, { childList: true, subtree: true, characterData: true });
+        window.addEventListener('resize', () => placeSoon(200));
+        window.addEventListener('load', () => placeSoon(300));
+        placeSoon(300);
+        setTimeout(placeWatermark, 2500);   // after entrance animations have settled
+    }
+
     if (typeof socket !== 'undefined') {
         socket.on('supporter', (status) => {
             watermark.hidden = Boolean(status && status.active);
+            if (!watermark.hidden) placeSoon(50);
         });
     }
 
