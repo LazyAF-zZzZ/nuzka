@@ -120,7 +120,7 @@
     watermarkStyle.textContent = `
         .rov-watermark {
             position: fixed; right: 18px; bottom: 14px; z-index: 2147483647;
-            display: flex; align-items: center; gap: 0.4em;
+            display: flex; align-items: center; gap: 0.55em;
             font: 700 23px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 0.04em;
             color: #ffffff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.7);
@@ -131,7 +131,7 @@
         /* The logo is at full strength like the text; a drop shadow stands in for the text shadow,
            which images do not get. */
         .rov-watermark img {
-            height: 1.45em; width: auto;
+            height: 2.1em; width: auto;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
         }
         body[data-watermark="top-right"] .rov-watermark { top: 14px; bottom: auto; transform-origin: top right; }
