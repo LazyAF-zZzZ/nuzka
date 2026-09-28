@@ -652,7 +652,19 @@ dropped: **the user chose keys only, no accounts and no server.**
   bottom-right sat on red player 5's name on the draft overlay; `/result` uses `bottom-left`
   (empty lower part of the red side panel). The stage graphics all keep 62px or more of
   bottom padding, so bottom-right is clear on them.
-- **Corner placement follows the data** (2026-09-28, after the user saw the mark on the last  row of a 32-team standings table: the 62 px bottom padding I had counted on is not kept  when a table fills the screen). `placeWatermark()` in `overlay-size.js` tries the corners in  order (`<body data-watermark>` first, else bottom-right; then bottom-left, top-right,  top-left), takes the first one where nothing drawn is under the mark (+8 px), else the least  covered. "Drawn" = elements with their own text, IMG/SVG/CANVAS, or a fill, picture or  border, ignoring anything a quarter of the screen or bigger (backdrops) and counting  opacity-0 elements (entrance animations about to show). Runs 300 ms after load, again at  2.5 s, 600 ms after any content change (MutationObserver on childList/characterData, not  attributes, so moving the mark cannot retrigger it), on resize, and when the mark is shown.  Checked on a copy of the user's real data: standings, matchup, team drafts and team card  go top-right; team list, stats and previous rounds bottom-right; result bottom-left;  nothing covered. The draft overlays keep the banner.
+- **Corner placement follows the data** (2026-09-28, after the user saw the mark on the last
+  row of a 32-team standings table: the 62 px bottom padding I had counted on is not kept when
+  a table fills the screen). `placeWatermark()` in `overlay-size.js` tries the corners in
+  order (`<body data-watermark>` first, else bottom-right; then bottom-left, top-right,
+  top-left), takes the first one where nothing drawn is under the mark (+8 px), else the least
+  covered. "Drawn" = elements with their own text, IMG/SVG/CANVAS, or a fill, picture or
+  border, ignoring anything a quarter of the screen or bigger (backdrops) and counting
+  opacity-0 elements (entrance animations about to show). Runs 300 ms after load, again at 2.5
+  s, 600 ms after any content change (MutationObserver on childList/characterData, not
+  attributes, so moving the mark cannot retrigger it), on resize, and when the mark is shown.
+  Checked on a copy of the user's real data: standings, matchup, team drafts and team card go
+  top-right; team list, stats and previous rounds bottom-right; result bottom-left; nothing
+  covered. The draft overlays keep the banner.
 - **Draft overlays: inside the banner** (user's request, 2026-09-28, replacing an
   "above the panel" spot from the same day). `/overlay` and `/overlay-1440` mark
   `.pick-section` with `data-watermark-slot`; `overlay-size.js` then puts the mark inside it
