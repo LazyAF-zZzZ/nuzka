@@ -262,6 +262,8 @@
         watermark.dataset.corner = preferred;
         new MutationObserver(() => placeSoon(600)).observe(body, { childList: true, subtree: true, characterData: true });
         window.addEventListener('resize', () => placeSoon(200));
+        // Parts moved with the layout editor (overlay-layout.js) change no content, only where it is.
+        window.addEventListener('rov-layout', () => placeSoon(150));
         window.addEventListener('load', () => placeSoon(300));
         placeSoon(300);
         setTimeout(placeWatermark, 2500);   // after entrance animations have settled

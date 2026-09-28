@@ -9,14 +9,14 @@
     <link rel="stylesheet" href="/css/fonts.css">
     <link rel="stylesheet" href="/css/overlay-prev.css">
 </head>
-<body>
+<body data-layout-scene="prev">
     <div class="pv-stage" id="stage">
-        <div class="pv-head">
-            <div class="pv-title" id="title"></div>
-            <div class="pv-sub" id="subtitle"></div>
+        <div data-layout="header" class="pv-head">
+            <div data-layout="title" class="pv-title" id="title"></div>
+            <div data-layout="subtitle" class="pv-sub" id="subtitle"></div>
         </div>
-        <div class="pv-list" id="list"></div>
-        <div class="pv-note" id="note" hidden></div>
+        <div data-layout-items="game" data-layout="games" class="pv-list" id="list"></div>
+        <div data-layout="note" class="pv-note" id="note" hidden></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -25,5 +25,6 @@
     <script src="/js/lib/overlay-common.js"></script>
     <script src="/js/overlay-prev.js"></script>
     <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-layout.js"></script>
 </body>
 </html>

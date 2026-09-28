@@ -35,6 +35,12 @@
                         </StackPanel>
                     </Button>
                     <StackPanel>
+                        <ComboBox ItemsSource="{Binding LayoutScenes}" SelectedItem="{Binding LayoutScene}"
+                                  HorizontalAlignment="Left" MinWidth="320" Margin="0,0,0,10">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         <TextBlock Text="{Binding LayoutStatus}" FontWeight="SemiBold"/>
                         <TextBlock Text="{svc:T Layout.Hint}" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"
                                    FontSize="12" Margin="0,4,0,0"/>

@@ -8,58 +8,58 @@
     <link rel="stylesheet" href="css/broadcast.css">
     <link rel="stylesheet" href="css/result.css">
 </head>
-<body data-skin-slots="resultTop:.team-section.blue, resultBottom:.team-section.red" data-watermark="bottom-left">
+<body data-layout-scene="result" data-skin-slots="resultTop:.team-section.blue, resultBottom:.team-section.red" data-watermark="bottom-left">
     <div class="result-container">
 
         <!-- ===== BLUE TEAM (top half) ===== -->
-        <div class="team-section blue">
+        <div data-layout="blue-half" class="team-section blue">
             <!-- Team header: name + bans -->
-            <div class="team-header">
+            <div data-layout="blue-header" class="team-header">
                 <div class="team-logo-name">
-                    <div class="team-name-text" id="blueNameResult">BLUE TEAM</div>
+                    <div data-layout="blue-name" class="team-name-text" id="blueNameResult">BLUE TEAM</div>
                 </div>
-                <div class="ban-row">
-                    <div class="ban-label-badge">BAN</div>
+                <div data-layout="blue-bans" class="ban-row">
+                    <div data-layout="blue-ban-label" class="ban-label-badge">BAN</div>
                     <div class="ban-icons" id="blueBanIconsResult">
-                        <div class="ban-icon-slot" id="blueResultBan0"></div>
-                        <div class="ban-icon-slot" id="blueResultBan1"></div>
-                        <div class="ban-icon-slot" id="blueResultBan2"></div>
-                        <div class="ban-icon-slot" id="blueResultBan3"></div>
+                        <div data-layout="blue-ban-1" class="ban-icon-slot" id="blueResultBan0"></div>
+                        <div data-layout="blue-ban-2" class="ban-icon-slot" id="blueResultBan1"></div>
+                        <div data-layout="blue-ban-3" class="ban-icon-slot" id="blueResultBan2"></div>
+                        <div data-layout="blue-ban-4" class="ban-icon-slot" id="blueResultBan3"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Pick cards -->
-            <div class="picks-row">
-                <div class="pick-card" id="bluePick0Result">
+            <div data-layout="blue-picks" class="picks-row">
+                <div data-layout="blue-pick-1" class="pick-card" id="bluePick0Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="blueHeroArt0" src="" alt="">
                     <div class="pick-card-footer">
                         <div class="pick-player-name" id="blueResultPlayer0">PLAYER 1</div>
                     </div>
                 </div>
-                <div class="pick-card" id="bluePick1Result">
+                <div data-layout="blue-pick-2" class="pick-card" id="bluePick1Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="blueHeroArt1" src="" alt="">
                     <div class="pick-card-footer">
                         <div class="pick-player-name" id="blueResultPlayer1">PLAYER 2</div>
                     </div>
                 </div>
-                <div class="pick-card" id="bluePick2Result">
+                <div data-layout="blue-pick-3" class="pick-card" id="bluePick2Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="blueHeroArt2" src="" alt="">
                     <div class="pick-card-footer">
                         <div class="pick-player-name" id="blueResultPlayer2">PLAYER 3</div>
                     </div>
                 </div>
-                <div class="pick-card" id="bluePick3Result">
+                <div data-layout="blue-pick-4" class="pick-card" id="bluePick3Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="blueHeroArt3" src="" alt="">
                     <div class="pick-card-footer">
                         <div class="pick-player-name" id="blueResultPlayer3">PLAYER 4</div>
                     </div>
                 </div>
-                <div class="pick-card" id="bluePick4Result">
+                <div data-layout="blue-pick-5" class="pick-card" id="bluePick4Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="blueHeroArt4" src="" alt="">
                     <div class="pick-card-footer">
@@ -70,57 +70,57 @@
         </div>
 
         <!-- center divider -->
-        <div class="center-divider"></div>
+        <div data-layout="divider" class="center-divider"></div>
 
         <!-- ===== RED TEAM (bottom half) ===== -->
-        <div class="team-section red">
+        <div data-layout="red-half" class="team-section red">
             <!-- Team header: name + bans -->
-            <div class="team-header">
+            <div data-layout="red-header" class="team-header">
                 <div class="team-logo-name">
-                    <div class="team-name-text" id="redNameResult">RED TEAM</div>
+                    <div data-layout="red-name" class="team-name-text" id="redNameResult">RED TEAM</div>
                 </div>
-                <div class="ban-row">
-                    <div class="ban-label-badge">BAN</div>
+                <div data-layout="red-bans" class="ban-row">
+                    <div data-layout="red-ban-label" class="ban-label-badge">BAN</div>
                     <div class="ban-icons" id="redBanIconsResult">
-                        <div class="ban-icon-slot" id="redResultBan0"></div>
-                        <div class="ban-icon-slot" id="redResultBan1"></div>
-                        <div class="ban-icon-slot" id="redResultBan2"></div>
-                        <div class="ban-icon-slot" id="redResultBan3"></div>
+                        <div data-layout="red-ban-1" class="ban-icon-slot" id="redResultBan0"></div>
+                        <div data-layout="red-ban-2" class="ban-icon-slot" id="redResultBan1"></div>
+                        <div data-layout="red-ban-3" class="ban-icon-slot" id="redResultBan2"></div>
+                        <div data-layout="red-ban-4" class="ban-icon-slot" id="redResultBan3"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Pick cards -->
-            <div class="picks-row">
-                <div class="pick-card" id="redPick0Result">
+            <div data-layout="red-picks" class="picks-row">
+                <div data-layout="red-pick-1" class="pick-card" id="redPick0Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="redHeroArt0" src="" alt="">
                     <div class="pick-card-footer">
                         <div class="pick-player-name" id="redResultPlayer0">PLAYER 1</div>
                     </div>
                 </div>
-                <div class="pick-card" id="redPick1Result">
+                <div data-layout="red-pick-2" class="pick-card" id="redPick1Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="redHeroArt1" src="" alt="">
                     <div class="pick-card-footer">
                         <div class="pick-player-name" id="redResultPlayer1">PLAYER 2</div>
                     </div>
                 </div>
-                <div class="pick-card" id="redPick2Result">
+                <div data-layout="red-pick-3" class="pick-card" id="redPick2Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="redHeroArt2" src="" alt="">
                     <div class="pick-card-footer">
                         <div class="pick-player-name" id="redResultPlayer2">PLAYER 3</div>
                     </div>
                 </div>
-                <div class="pick-card" id="redPick3Result">
+                <div data-layout="red-pick-4" class="pick-card" id="redPick3Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="redHeroArt3" src="" alt="">
                     <div class="pick-card-footer">
                         <div class="pick-player-name" id="redResultPlayer3">PLAYER 4</div>
                     </div>
                 </div>
-                <div class="pick-card" id="redPick4Result">
+                <div data-layout="red-pick-5" class="pick-card" id="redPick4Result">
                     <div class="pick-card-empty-icon">?</div>
                     <img class="hero-art" id="redHeroArt4" src="" alt="">
                     <div class="pick-card-footer">
@@ -135,5 +135,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/result.js"></script>
     <script src="js/overlay-size.js"></script>
+    <script src="js/overlay-layout.js"></script>
 </body>
 </html>

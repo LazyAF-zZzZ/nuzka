@@ -259,6 +259,9 @@ function settleSoon(count, step) {
 // scrollHeight จะคืนค่าเท่ากับ clientHeight เสมอ แปลว่า "ไม่ล้น" ตลอด
 // เคยเขียนแบบนั้นใน /overlay-teams แล้วตัวย่อไม่เคยทำงานเลย
 function fitToStage() {
+    // วัดตามผังเดิม ไม่นับชิ้นที่ผู้ใช้ลากย้ายไว้ในตัวแก้ layout (overlay-layout.js)
+    // ไม่งั้นการ์ดที่ถูกลากลงล่างจะดูเหมือนล้นจอ แล้วทั้งตารางถูกย่อตามไปด้วย
+    if (window.RovLayout && !window.RovLayout.measuring) return window.RovLayout.asDesigned(fitToStage);
     const board = document.getElementById('board');
     const stage = document.getElementById('stage');
     board.style.transform = '';

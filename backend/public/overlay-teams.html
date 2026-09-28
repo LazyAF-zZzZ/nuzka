@@ -9,14 +9,14 @@
     <link rel="stylesheet" href="/css/fonts.css">
     <link rel="stylesheet" href="/css/overlay-teams.css">
 </head>
-<body>
+<body data-layout-scene="teams">
     <div class="tl-stage" id="stage">
-        <div class="tl-head" id="head">
-            <div class="tl-title" id="title"></div>
-            <div class="tl-sub" id="subtitle"></div>
+        <div data-layout="header" class="tl-head" id="head">
+            <div data-layout="title" class="tl-title" id="title"></div>
+            <div data-layout="subtitle" class="tl-sub" id="subtitle"></div>
         </div>
-        <div class="tl-grid" id="grid"></div>
-        <div class="tl-note" id="note" hidden></div>
+        <div data-layout-items="team" data-layout="grid" class="tl-grid" id="grid"></div>
+        <div data-layout="note" class="tl-note" id="note" hidden></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -24,5 +24,6 @@
     <script src="/js/lib/overlay-common.js"></script>
     <script src="/js/overlay-teams.js"></script>
     <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-layout.js"></script>
 </body>
 </html>

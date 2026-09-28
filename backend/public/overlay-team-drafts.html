@@ -12,26 +12,26 @@
          สองหน้านี้คือคอมโพเนนต์เดียวกัน ต่างกันแค่ข้อมูลที่ใส่เข้าไป -->
     <link rel="stylesheet" href="/css/overlay-matchup.css">
 </head>
-<body>
+<body data-layout-scene="team-drafts">
     <div class="mu-stage" id="stage">
-        <div class="mu-head">
-            <div class="mu-title" id="title"></div>
-            <div class="mu-sub" id="subtitle"></div>
+        <div data-layout="header" class="mu-head">
+            <div data-layout="title" class="mu-title" id="title"></div>
+            <div data-layout="subtitle" class="mu-sub" id="subtitle"></div>
         </div>
 
-        <div class="mu-score">
-            <div class="mu-team blue"><div class="mu-dot"></div><div class="mu-name" id="nameA"></div></div>
-            <div class="mu-tally">
+        <div data-layout="score" class="mu-score">
+            <div data-layout="blue-team" class="mu-team blue"><div class="mu-dot"></div><div class="mu-name" id="nameA"></div></div>
+            <div data-layout="score-numbers" class="mu-tally">
                 <span class="mu-num" id="numA">0</span>
                 <span class="mu-vs">VS</span>
                 <span class="mu-num" id="numB">0</span>
             </div>
-            <div class="mu-team red"><div class="mu-dot"></div><div class="mu-name" id="nameB"></div></div>
-            <div class="mu-scope" id="scope"></div>
+            <div data-layout="red-team" class="mu-team red"><div class="mu-dot"></div><div class="mu-name" id="nameB"></div></div>
+            <div data-layout="scope" class="mu-scope" id="scope"></div>
         </div>
 
-        <div class="mu-cols" id="cols"></div>
-        <div class="mu-note" id="note" hidden></div>
+        <div data-layout-items="blue-column red-column" data-layout="columns" class="mu-cols" id="cols"></div>
+        <div data-layout="note" class="mu-note" id="note" hidden></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -40,5 +40,6 @@
     <script src="/js/lib/overlay-common.js"></script>
     <script src="/js/overlay-team-drafts.js"></script>
     <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-layout.js"></script>
 </body>
 </html>

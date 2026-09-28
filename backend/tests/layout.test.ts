@@ -73,3 +73,22 @@ test('both draft overlays load the layout script after the one that opens the so
   // One saved layout serves both sizes, so their parts must be the same.
   assert.deepStrictEqual(pages[0], pages[1]);
 });
+
+test('every broadcast graphic has a layout scene and loads the layout script last', () => {
+  const { PAGES } = require('../server/http/pages') as typeof import('../server/http/pages');
+  const publicDir = path.join(__dirname, '..', '..', 'public');
+  // Derived from PAGES, like the watermark test, so a new overlay cannot be left out.
+  const broadcast = Object.entries(PAGES).filter(([route]) => route.startsWith('/overlay') || route === '/result');
+  const scenes = new Map<string, string>();
+  for (const [route, file] of broadcast) {
+    const html = fs.readFileSync(path.join(publicDir, file), 'utf8');
+    const scene = /<body data-layout-scene="([a-z0-9-]+)"/.exec(html)?.[1];
+    assert.ok(scene, `${route} names its layout scene`);
+    const scripts = [...html.matchAll(/src="(\/?js\/[^"]+\.js)"/g)].map((m) => m[1] as string);
+    assert.match(scripts[scripts.length - 1] as string, /overlay-layout\.js$/, `${route} loads overlay-layout.js last`);
+    assert.ok(html.includes('data-layout="'), `${route} has parts to move`);
+    // Only the two draft overlays share a scene: one is the other scaled by 4/3.
+    if (scenes.has(scene) && scene !== 'draft') assert.fail(`${route} and ${scenes.get(scene)} share the scene ${scene}`);
+    scenes.set(scene, route);
+  }
+});

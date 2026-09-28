@@ -160,6 +160,9 @@ function settleSoon(count) {
 // ตัวอักษรใหญ่ที่สุดที่ยังพอดีผืน 1080 แล้วค่อยย่อทั้งกระดานถ้าเล็กสุดแล้วยังล้น
 // เหตุผลและกับดักของการย่อเหมือน overlay-prev.js: ย่ออย่างเดียว ไม่ขยายความกว้างชดเชย
 function fitToStage() {
+    // วัดตามผังเดิม ไม่นับชิ้นที่ผู้ใช้ลากย้ายไว้ในตัวแก้ layout (overlay-layout.js)
+    // ไม่งั้นการ์ดที่ถูกลากลงล่างจะดูเหมือนล้นจอ แล้วทั้งตารางถูกย่อตามไปด้วย
+    if (window.RovLayout && !window.RovLayout.measuring) return window.RovLayout.asDesigned(fitToStage);
     const groups = document.getElementById('groups');
     groups.style.transform = '';
 

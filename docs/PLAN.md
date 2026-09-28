@@ -376,10 +376,6 @@ docs/v2/            v2's plan, guide and notes, for reference
 
 ## 8. Open items
 
-- **Movable parts on the other nine overlays** (result, standings, matchup, team card, teams,
-  analytics, previous game, team drafts). The draft overlay is done (see "Overlay layout
-  editor" below); the user chose it first, to try before the rest. Each page needs only
-  `data-layout-scene`, `data-layout` names and the script tag.
 
 - **The installed copy was installed from the agent session, so it lives in a sandbox.**
   Its desktop shortcut points into `Packages\Claude_*\LocalCache` and shows no icon. It
@@ -505,8 +501,25 @@ docs/v2/            v2's plan, guide and notes, for reference
   `/overlay?edit=1&lang=..`, or `-1440`) and **Reset layout** with a confirm. The draft
   overlay has 36 parts: banner; blue/red bans, BAN labels, each ban; centre, tournament, score
   row, each team (logo, name), score numbers, timer, match title; blue/red picks and each pick.
+- **Layout on every overlay (3.2.0-beta.18).** All ten broadcast pages now have a scene: draft
+  (both sizes), result, prev, standings, matchup, team-drafts, team-card (one layout for both
+  sides), teams, analytics. A test derived from `PAGES` makes every broadcast page name a
+  scene and load `overlay-layout.js` last. Boards build their contents in script, so a
+  container marked `data-layout-items="team"` gets its children named `team-1`, `team-2`, ...
+  by position (or a list, `"blue-column red-column"`), re-done by a MutationObserver before
+  paint whenever the board rebuilds. The Design card has a dropdown of the nine layouts, each
+  with its count of moved parts; Reset works on the chosen one. The watermark re-picks its
+  corner on a `rov-layout` event, since a move changes no content.
 
 ## 9. Traps already paid for
+
+- **Boards that shrink to fit measure their cards**, so a card the operator dragged down read
+  as overflow and shrank the whole board. `fitToStage()` in teams, analytics, prev and
+  standings now runs inside `window.RovLayout.asDesigned()`, which takes the moves off for
+  the synchronous measurement (transitions off) and puts them back before any paint.
+- **A background tab (and possibly OBS with a hidden source) does not run transitions on
+  time**, so the 400 ms "is anything outside its clipping box" re-check read stale positions.
+  It also runs on `transitionend` of a part's `translate`/`scale`.
 
 - **The draft banner clips its contents** (`overflow: hidden`, to keep its light sweep inside
   the frame), so a part dragged out of it vanished. `overlay-layout.js` sets

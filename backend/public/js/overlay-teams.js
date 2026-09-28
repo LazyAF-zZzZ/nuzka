@@ -169,6 +169,9 @@ function settleSoon(count, step = stagger) {
 // ซึ่งบนกราฟิกออกอากาศแปลว่ามีทีมหายไปจากรายชื่อโดยไม่มีใครรู้
 // ย่อให้เล็กลงอ่านยากขึ้น ยังดีกว่าทีมท้ายๆ ไม่ได้ขึ้นจอเลย
 function fitToStage() {
+    // วัดตามผังเดิม ไม่นับชิ้นที่ผู้ใช้ลากย้ายไว้ในตัวแก้ layout (overlay-layout.js)
+    // ไม่งั้นการ์ดที่ถูกลากลงล่างจะดูเหมือนล้นจอ แล้วทั้งตารางถูกย่อตามไปด้วย
+    if (window.RovLayout && !window.RovLayout.measuring) return window.RovLayout.asDesigned(fitToStage);
     const grid = document.getElementById('grid');
     const stage = document.getElementById('stage');
     grid.style.transform = '';

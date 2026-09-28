@@ -10,6 +10,26 @@ using RovOverlay.Desktop.Services;
 
 namespace RovOverlay.Desktop.ViewModels;
 
+// One overlay whose parts can be moved (backend/public/js/overlay-layout.js). Key is the
+// page's data-layout-scene; Route is where its editor opens.
+public sealed class LayoutSceneRow(string key, string route, string labelKey) : ObservableObject
+{
+    public string Key { get; } = key;
+    public string Route { get; } = route;
+    public int Moved { get; private set; }
+    public string Label => Moved == 0 ? Loc.T(labelKey) : $"{Loc.T(labelKey)}  ·  {Loc.F("Layout.MovedShort", Moved)}";
+
+    public void Apply(int moved)
+    {
+        if (moved == Moved) return;
+        Moved = moved;
+        OnPropertyChanged(nameof(Moved));
+        OnPropertyChanged(nameof(Label));
+    }
+
+    public void RefreshText() => OnPropertyChanged(nameof(Label));
+}
+
 // One background image the overlay can wear. The file name is fixed by the server
 // (backend/server/domain/media.ts), so a slot is a slot, never a user-typed path.
 public sealed class SkinSlotRow : ObservableObject
@@ -243,16 +263,36 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
         });
         OpenPreviewCommand = new RelayCommand(() => Browser.Open(_s.Url(Is1440 ? "/overlay-1440" : "/overlay")));
 
+        // Same order as the OBS sources list. The team card has one layout for both sides.
+        LayoutScenes =
+        [
+            new("draft", "/overlay", "Layout.Scene.Draft"),
+            new("result", "/result", "Layout.Scene.Result"),
+            new("prev", "/overlay-prev", "Layout.Scene.Prev"),
+            new("standings", "/overlay-standings", "Layout.Scene.Standings"),
+            new("matchup", "/overlay-matchup", "Layout.Scene.Matchup"),
+            new("team-drafts", "/overlay-team-drafts", "Layout.Scene.TeamDrafts"),
+            new("team-card", "/overlay-team-card?side=blue", "Layout.Scene.TeamCard"),
+            new("teams", "/overlay-teams", "Layout.Scene.Teams"),
+            new("analytics", "/overlay-analytics", "Layout.Scene.Analytics")
+        ];
+        _layoutScene = LayoutScenes[0];
+
         // The editor is the overlay itself with ?edit=1 (backend/public/js/overlay-layout.js):
         // dragging the real page is the only way to see exactly what OBS will show.
-        EditLayoutCommand = new RelayCommand(() => Browser.Open(_s.Url(
-            (Is1440 ? "/overlay-1440" : "/overlay") + "?edit=1&lang=" + Loc.Instance.Language)));
+        EditLayoutCommand = new RelayCommand(() =>
+        {
+            var route = LayoutScene.Key == "draft" && Is1440 ? "/overlay-1440" : LayoutScene.Route;
+            Browser.Open(_s.Url(route + (route.Contains('?') ? "&" : "?") + "edit=1&lang=" + Loc.Instance.Language));
+        });
         ResetLayoutCommand = new RelayCommand(() =>
         {
-            if (!Dialogs.Confirm(Loc.T("Layout.ResetTitle"), [Loc.T("Layout.ResetBody")], Loc.T("Layout.Reset"), danger: true)) return;
-            _s.Socket?.EmitAsync("resetLayout", new { scene = "draft" });
+            var scene = LayoutScene;
+            if (!Dialogs.Confirm(Loc.F("Layout.ResetTitle", Loc.T("Layout.Scene." + SceneLabelKey(scene))),
+                    [Loc.T("Layout.ResetBody")], Loc.T("Layout.Reset"), danger: true)) return;
+            _s.Socket?.EmitAsync("resetLayout", new { scene = scene.Key });
             Toasts.Info(Loc.T("Layout.WasReset"));
-        }, () => MovedParts > 0);
+        }, () => LayoutScene.Moved > 0);
 
         services.StateUpdated += OnState;
         Loc.Instance.Changed += OnLanguageChanged;
@@ -267,9 +307,28 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
     public ICommand EditLayoutCommand { get; }
     public ICommand ResetLayoutCommand { get; }
 
-    // How many parts of the draft overlay have been moved, resized or hidden.
-    public int MovedParts { get; private set; }
-    public string LayoutStatus => MovedParts == 0 ? Loc.T("Layout.AsDesigned") : Loc.F("Layout.Moved", MovedParts);
+    public IReadOnlyList<LayoutSceneRow> LayoutScenes { get; }
+    private LayoutSceneRow _layoutScene;
+    public LayoutSceneRow LayoutScene
+    {
+        get => _layoutScene;
+        set
+        {
+            if (value is null || !Set(ref _layoutScene, value)) return;
+            OnPropertyChanged(nameof(LayoutStatus));
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    private static string SceneLabelKey(LayoutSceneRow scene) => scene.Key switch
+    {
+        "team-drafts" => "TeamDrafts",
+        "team-card" => "TeamCard",
+        _ => char.ToUpperInvariant(scene.Key[0]) + scene.Key[1..]
+    };
+
+    // How many parts of the chosen overlay have been moved, resized or hidden.
+    public string LayoutStatus => LayoutScene.Moved == 0 ? Loc.T("Layout.AsDesigned") : Loc.F("Layout.Moved", LayoutScene.Moved);
 
     public bool Is1440 { get; private set; }
     public string PreviewSizeText => Is1440 ? "2560 × 1440" : "1920 × 1080";
@@ -353,14 +412,9 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
 
             foreach (var slot in Slots) _ = slot.ApplyAsync(J.Int(skin?["slots"]?[slot.Key]), _s);
 
-            var moved = (node["layout"]?["draft"] as JsonObject)?.Count ?? 0;
-            if (moved != MovedParts)
-            {
-                MovedParts = moved;
-                OnPropertyChanged(nameof(MovedParts));
-                OnPropertyChanged(nameof(LayoutStatus));
-                CommandManager.InvalidateRequerySuggested();
-            }
+            foreach (var scene in LayoutScenes) scene.Apply((node["layout"]?[scene.Key] as JsonObject)?.Count ?? 0);
+            OnPropertyChanged(nameof(LayoutStatus));
+            CommandManager.InvalidateRequerySuggested();
 
             var theme = node["theme"];
             foreach (var row in Colors)
@@ -388,6 +442,7 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
         foreach (var slot in Slots) slot.RefreshText();
         foreach (var row in Colors) row.RefreshText();
         foreach (var row in Numbers) row.RefreshText();
+        foreach (var scene in LayoutScenes) scene.RefreshText();
         OnPropertyChanged(nameof(LayoutStatus));
     }
 

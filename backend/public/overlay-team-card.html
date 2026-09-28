@@ -12,20 +12,20 @@
     <link rel="stylesheet" href="/css/overlay-matchup.css">
     <link rel="stylesheet" href="/css/overlay-team-card.css">
 </head>
-<body>
+<body data-layout-scene="team-card">
     <div class="mu-stage tc-stage" id="stage">
-        <div class="tc-head">
-            <div class="tc-logo" id="logo"></div>
+        <div data-layout="header" class="tc-head">
+            <div data-layout="logo" class="tc-logo" id="logo"></div>
             <div class="tc-id">
-                <div class="tc-side" id="sideLabel"></div>
-                <div class="tc-name" id="name"></div>
-                <div class="mu-sub" id="subtitle"></div>
+                <div data-layout="side-label" class="tc-side" id="sideLabel"></div>
+                <div data-layout="name" class="tc-name" id="name"></div>
+                <div data-layout="subtitle" class="mu-sub" id="subtitle"></div>
             </div>
         </div>
 
-        <div class="tc-tiles" id="tiles"></div>
-        <div class="tc-cols" id="cols"></div>
-        <div class="mu-note" id="note" hidden></div>
+        <div data-layout-items="tile" data-layout="tiles" class="tc-tiles" id="tiles"></div>
+        <div data-layout-items="heroes-column players-column" data-layout="columns" class="tc-cols" id="cols"></div>
+        <div data-layout="note" class="mu-note" id="note" hidden></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -34,5 +34,6 @@
     <script src="/js/lib/overlay-common.js"></script>
     <script src="/js/overlay-team-card.js"></script>
     <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-layout.js"></script>
 </body>
 </html>

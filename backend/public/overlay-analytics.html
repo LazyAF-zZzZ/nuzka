@@ -13,18 +13,18 @@
     <link rel="stylesheet" href="/css/fonts.css">
     <link rel="stylesheet" href="/css/overlay-analytics.css">
 </head>
-<body>
+<body data-layout-scene="analytics">
     <div class="an-stage" id="stage">
-        <div class="an-head" id="head">
+        <div data-layout="header" class="an-head" id="head">
             <div class="an-titles">
-                <div class="an-title" id="title"></div>
-                <div class="an-sub" id="subtitle"></div>
+                <div data-layout="title" class="an-title" id="title"></div>
+                <div data-layout="subtitle" class="an-sub" id="subtitle"></div>
             </div>
-            <div class="an-meta" id="meta"></div>
+            <div data-layout="summary" class="an-meta" id="meta"></div>
         </div>
 
-        <div class="an-board" id="board"></div>
-        <div class="an-note" id="note" hidden></div>
+        <div data-layout-items="row" data-layout="board" class="an-board" id="board"></div>
+        <div data-layout="note" class="an-note" id="note" hidden></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -33,5 +33,6 @@
     <script src="/js/lib/overlay-common.js"></script>
     <script src="/js/overlay-analytics.js"></script>
     <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-layout.js"></script>
 </body>
 </html>

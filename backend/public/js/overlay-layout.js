@@ -9,12 +9,45 @@
 // with the transforms and animations the page already has (the banner's slide, the pick
 // entrance) instead of overwriting them. They need Chromium 104, which OBS 31 has.
 //
+// Pages that build their contents in script (team cards, table rows, columns) mark the
+// container with data-layout-items: its children are named here as they appear, "team"
+// giving team-1, team-2, ... by position, or a list ("blue-column red-column") naming each.
+// A moved "team 3" is the third card, whoever is in it.
+//
 // Open the page with ?edit=1 (the app's Design screen does) for the editor. Without it the
 // page only applies the layout, and nothing here reacts to the mouse.
 (function () {
     const body = document.body;
     const scene = body.dataset.layoutScene;
     if (!scene || typeof socket === 'undefined') return;
+
+    // Boards that shrink themselves to fit the screen measure where their cards are. A card
+    // the operator moved down would read as overflow and shrink the whole board, so the
+    // measuring runs with every part back where it was designed. It is synchronous, so
+    // nothing is painted in between; transitions are off meanwhile, or the slots with
+    // "transition: all" would animate away and back.
+    window.RovLayout = {
+        measuring: false,
+        asDesigned(fn) {
+            const moved = Array.from(document.querySelectorAll('[data-layout]'))
+                .map((el) => /** @type {HTMLElement} */ (el))
+                .filter((el) => el.style.translate || el.style.scale)
+                .map((el) => ({ el, translate: el.style.translate, scale: el.style.scale }));
+            const html = document.documentElement;
+            const settling = html.hasAttribute('data-layout-settling');
+            html.setAttribute('data-layout-settling', '');
+            moved.forEach(({ el }) => { el.style.translate = ''; el.style.scale = ''; });
+            this.measuring = true;
+            try {
+                return fn();
+            } finally {
+                this.measuring = false;
+                moved.forEach(({ el, translate, scale }) => { el.style.translate = translate; el.style.scale = scale; });
+                void html.offsetWidth;   // settle the restored values while transitions are still off
+                if (!settling) html.removeAttribute('data-layout-settling');
+            }
+        }
+    };
 
     const params = new URLSearchParams(location.search);
     const editing = params.get('edit') === '1';
@@ -36,16 +69,35 @@
         el.toggleAttribute('data-layout-hidden', entry.h);
     }
 
-    // A group that clips its contents (the draft banner does, to keep its light sweep
-    // inside the frame) would cut off a part dragged out of it. Such a group lets its
-    // contents out only while one of them actually is out, and its sweep pauses then,
-    // because unclipped it would slide across the screen beyond the banner's ends.
-    // Decided once, before anything here changes an overflow.
-    const clippers = parts().filter((el) =>
-        getComputedStyle(el).overflow !== 'visible' && el.querySelector('[data-layout]'));
+    function nameItems() {
+        document.querySelectorAll('[data-layout-items]').forEach((box) => {
+            const names = (box.getAttribute('data-layout-items') || '').split(/\s+/).filter(Boolean);
+            Array.from(box.children).slice(0, 60).forEach((child, i) => {
+                const name = names.length > 1 ? names[i] : `${names[0]}-${i + 1}`;
+                if (name && child.getAttribute('data-layout') !== name) child.setAttribute('data-layout', name);
+            });
+        });
+    }
+
+    // Anything that clips its contents (the draft banner does, to keep its light sweep
+    // inside the frame; some boards clip at the stage) would cut off a part dragged out of
+    // it. It lets its contents out only while one of them actually is out. The banner's
+    // sweep pauses then, because unclipped it would slide past the banner's ends.
+    // Found from the parts' ancestors each time, since boards build their parts late; one
+    // already let out is known by its attribute, as its computed overflow no longer says.
+    function clippers() {
+        const found = new Set();
+        parts().forEach((el) => {
+            for (let p = el.parentElement; p && p !== body; p = p.parentElement) {
+                if (found.has(p)) continue;
+                if (p.hasAttribute('data-layout-overflow') || getComputedStyle(p).overflow !== 'visible') found.add(p);
+            }
+        });
+        return found;
+    }
 
     function releaseClipped() {
-        clippers.forEach((group) => {
+        clippers().forEach((group) => {
             const box = group.getBoundingClientRect();
             const out = Array.from(group.querySelectorAll('[data-layout]')).some((el) => {
                 const r = el.getBoundingClientRect();
@@ -54,9 +106,12 @@
             });
             group.toggleAttribute('data-layout-overflow', out);
         });
+        // The watermark picks a free corner; tell it things have moved (overlay-size.js).
+        window.dispatchEvent(new Event('rov-layout'));
     }
 
     function applyAll() {
+        nameItems();
         parts().forEach((el) => {
             const key = el.dataset.layout;
             if (key !== dragKey) applyPart(el, entryOf(key));
@@ -72,7 +127,7 @@
         [data-layout-hidden] { visibility: hidden !important; }
         [data-layout-settling] [data-layout] { transition: none !important; }
         [data-layout-overflow] { overflow: visible !important; }
-        [data-layout-overflow]::before, [data-layout-overflow]::after { visibility: hidden !important; }`;
+        .pick-section[data-layout-overflow]::before, .pick-section[data-layout-overflow]::after { visibility: hidden !important; }`;
     document.head.appendChild(style);
 
     // The first layout a page gets is where things are, not a move: without this, every
@@ -90,12 +145,33 @@
         }
     });
 
+    // The 400 ms re-check above assumes the transition runs on time. A page nobody is
+    // looking at (a background tab; OBS may throttle a source that is not showing) runs it
+    // late, so check again whenever a part's move actually finishes.
+    document.addEventListener('transitionend', (ev) => {
+        const el = /** @type {HTMLElement} */ (ev.target);
+        if ((ev.propertyName === 'translate' || ev.propertyName === 'scale') && el.hasAttribute('data-layout')) releaseClipped();
+    });
+
+    // A board rebuilt its rows, or a new card appeared: name and place them before they are
+    // painted (observer callbacks run before the next frame), so nothing flashes in its old spot.
+    new MutationObserver((records) => {
+        const relevant = records.some((r) => (r.target instanceof HTMLElement && r.target.hasAttribute('data-layout-items'))
+            || Array.from(r.addedNodes).some((n) => n instanceof HTMLElement
+                && (n.matches('[data-layout], [data-layout-items]') || !!n.querySelector('[data-layout], [data-layout-items]'))));
+        if (relevant) applyAll();
+    }).observe(body, { childList: true, subtree: true });
+
     if (!editing) return;
 
     // ------------------------------------------------------------------ editor
 
     const T = th ? {
-        title: 'จัดตำแหน่ง overlay', scene: { draft: 'หน้าดราฟต์' },
+        title: 'จัดตำแหน่ง overlay', scene: {
+            draft: 'หน้าดราฟต์', result: 'หน้าผลดราฟต์', teams: 'รายชื่อทีม', analytics: 'กระดานสถิติ',
+            standings: 'ตารางคะแนน', matchup: 'เจอกันมาก่อน', 'team-drafts': 'พิค/แบนของทีม',
+            'team-card': 'การ์ดทีม', prev: 'พิค/แบนเกมก่อน'
+        },
         help: 'ลากเพื่อย้าย คลิกเลือกชิ้นเล็กสุดที่อยู่ใต้เมาส์ กด "เลือกทั้งกลุ่ม" หรือ Alt+คลิก เพื่อเลือกกลุ่มที่ครอบอยู่ ปุ่มลูกศรขยับทีละ 1 px (Shift = 10 px) ลากกลับใกล้ที่เดิมจะดูดเข้าที่เดิมเอง',
         none: 'ยังไม่ได้เลือก คลิกชิ้นส่วนบน overlay หรือในรายการด้านล่าง',
         size: 'ขนาด %', parent: 'เลือกทั้งกลุ่ม', hide: 'ซ่อน', show: 'แสดง', reset: 'คืนที่เดิม',
@@ -105,7 +181,11 @@
         offline: 'ต่อเซิร์ฟเวอร์ไม่ได้ ตอนนี้ยังไม่ได้บันทึก เปิด Nuzka ไว้แล้วลองใหม่',
         refused: 'เซิร์ฟเวอร์ไม่รับการแก้ไข: ', notShown: 'ตอนนี้ไม่แสดง', moved: 'ย้ายแล้ว'
     } : {
-        title: 'Edit overlay layout', scene: { draft: 'Draft overlay' },
+        title: 'Edit overlay layout', scene: {
+            draft: 'Draft overlay', result: 'Result', teams: 'Team list', analytics: 'Stats board',
+            standings: 'Standings', matchup: 'Head to head', 'team-drafts': 'Team picks & bans',
+            'team-card': 'Team card', prev: 'Previous picks & bans'
+        },
         help: 'Drag to move. A click picks the smallest part under the mouse; "Select group" or Alt+click picks the group around it. Arrow keys move 1 px (Shift: 10 px). Dragging back near the original spot snaps into it.',
         none: 'Nothing selected. Click a part on the overlay or in the list below.',
         size: 'Size %', parent: 'Select group', hide: 'Hide', show: 'Show', reset: 'Reset',
@@ -118,25 +198,43 @@
 
     const NAMES = th ? {
         banner: 'แบนเนอร์ทั้งแถบ', center: 'กล่องกลาง', tournament: 'ชื่อทัวร์นาเมนต์', score: 'แถวคะแนน',
-        'score-numbers': 'ตัวเลขคะแนน', timer: 'เวลา', 'match-title': 'ชื่อแมตช์'
+        'score-numbers': 'ตัวเลขคะแนน', timer: 'เวลา', 'match-title': 'ชื่อแมตช์',
+        divider: 'เส้นแบ่งกลาง', header: 'หัวข้อ (ชื่อ + คำอธิบาย)', title: 'ชื่อหัวข้อ', subtitle: 'คำอธิบายใต้หัวข้อ',
+        note: 'ข้อความแจ้ง (ตอนไม่มีข้อมูล)', grid: 'การ์ดทีมทั้งหมด', board: 'ตารางทั้งหมด', summary: 'ตัวเลขสรุป',
+        groups: 'ตารางทุกกลุ่ม', scope: 'ขอบเขตข้อมูล', columns: 'คอลัมน์ทั้งหมด', games: 'ทุกเกม',
+        logo: 'โลโก้', 'side-label': 'ป้ายฝั่ง', name: 'ชื่อทีม', tiles: 'ช่องตัวเลขทั้งหมด',
+        'heroes-column': 'คอลัมน์ฮีโร่', 'players-column': 'คอลัมน์ผู้เล่น'
     } : {
         banner: 'Whole banner', center: 'Centre block', tournament: 'Tournament name', score: 'Score row',
-        'score-numbers': 'Score numbers', timer: 'Timer', 'match-title': 'Match title'
+        'score-numbers': 'Score numbers', timer: 'Timer', 'match-title': 'Match title',
+        divider: 'Centre divider', header: 'Heading (title + subtitle)', title: 'Title', subtitle: 'Subtitle',
+        note: 'Message (when there is no data)', grid: 'All team cards', board: 'Whole table', summary: 'Summary figures',
+        groups: 'All groups', scope: 'Data range', columns: 'Both columns', games: 'All games',
+        logo: 'Logo', 'side-label': 'Side label', name: 'Team name', tiles: 'All number tiles',
+        'heroes-column': 'Heroes column', 'players-column': 'Players column'
     };
+
+    const ITEMS = th
+        ? { team: 'การ์ดทีม', row: 'แถว', group: 'กลุ่ม', tile: 'ช่องตัวเลข', game: 'เกม' }
+        : { team: 'Team card', row: 'Row', group: 'Group', tile: 'Tile', game: 'Game' };
 
     function nameOf(key) {
         if (NAMES[key]) return NAMES[key];
+        const item = /^(team|row|group|tile|game)-(\d+)$/.exec(key);
+        if (item) return `${ITEMS[item[1]]} ${item[2]}`;
         const m = /^(blue|red)-(.+?)(?:-(\d+))?$/.exec(key);
         if (!m) return key;
         const side = th ? (m[1] === 'blue' ? 'น้ำเงิน' : 'แดง') : (m[1] === 'blue' ? 'Blue' : 'Red');
         const n = m[3] ? ' ' + m[3] : '';
         const what = th ? {
             bans: `แบนฝั่ง${side}`, ban: `แบน${side}${n}`, 'ban-label': `ป้าย BAN ฝั่ง${side}`,
-            picks: `พิคฝั่ง${side}`, pick: `พิค${side}${n}`, team: `ทีม${side} (โลโก้ + ชื่อ)`,
+            picks: `พิคฝั่ง${side}`, pick: `พิค${side}${n}`, team: `ทีม${side}`, half: `ครึ่งฝั่ง${side}`,
+            header: `หัวฝั่ง${side} (ชื่อ + แบน)`, column: `คอลัมน์ฝั่ง${side}`,
             logo: `โลโก้ทีม${side}`, name: `ชื่อทีม${side}`
         } : {
             bans: `${side} bans`, ban: `${side} ban${n}`, 'ban-label': `${side} "BAN" label`,
-            picks: `${side} picks`, pick: `${side} pick${n}`, team: `${side} team (logo + name)`,
+            picks: `${side} picks`, pick: `${side} pick${n}`, team: `${side} team`, half: `${side} half`,
+            header: `${side} header (name + bans)`, column: `${side} column`,
             logo: `${side} logo`, name: `${side} team name`
         };
         return what[m[2]] || key;

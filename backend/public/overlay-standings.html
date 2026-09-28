@@ -9,14 +9,14 @@
     <link rel="stylesheet" href="/css/fonts.css">
     <link rel="stylesheet" href="/css/overlay-standings.css">
 </head>
-<body>
+<body data-layout-scene="standings">
     <div class="st-stage" id="stage">
-        <div class="st-head">
-            <div class="st-title" id="title"></div>
-            <div class="st-sub" id="subtitle"></div>
+        <div data-layout="header" class="st-head">
+            <div data-layout="title" class="st-title" id="title"></div>
+            <div data-layout="subtitle" class="st-sub" id="subtitle"></div>
         </div>
-        <div class="st-groups" id="groups"></div>
-        <div class="st-note" id="note" hidden></div>
+        <div data-layout-items="group" data-layout="groups" class="st-groups" id="groups"></div>
+        <div data-layout="note" class="st-note" id="note" hidden></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -24,5 +24,6 @@
     <script src="/js/lib/overlay-common.js"></script>
     <script src="/js/overlay-standings.js"></script>
     <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-layout.js"></script>
 </body>
 </html>
