@@ -56,8 +56,8 @@ body[data-size="1440"] .tl-stage {
 /* หัวข้อไม่มี delay จึงเข้ามาก่อนการ์ดใบแรกเสมอ */
 .tl-head {
     opacity: 0;
-    transform: translateY(-26px);
-    animation: tlHeadIn 520ms cubic-bezier(0.16, 0.84, 0.32, 1) forwards;
+    transform: none;
+    animation: tlHeadIn 500ms ease forwards;
 }
 
 /* GRID -------------------------------------------------------------- */
@@ -111,7 +111,7 @@ body[data-size="1440"] .tl-stage {
 }
 
 /* สลับชุด: ทั้งชุดจางออกพร้อมกัน แล้วชุดถัดไปจางเข้าพร้อมกัน ไม่เลื่อน (ผู้ใช้ขอ)
- * ตอนเปิดหน้าครั้งแรกยังไล่เข้าจากซ้ายทีละใบเหมือนเดิม
+ * ตอนเปิดหน้าก็จางเข้าแบบเดียวกัน ทั้งการ์ดและหัวข้อ
  * .leaving ต้องอยู่หลัง .settled: ชุดที่ถูกบังคับจบไว้แล้วก็ยังต้องจางออกได้
  * ความเจาะจงเท่ากัน ตัวที่มาทีหลังชนะ ส่วน .fading ไม่มี !important
  * .settled จึงยังบังคับจบให้ได้ถ้า OBS หยุดอนิเมชันไว้ */
@@ -142,8 +142,8 @@ body[data-size="1440"] .tl-stage {
     to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes tlHeadIn {
-    from { opacity: 0; transform: translateY(-26px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: none; }
+    to   { opacity: 1; transform: none; }
 }
 
 /* CARD CONTENT ------------------------------------------------------ */

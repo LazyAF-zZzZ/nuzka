@@ -9,7 +9,7 @@
 //   ?subtitle=         เปลี่ยนบรรทัดรอง ไม่ใส่ = จำนวนทีม
 //   ?columns=1..6      บังคับจำนวนคอลัมน์ ไม่ใส่ = เลือกให้ตามจำนวนทีม
 //   ?roster=off        ไม่ต้องแสดงรายชื่อผู้เล่น
-//   ?stagger=<ms>      ระยะห่างของการไล่เข้าทีละใบ ไม่ใส่ = 90ms
+//   ?stagger=<ms>      ไม่มีผลแล้ว: ตั้งแต่ 3.2.0 การ์ดจางเข้าทั้งชุดพร้อมกัน ไม่ไล่ทีละใบ
 //   ?perSet=4..64      ทีมสูงสุดต่อชุด ไม่ใส่ = 32
 //   ?seconds=3..120    ชุดหนึ่งค้างบนจอกี่วินาทีก่อนสลับ ไม่ใส่ = 12
 //   ?set=<n>           แสดงชุดที่ n ชุดเดียว ไม่วน
@@ -276,7 +276,8 @@ function showSets(tournament, teams) {
     let index = only ? only - 1 : 0;
 
     const draw = (fade) => render(tournament, sets[index], teams.length, index + 1, sets.length, fade);
-    draw(false);
+    // ตอนเปิดหน้าก็จางเข้าทั้งชุดเหมือนตอนสลับ (ผู้ใช้ขอ)
+    draw(true);
     if (only || sets.length < 2 || !cycling) return;
 
     const next = () => {
@@ -287,9 +288,7 @@ function showSets(tournament, teams) {
             cycleTimer = setTimeout(next, FADE_MS + holdMs);
         }, FADE_MS);
     };
-    // ชุดแรกยังไล่เข้าทีละใบ นับเวลาค้างจากตอนที่ใบสุดท้ายเข้ามาครบ
-    const first = sets[index].length;
-    cycleTimer = setTimeout(next, staggerFor(first) * Math.max(0, first - 1) + ENTER_MS + holdMs);
+    cycleTimer = setTimeout(next, FADE_MS + holdMs);
 }
 
 async function load() {

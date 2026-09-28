@@ -515,7 +515,8 @@ docs/v2/            v2's plan, guide and notes, for reference
   32 teams at a time (`?perSet=4..64`), split evenly (40 = 20 + 20, so every set has the same
   card size), each held 12 s (`?seconds=3..120`) after its last card is in, then the cards
   fade out together and the next set fades in together (the user asked for a fade, not the
-  first slide version; the first set on page load still slides in card by card); it loops. The subtitle ends in
+  first slide version, and asked for the page-load entrance to fade as well; `?stagger=` no
+  longer has any effect); it loops. The subtitle ends in
   `· 1 / 2`. `?set=n` shows one set without looping, and `?edit=1` holds the first set so
   cards do not change under the mouse. Timers only, no `animationend`, for the same OBS reason
   as `settleSoon`. The heading gets `.settled` after its first entrance so a new set does not
