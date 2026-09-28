@@ -114,8 +114,9 @@
     watermarkStyle.textContent = `
         .rov-watermark {
             position: fixed; right: 18px; bottom: 14px; z-index: 2147483647;
-            font: 600 15px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 0.04em;
-            color: rgba(255, 255, 255, 0.6); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+            font: 700 19px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.6);
             pointer-events: none; user-select: none; white-space: nowrap;
             transform-origin: bottom right;
         }
