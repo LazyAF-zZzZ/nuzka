@@ -677,7 +677,7 @@ no `-Publish`): `releases/RovOverlayTool3-beta-Setup.exe` and `-beta-Portable.zi
 `docs/release-notes/3.2.0-beta.1.md`. The portable copy passed `smoke.ps1`; the bundle holds
 `supporter.js` and the watermark, and neither the key tool nor the secret key. `package.json` and
 the csproj still say 3.1.2 (pack passes the version to dotnet only); bump both before a real release.
-The user is trying it with a one-month test key. **3.2.0-beta.2** (same way, 2026-09-28) moves the draft overlay's watermark into the banner with the logo behind the title; not smoke-tested because the user's installed app held the single-instance lock, and only overlay files changed since beta.1 passed. **3.2.0-beta.3** (2026-09-28): the logo moves behind the score at 150px; same build, same caveat. **3.2.0-beta.4** (2026-09-28): the logo becomes a small shield inside the mark, before the text.
+The user is trying it with a one-month test key. **3.2.0-beta.2** (same way, 2026-09-28) moves the draft overlay's watermark into the banner with the logo behind the title; not smoke-tested because the user's installed app held the single-instance lock, and only overlay files changed since beta.1 passed. **3.2.0-beta.3** (2026-09-28): the logo moves behind the score at 150px; same build, same caveat. **3.2.0-beta.4** (2026-09-28): the logo becomes a small shield inside the mark, before the text. **3.2.0-beta.5** (2026-09-28): the app is renamed Nuzka.
 
 **Before S1-S3 can ship:** the user sees the watermark in OBS; prices are chosen; a way to pay
 exists (manual PromptPay is enough); ideally a page for "Become a supporter"; the commits
