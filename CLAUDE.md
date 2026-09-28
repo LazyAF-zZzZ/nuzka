@@ -24,6 +24,10 @@ RovOverlay.Desktop/bin/Debug/net10.0-windows/RovOverlayTool.exe --port 3918 --pa
 `--port` still attaches to, or starts, the real one: don't. smoke.ps1 launches the real app on
 purpose, so copy the data folder aside first if the operator has anything in it.
 
+Stop a test copy **by the PID you started**, never `taskkill /IM RovOverlayTool.exe`: the
+installed app has the same exe name, and that closes the operator's real Nuzka too, skipping its
+shutdown backup (done once, 2026-09-28).
+
 ## Standing rule: keep the plan current
 
 Every change that moves a milestone updates `docs/PLAN.md` in the same change: §0
