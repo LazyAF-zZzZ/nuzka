@@ -642,7 +642,7 @@ dropped: **the user chose keys only, no accounts and no server.**
 - The watermark is created and styled by `public/js/overlay-size.js`, which all ten
   broadcast graphics load after the script that declares `socket`. Styles are injected
   from there because broadcast pages share no stylesheet. Text **"Powered by Nuzka"** (user, 2026-09-28; before that "Nuzka · by LazyAF", and "ROV Overlay Tool · by
-  LazyAF", 23px bold (21px in the draft banner), pure white with a dark shadow, the logo at full strength and 2.1 × the text height (48 px in corners, 44 in the banner, which exactly spans the red ban slots) with a 0.55 em gap (was 15px at 60% in beta.1, then 19/17px at 85%; the user asked twice for bigger and brighter), `pointer-events: none`, scaled 4/3 at 1440.
+  LazyAF", 23px bold (21px in the draft banner), pure white with a dark shadow, the logo at full strength and 2.8 × the text height (64 px in corners, 59 in the banner, the height of the red ban slots) with a 0.55 em gap (was 15px at 60% in beta.1, then 19/17px at 85%; the user asked twice for bigger and brighter), `pointer-events: none`, scaled 4/3 at 1440.
 - **It starts hidden** and appears only when the `supporter` event says inactive. Showing
   it first would flash it on a supporter's stream every time OBS loads a source. The flip
   side: an overlay that never reaches the server shows no watermark, which is acceptable
@@ -653,18 +653,23 @@ dropped: **the user chose keys only, no accounts and no server.**
   (empty lower part of the red side panel). The stage graphics all keep 62px or more of
   bottom padding, so bottom-right is clear on them.
 - **Corner placement follows the data** (2026-09-28, after the user saw the mark on the last
-  row of a 32-team standings table: the 62 px bottom padding I had counted on is not kept when
-  a table fills the screen). `placeWatermark()` in `overlay-size.js` tries the corners in
-  order (`<body data-watermark>` first, else bottom-right; then bottom-left, top-right,
-  top-left), takes the first one where nothing drawn is under the mark (+8 px), else the least
-  covered. "Drawn" = elements with their own text, IMG/SVG/CANVAS, or a fill, picture or
-  border, ignoring anything a quarter of the screen or bigger (backdrops) and counting
-  opacity-0 elements (entrance animations about to show). Runs 300 ms after load, again at 2.5
-  s, 600 ms after any content change (MutationObserver on childList/characterData, not
-  attributes, so moving the mark cannot retrigger it), on resize, and when the mark is shown.
-  Checked on a copy of the user's real data: standings, matchup, team drafts and team card go
-  top-right; team list, stats and previous rounds bottom-right; result bottom-left; nothing
-  covered. The draft overlays keep the banner.
+  row of a finished 32-team standings table, whose "All teams" panel reaches the bottom edge).
+  `placeWatermark()` in `overlay-size.js` tries the corners (`<body data-watermark>` first,
+  else bottom-right; then bottom-left, top-right, top-left) and scores each: area of
+  **content** under the mark (+8 px) x 1000, plus area of **panels** under it. Content = text
+  measured by its letters (`Range.getClientRects`, because a footnote's box can span the screen
+  while its words fill a third of it), IMG/SVG/CANVAS, and boxes under a quarter of the screen
+  with a fill, picture or border. Panels = painted boxes from a quarter to 90% of the screen
+  (the table card); bigger is the stage backdrop and ignored. First score of 0 wins, else the
+  lowest. Opacity-0 elements count (entrance animations). Runs 300 ms after load, at 2.5 s,
+  600 ms after any content change (MutationObserver childList/characterData; not attributes,
+  so moving the mark cannot retrigger it), on resize, and when the mark is shown.
+  **Test trap:** my iframe-based checks ran a cached older `overlay-size.js` and measured a
+  shorter table than the real page; trust only checks on the page itself at 1920x1080.
+  Verified that way on a throwaway server with a seeded 32-team single-elim (finished, "Final
+  standings / All teams"), a 32-team group stage and a live match: every graphic clear; the
+  32-team table forced to the bottom edge sends the mark top-right. The draft overlays keep the
+  banner. Logo 2.8 x the text (64 px in corners, 59 in the banner = the ban slots' height).
 - **Draft overlays: inside the banner** (user's request, 2026-09-28, replacing an
   "above the panel" spot from the same day). `/overlay` and `/overlay-1440` mark
   `.pick-section` with `data-watermark-slot`; `overlay-size.js` then puts the mark inside it

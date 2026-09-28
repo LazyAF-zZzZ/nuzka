@@ -310,6 +310,10 @@ test('on full-screen graphics the watermark picks a free corner, and looks again
   assert.match(js, /const CORNERS = \['bottom-right', 'bottom-left', 'top-right', 'top-left'\];/);
   assert.match(js, /new MutationObserver\(\(\) => placeSoon\(/, 'placement follows content changes');
   assert.match(js, /if \(slot\) return;/, 'the draft banner keeps its fixed place');
+  // Covering content must always lose to sitting on a panel, and text is measured by its
+  // letters: a full-width footnote box once made every corner look busy.
+  assert.match(js, /overlap\(drawn\.content, 8\) \* 1000 \+ overlap\(drawn\.panels, 0\)/);
+  assert.match(js, /range\.getClientRects\(\)/);
 });
 
 test('the draft overlays carry the watermark in their banner, and the logo it shows is shipped', () => {
