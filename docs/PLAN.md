@@ -376,6 +376,11 @@ docs/v2/            v2's plan, guide and notes, for reference
 
 ## 8. Open items
 
+- **Movable parts on the other nine overlays** (result, standings, matchup, team card, teams,
+  analytics, previous game, team drafts). The draft overlay is done (see "Overlay layout
+  editor" below); the user chose it first, to try before the rest. Each page needs only
+  `data-layout-scene`, `data-layout` names and the script tag.
+
 - **The installed copy was installed from the agent session, so it lives in a sandbox.**
   Its desktop shortcut points into `Packages\Claude_*\LocalCache` and shows no icon. It
   needs uninstalling from Windows Settings and reinstalling by double-clicking the Setup
@@ -482,8 +487,34 @@ docs/v2/            v2's plan, guide and notes, for reference
   followed, and Restore brought back 32 teams, the tournament and 112 matches.
 - **`--port <n>` for the desktop app**: attach-only (`BackendHost(port, attachOnly: true)`), never
   starts a backend and is never saved. Every test of the app goes through it now (CLAUDE.md).
+- **Overlay layout editor (2026-09-28, 3.2.0-beta.17).** The user asked for every part of the
+  overlay to be draggable anywhere; they chose the draft overlay first, editing in the browser,
+  and groups plus single items. `state.layout[scene][part] = { x, y, s, h }`
+  (`server/domain/layout.ts`, in `CARRIED_OVER_KEYS`), offsets in 1080p pixels (1440p is the
+  same layout scaled 4/3, so one layout serves both). Only moved parts are stored; names are
+  slugs because they go into a CSS selector. Socket `updateLayout {scene,key,value}` and
+  `resetLayout {scene}` (control events). `public/js/overlay-layout.js` applies it on every
+  page with `<body data-layout-scene>`, via the CSS `translate`/`scale` properties so the
+  page's own transforms and animations still work (needs Chromium 104: OBS 31 or newer).
+  `?edit=1` turns the page into the editor: the page fitted left of a side panel, click selects
+  the smallest part (own hit test, since parts may have `pointer-events: none`), Select group /
+  Alt+click for the group around it, drag, arrows (Shift 10 px), X/Y/Size fields, hide (ghosted
+  while editing), per-part reset, reset all, Ctrl+Z, and a snap back to the original spot within
+  6 px. Every move is sent at once (throttled to 80 ms while dragging), so OBS follows live.
+  Design screen: a Layout card with the count of moved parts, **Edit layout** (opens
+  `/overlay?edit=1&lang=..`, or `-1440`) and **Reset layout** with a confirm. The draft
+  overlay has 36 parts: banner; blue/red bans, BAN labels, each ban; centre, tournament, score
+  row, each team (logo, name), score numbers, timer, match title; blue/red picks and each pick.
 
 ## 9. Traps already paid for
+
+- **The draft banner clips its contents** (`overflow: hidden`, to keep its light sweep inside
+  the frame), so a part dragged out of it vanished. `overlay-layout.js` sets
+  `data-layout-overflow` on a clipping group only while a part is actually outside it, which
+  unclips it and hides its `::before`/`::after` sweep (unclipped, it slides past the banner's
+  ends). **And the slots have `transition: all`**, so every refresh slid moved parts in from
+  their old places: the first layout is applied under `data-layout-settling` (transitions off),
+  with a layout read forcing the style while it is set.
 
 - **`"yyyy"` writes the Buddhist year under th-TH.** The app runs with a Thai culture, so
   `DateTime.Now.ToString("yyyy-MM-dd")` gave `2569-09-28`. Anything stored or compared uses

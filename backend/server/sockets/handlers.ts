@@ -30,6 +30,7 @@ import {
   GLOBAL_HOTKEY_DEFAULTS
 } from '../domain/settings';
 import { deepClone } from '../lib/json';
+import { patchLayout, resetSceneLayout } from '../domain/layout';
 import { getState, emitState, pushUndo, popUndo } from '../store/live-state';
 import {
   setDraftSeconds,
@@ -322,6 +323,20 @@ export function registerHandlers(socket: Socket): void {
 
   controlEvent(socket, 'resetHotkeys', () => {
     getState().hotkeys = deepClone(HOTKEY_DEFAULTS);
+    emitState();
+  });
+
+  // ลากชิ้นส่วนบน overlay ในโหมดแก้ layout ส่งมาทีละชิ้น { scene, key, value }
+  // value เป็น null หรือเท่ากับค่าเดิมของหน้า = คืนที่เดิม
+  controlEvent(socket, 'updateLayout', ({ scene, key, value }) => {
+    const state = getState();
+    state.layout = patchLayout(state.layout, scene, key, value);
+    emitState();
+  });
+
+  controlEvent(socket, 'resetLayout', ({ scene }) => {
+    const state = getState();
+    state.layout = resetSceneLayout(state.layout, scene);
     emitState();
   });
 

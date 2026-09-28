@@ -19,6 +19,29 @@
                 </StackPanel>
             </DockPanel>
 
+            <!-- Layout -->
+            <DockPanel Margin="0,20,0,8">
+                <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="{svc:T Layout.Reset}"
+                        Command="{Binding ResetLayoutCommand}" Padding="10,0"/>
+                <TextBlock Style="{StaticResource SectionTitle}" Text="{svc:T Layout.Title}" VerticalAlignment="Center"/>
+            </DockPanel>
+            <Border Style="{StaticResource Card}" Padding="16,14">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Command="{Binding EditLayoutCommand}"
+                            VerticalAlignment="Center" Margin="16,0,0,0" Padding="14,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE7C2;" FontSize="12" Margin="0,0,7,0"/>
+                            <TextBlock Text="{svc:T Layout.Edit}"/>
+                        </StackPanel>
+                    </Button>
+                    <StackPanel>
+                        <TextBlock Text="{Binding LayoutStatus}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{svc:T Layout.Hint}" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"
+                                   FontSize="12" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
             <!-- Theme -->
             <DockPanel Margin="0,20,0,8">
                 <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="{svc:T Design.ResetTheme}"

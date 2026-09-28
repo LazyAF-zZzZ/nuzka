@@ -171,7 +171,7 @@ export function sanitizeSfx(value: unknown): SfxLevels {
 // ตอนทำโหมดทัวร์นาเมนต์ การกดเลือกแมตช์ก็คือการเปลี่ยนแมตช์เหมือนกัน
 // ให้ใช้ทางนี้ อย่าเขียนทับ state ทั้งก้อน
 export const CARRIED_OVER_KEYS = [
-  'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound'
+  'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound', 'layout'
 ] as const;
 
 export type CarriedOverKey = typeof CARRIED_OVER_KEYS[number];

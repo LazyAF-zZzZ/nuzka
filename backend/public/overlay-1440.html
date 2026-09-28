@@ -9,54 +9,54 @@
     <link rel="stylesheet" href="css/overlay.css">
     <link rel="stylesheet" href="css/overlay-1440.css" id="size1440">
 </head>
-<body data-lock-size="1440" data-skin-slots="overlayBottom:.pick-section">
+<body data-layout-scene="draft" data-lock-size="1440" data-skin-slots="overlayBottom:.pick-section">
     <div class="overlay-container">
         <!-- Bottom Section: Pick Phase -->
-        <div class="pick-section" data-watermark-slot>
-            <div class="ban-left">
-                <div class="ban-label">BAN</div>
+        <div data-layout="banner" class="pick-section" data-watermark-slot>
+            <div data-layout="blue-bans" class="ban-left">
+                <div data-layout="blue-ban-label" class="ban-label">BAN</div>
                 <div class="ban-heroes" id="blueBans">
-                    <div class="ban-slot" data-team="teamBlue" data-index="0"></div>
-                    <div class="ban-slot" data-team="teamBlue" data-index="1"></div>
-                    <div class="ban-slot" data-team="teamBlue" data-index="2"></div>
-                    <div class="ban-slot" data-team="teamBlue" data-index="3"></div>
+                    <div data-layout="blue-ban-1" class="ban-slot" data-team="teamBlue" data-index="0"></div>
+                    <div data-layout="blue-ban-2" class="ban-slot" data-team="teamBlue" data-index="1"></div>
+                    <div data-layout="blue-ban-3" class="ban-slot" data-team="teamBlue" data-index="2"></div>
+                    <div data-layout="blue-ban-4" class="ban-slot" data-team="teamBlue" data-index="3"></div>
                 </div>
             </div>
-            <div class="ban-right">
-                <div class="ban-label">BAN</div>
+            <div data-layout="red-bans" class="ban-right">
+                <div data-layout="red-ban-label" class="ban-label">BAN</div>
                 <div class="ban-heroes" id="redBans">
-                    <div class="ban-slot" data-team="teamRed" data-index="0"></div>
-                    <div class="ban-slot" data-team="teamRed" data-index="1"></div>
-                    <div class="ban-slot" data-team="teamRed" data-index="2"></div>
-                    <div class="ban-slot" data-team="teamRed" data-index="3"></div>
+                    <div data-layout="red-ban-1" class="ban-slot" data-team="teamRed" data-index="0"></div>
+                    <div data-layout="red-ban-2" class="ban-slot" data-team="teamRed" data-index="1"></div>
+                    <div data-layout="red-ban-3" class="ban-slot" data-team="teamRed" data-index="2"></div>
+                    <div data-layout="red-ban-4" class="ban-slot" data-team="teamRed" data-index="3"></div>
                 </div>
             </div>
-            <div class="match-center">
-                <div class="tournament-name" id="tournamentName">ROV Premier League</div>
-                <div class="match-score-container">
-                    <div class="team-logo-score blue">
-                        <img class="team-logo" id="blueTeamLogo" alt="" hidden>
+            <div data-layout="center" class="match-center">
+                <div data-layout="tournament" class="tournament-name" id="tournamentName">ROV Premier League</div>
+                <div data-layout="score" class="match-score-container">
+                    <div data-layout="blue-team" class="team-logo-score blue">
+                        <img data-layout="blue-logo" class="team-logo" id="blueTeamLogo" alt="" hidden>
                         <div class="team-info">
-                            <div class="team-name" id="blueTeamName">FW</div>
+                            <div data-layout="blue-name" class="team-name" id="blueTeamName">FW</div>
                         </div>
                     </div>
-                    <div class="score-display">
+                    <div data-layout="score-numbers" class="score-display">
                         <span class="score-number" id="blueScore">0</span>
                         <span class="score-separator">VS</span>
                         <span class="score-number" id="redScore">2</span>
                     </div>
-                    <div class="team-logo-score red">
-                        <img class="team-logo" id="redTeamLogo" alt="" hidden>
+                    <div data-layout="red-team" class="team-logo-score red">
+                        <img data-layout="red-logo" class="team-logo" id="redTeamLogo" alt="" hidden>
                         <div class="team-info">
-                            <div class="team-name" id="redTeamName">EA</div>
+                            <div data-layout="red-name" class="team-name" id="redTeamName">EA</div>
                         </div>
                     </div>
                 </div>
-                <div class="timer-display">
+                <div data-layout="timer" class="timer-display">
                     <div id="draftLabel"></div>
                     <span class="timer" id="timer">00:17</span>
                 </div>
-                <div class="match-title" id="matchTitle">FW VS EA : GAME 3 [BO7]</div>
+                <div data-layout="match-title" class="match-title" id="matchTitle">FW VS EA : GAME 3 [BO7]</div>
             </div>
             <!-- Team Center Info (ตรงกลาง) -->
             <div class="team-center-info">
@@ -69,36 +69,36 @@
             </div>
             
             <!-- Blue Team (Left) -->
-            <div class="team-picks blue-team">
-                <div class="pick-slot" data-team="teamBlue" data-index="0">
+            <div data-layout="blue-picks" class="team-picks blue-team">
+                <div data-layout="blue-pick-1" class="pick-slot" data-team="teamBlue" data-index="0">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">1</div>
                         <div class="player-name" id="bluePlayer0">NAILIU</div>
                     </div>
                 </div>
-                <div class="pick-slot" data-team="teamBlue" data-index="1">
+                <div data-layout="blue-pick-2" class="pick-slot" data-team="teamBlue" data-index="1">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">2</div>
                         <div class="player-name" id="bluePlayer1">ZHAN</div>
                     </div>
                 </div>
-                <div class="pick-slot" data-team="teamBlue" data-index="2">
+                <div data-layout="blue-pick-3" class="pick-slot" data-team="teamBlue" data-index="2">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">3</div>
                         <div class="player-name" id="bluePlayer2">ZHENZHE</div>
                     </div>
                 </div>
-                <div class="pick-slot" data-team="teamBlue" data-index="3">
+                <div data-layout="blue-pick-4" class="pick-slot" data-team="teamBlue" data-index="3">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">4</div>
                         <div class="player-name" id="bluePlayer3">VUXIANG(C)</div>
                     </div>
                 </div>
-                <div class="pick-slot" data-team="teamBlue" data-index="4">
+                <div data-layout="blue-pick-5" class="pick-slot" data-team="teamBlue" data-index="4">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">5</div>
@@ -108,36 +108,36 @@
             </div>
             
             <!-- Red Team (Right) -->
-            <div class="team-picks red-team">
-                <div class="pick-slot" data-team="teamRed" data-index="0">
+            <div data-layout="red-picks" class="team-picks red-team">
+                <div data-layout="red-pick-1" class="pick-slot" data-team="teamRed" data-index="0">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">1</div>
                         <div class="player-name" id="redPlayer0">PICHU(C)</div>
                     </div>
                 </div>
-                <div class="pick-slot" data-team="teamRed" data-index="1">
+                <div data-layout="red-pick-2" class="pick-slot" data-team="teamRed" data-index="1">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">2</div>
                         <div class="player-name" id="redPlayer1">NEGAN</div>
                     </div>
                 </div>
-                <div class="pick-slot" data-team="teamRed" data-index="2">
+                <div data-layout="red-pick-3" class="pick-slot" data-team="teamRed" data-index="2">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">3</div>
                         <div class="player-name" id="redPlayer2">QQ</div>
                     </div>
                 </div>
-                <div class="pick-slot" data-team="teamRed" data-index="3">
+                <div data-layout="red-pick-4" class="pick-slot" data-team="teamRed" data-index="3">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">4</div>
                         <div class="player-name" id="redPlayer3">NBANK</div>
                     </div>
                 </div>
-                <div class="pick-slot" data-team="teamRed" data-index="4">
+                <div data-layout="red-pick-5" class="pick-slot" data-team="teamRed" data-index="4">
                     <div class="hero-image"></div>
                     <div class="player-info">
                         <div class="position-indicator">5</div>
@@ -152,5 +152,6 @@
     <script src="js/overlay-sfx.js"></script>
     <script src="js/overlay.js"></script>
     <script src="js/overlay-size.js"></script>
+    <script src="js/overlay-layout.js"></script>
 </body>
 </html>

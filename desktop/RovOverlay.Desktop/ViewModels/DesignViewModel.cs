@@ -243,6 +243,17 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
         });
         OpenPreviewCommand = new RelayCommand(() => Browser.Open(_s.Url(Is1440 ? "/overlay-1440" : "/overlay")));
 
+        // The editor is the overlay itself with ?edit=1 (backend/public/js/overlay-layout.js):
+        // dragging the real page is the only way to see exactly what OBS will show.
+        EditLayoutCommand = new RelayCommand(() => Browser.Open(_s.Url(
+            (Is1440 ? "/overlay-1440" : "/overlay") + "?edit=1&lang=" + Loc.Instance.Language)));
+        ResetLayoutCommand = new RelayCommand(() =>
+        {
+            if (!Dialogs.Confirm(Loc.T("Layout.ResetTitle"), [Loc.T("Layout.ResetBody")], Loc.T("Layout.Reset"), danger: true)) return;
+            _s.Socket?.EmitAsync("resetLayout", new { scene = "draft" });
+            Toasts.Info(Loc.T("Layout.WasReset"));
+        }, () => MovedParts > 0);
+
         services.StateUpdated += OnState;
         Loc.Instance.Changed += OnLanguageChanged;
         if (services.LastState is not null) OnState(services.LastState);
@@ -253,6 +264,12 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
     public IReadOnlyList<ThemeNumberRow> Numbers { get; }
     public ICommand ResetThemeCommand { get; }
     public ICommand OpenPreviewCommand { get; }
+    public ICommand EditLayoutCommand { get; }
+    public ICommand ResetLayoutCommand { get; }
+
+    // How many parts of the draft overlay have been moved, resized or hidden.
+    public int MovedParts { get; private set; }
+    public string LayoutStatus => MovedParts == 0 ? Loc.T("Layout.AsDesigned") : Loc.F("Layout.Moved", MovedParts);
 
     public bool Is1440 { get; private set; }
     public string PreviewSizeText => Is1440 ? "2560 × 1440" : "1920 × 1080";
@@ -336,6 +353,15 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
 
             foreach (var slot in Slots) _ = slot.ApplyAsync(J.Int(skin?["slots"]?[slot.Key]), _s);
 
+            var moved = (node["layout"]?["draft"] as JsonObject)?.Count ?? 0;
+            if (moved != MovedParts)
+            {
+                MovedParts = moved;
+                OnPropertyChanged(nameof(MovedParts));
+                OnPropertyChanged(nameof(LayoutStatus));
+                CommandManager.InvalidateRequerySuggested();
+            }
+
             var theme = node["theme"];
             foreach (var row in Colors)
             {
@@ -362,6 +388,7 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
         foreach (var slot in Slots) slot.RefreshText();
         foreach (var row in Colors) row.RefreshText();
         foreach (var row in Numbers) row.RefreshText();
+        OnPropertyChanged(nameof(LayoutStatus));
     }
 
     public void OnClosed()

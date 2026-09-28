@@ -287,7 +287,8 @@ test('every broadcast graphic carries the watermark script, after the script tha
     const size = html.search(/src="\/?js\/overlay-size\.js"/);
     assert.ok(size > 0, `${route} loads overlay-size.js, where the watermark lives`);
     const scripts = [...html.matchAll(/src="(\/?js\/[^"]+\.js)"/g)].map((m) => m[1] as string);
-    const own = scripts.filter((s) => !/overlay-size|overlay-sfx|\/lib\//.test(s));
+    // overlay-layout.js reads the socket too, like overlay-size.js (tests/layout.test.ts).
+    const own = scripts.filter((s) => !/overlay-size|overlay-sfx|overlay-layout|\/lib\//.test(s));
     for (const s of own) assert.ok(html.indexOf(s) < size, `${route}: ${s} declares the socket before overlay-size.js reads it`);
   }
 });
@@ -320,7 +321,7 @@ test('the draft overlays carry the watermark in their banner, and the logo it sh
   const publicDir = path.join(__dirname, '..', '..', 'public');
   for (const file of ['overlay.html', 'overlay-1440.html']) {
     const html = fs.readFileSync(path.join(publicDir, file), 'utf8');
-    assert.match(html, /<div class="pick-section" data-watermark-slot>/, `${file} marks its banner`);
+    assert.match(html, /<div [^>]*class="pick-section" data-watermark-slot>/, `${file} marks its banner`);
   }
   const png = fs.readFileSync(path.join(publicDir, 'images', 'watermark-logo.png'));
   assert.strictEqual(png.subarray(1, 4).toString(), 'PNG', 'the logo the watermark loads is shipped');

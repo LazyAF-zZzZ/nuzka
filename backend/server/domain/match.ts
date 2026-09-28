@@ -30,6 +30,8 @@ import {
   sanitizeGlobalHotkeys
 } from './settings';
 import type { PositionValue } from './position';
+import type { Layout } from './layout';
+import { sanitizeLayout } from './layout';
 import { sanitizePosition } from './position';
 import type { Logo, Skin, SkinSlot } from './media';
 import { SKIN_SLOTS, sanitizeLogo, sanitizeSkin } from './media';
@@ -81,6 +83,8 @@ export interface GameState {
   sfx: SfxLevels;
   globalHotkeys: GlobalHotkeys;
   skin: Skin;
+  // ตำแหน่ง/ขนาด/การซ่อนของชิ้นส่วนบน overlay ที่ลากย้ายไว้ ดู domain/layout.ts
+  layout: Layout;
   matchInfo: MatchInfo;
   // เกมที่เท่าไหร่ของซีรีส์ที่กำลังคุมอยู่ เริ่มที่ 1
   //
@@ -151,6 +155,7 @@ export const defaultState: GameState = {
   sfx: { ...SFX_DEFAULTS },
   globalHotkeys: deepClone(GLOBAL_HOTKEY_DEFAULTS),
   skin: emptySkin(),
+  layout: {},
   matchInfo: {
     title: 'BLUE VS RED',
     tournament: 'ROV Tournament'
@@ -309,6 +314,7 @@ export function sanitizeState(state: unknown): GameState {
     sfx: sanitizeSfx(source.sfx),
     globalHotkeys: sanitizeGlobalHotkeys(source.globalHotkeys),
     skin: sanitizeSkin(source.skin),
+    layout: sanitizeLayout(source.layout),
     matchInfo: {
       title: sanitizeText(matchInfo.title, 80) || defaultState.matchInfo.title,
       tournament: sanitizeText(matchInfo.tournament, 50) || defaultState.matchInfo.tournament
