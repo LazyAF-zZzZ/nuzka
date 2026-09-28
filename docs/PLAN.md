@@ -446,6 +446,7 @@ docs/v2/            v2's plan, guide and notes, for reference
 - **Code signing.** An unsigned installer gets a SmartScreen warning.
 - **`CONTROL_TOKEN`** is not used by v3 (the server binds 127.0.0.1 only). Revisit if
   the server is ever exposed on the LAN.
+- **Logo size hint visible again** (user noticed it was gone, 2026-09-28). v2 showed it under the  logo buttons; the native Control screen had it only as a tooltip on the logo box. Now a muted  line under Upload / Clear logo (`Control.LogoSize`: square, 184 × 184 px or larger), and the  team profile's `Team.LogoHint` gives the size too. 184 is the largest any overlay draws a logo  (the draft overlay at 1440p; the team card is ~170 at 1440p, the rest smaller).
 
 ## 9. Traps already paid for
 
