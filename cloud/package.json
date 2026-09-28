@@ -1,0 +1,12 @@
+{
+  "name": "nuzka-key-shop",
+  "private": true,
+  "description": "Cloudflare Worker that sells Nuzka supporter keys through Stripe. See README.md.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

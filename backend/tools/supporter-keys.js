@@ -13,6 +13,10 @@
 //   node tools/supporter-keys.js read <key>
 //       Shows what a key says and whether this build accepts it.
 //
+//   node tools/supporter-keys.js shop-id <cs_live_...>
+//       The key id of a key the key shop (cloud/) made for that Stripe Checkout Session,
+//       to put in revoked-keys.json after a refund. Same rule as cloud/src/keys.js.
+//
 // Lose signing-key.pem and no new key can be made that existing installs accept. Back it
 // up somewhere private. Leak it and anyone can make keys: make a new pair, ship an
 // update with the new public key, and reissue keys to current supporters.
@@ -116,4 +120,8 @@ const [command, ...rest] = process.argv.slice(2);
 if (command === 'init') init();
 else if (command === 'make') make(args(rest));
 else if (command === 'read') read(rest[0]);
-else fail('Usage: node tools/supporter-keys.js init | make --name "Team X" [--months 12 | --until YYYY-MM-DD] | read <key>');
+else if (command === 'shop-id') {
+  if (!/^cs_(test|live)_/.test(rest[0] || '')) fail('Give the Checkout Session id from the Stripe dashboard, e.g. cs_live_a1B2...');
+  console.log(crypto.createHash('sha256').update(rest[0]).digest('hex').slice(0, 12));
+}
+else fail('Usage: node tools/supporter-keys.js init | make --name "Team X" [--months 12 | --until YYYY-MM-DD] | read <key> | shop-id <cs_...>');

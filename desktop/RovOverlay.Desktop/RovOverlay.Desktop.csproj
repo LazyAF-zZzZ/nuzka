@@ -19,12 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Optional pictures read at run time, e.g. Assets/promptpay-qr.png for the Support
-         screen. Copied beside the exe, so pack.ps1 ships them too. -->
-    <None Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Velopack" Version="1.2.0" />
   </ItemGroup>
 

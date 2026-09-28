@@ -371,8 +371,8 @@ docs/v2/            v2's plan, guide and notes, for reference
 | S1 | Supporter key check in the backend (Ed25519, offline) + API + tests (§10) | **done 2026-09-27**, commit after `b493e35`. `domain/supporter.ts`, `store/supporter.ts`, `http/api-supporter.ts`, `tests/supporter.test.ts` (18 tests; 420 in all) |
 | S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | **done 2026-09-27**, commit after `2a1fa96`. In `overlay-size.js`, starts hidden; `data-watermark` per page (result: `bottom-left`); draft overlays: inside the banner; the app shield sits before the text as one mark (2026-09-28). Placement checked in a browser; **look in OBS not yet confirmed by the user** |
 | S3 | Settings: Supporter section, expiry reminder, Garena/Tencent disclaimer (§10). S1-S3 ship **together** | **done 2026-09-28**, commit after `7bec2f0`. Settings section, reminder toast, disclaimer. Clicked through for real with `scripts/uia.ps1` (new `set-text` action) against a throwaway backend |
-| S4 | Key generator on the maker's PC (secret key outside the repo); manual PromptPay sales (§10) | **tool done** in S1 (`backend/tools/supporter-keys.js`, the real pair made 2026-09-27); PromptPay process not started |
-| S5 | Later: sales website on Cloudflare Pages; a gateway issuing the same keys automatically | not started |
+| S4 | Key generator on the maker's PC (secret key outside the repo); sales by hand (§10) | **tool done**; manual PromptPay dropped for the key shop (S5) |
+| S5 | **Key shop**: Stripe (PromptPay + card) behind a Cloudflare Worker in `cloud/`; the app's Support → Get a key opens it (§10) | **built and tested locally 2026-09-28** (11 tests, fake Stripe); **not deployed**: waits for the user's Stripe and Cloudflare accounts |
 
 ## 8. Open items
 
@@ -686,20 +686,45 @@ The user is trying it with a one-month test key. **3.2.0-beta.2** (same way, 202
   shell for that. `SettingsViewModel.SupporterPageUrl` is gone.
 - The key box, status line and remove button moved out of Settings into **`SupporterPanel`**
   (`ViewModels/SupportViewModels.cs`); Settings and Support each hold one and bind `Supporter.*`.
-- The screen: lead line, your key, what you get, price, how to get a key (PromptPay QR, send
-  slip, receive key, paste), questions, the Garena/Tencent line. Text in `Loc.Supporter.cs`.
-- **What the maker fills in** lives in one file, `Services/SupporterOffer.cs`: `MonthlyPrice`,
-  `YearlyPrice`, `ContactUrl`, `ContactLabel`. Empty shows "Coming soon" / "Contact details
-  coming soon". The QR is a picture: **`desktop/RovOverlay.Desktop/Assets/promptpay-qr.png`**,
-  copied beside the exe by the csproj (`None Include="Assets\**"`), so pack.ps1 ships it; no
-  file shows a "QR coming soon" box. Changing any of these needs an app update.
-- Verified by snapshots in both languages, empty and filled (sample prices, a contact, a
-  stand-in QR, all reverted). The Settings button was not clicked in a live window: the user's
-  installed app held the single-instance lock.
+- The screen: lead line, your key, what you get, price, how to get a key (four steps and a
+  **Get a key** button), questions, the Garena/Tencent line. Text in `Loc.Supporter.cs`.
+- **What the maker fills in** lives in one file, `Services/SupporterOffer.cs`: `MonthlyPrice`
+  (the label only), `YearlyPrice`, and **`ShopUrl`**, the deployed key shop. Empty
+  `ShopUrl` leaves the button disabled, reading "Buying opens soon". Changing any of these
+  needs an app update. (A PromptPay-QR-and-send-a-slip version existed for an hour on
+  2026-09-28; the user found it too complicated, and its QR/contact fields and the csproj
+  `Assets**` rule are gone.)
+- Verified by snapshots in both languages. The Settings button was not clicked in a live
+  window: the user's installed app held the single-instance lock.
 
-**Before S1-S3 can ship:** the user sees the watermark in OBS; prices, the PromptPay QR and a
-contact for slips go into the Support screen; the commits are pushed, which also publishes
-`revoked-keys.json`.
+**Key shop, `cloud/` (S5, built 2026-09-28, not deployed).** User's choice after comparing
+Stripe, Opn/Omise and GB Prime Pay: **Stripe** (sole proprietors allowed in Thailand;
+PromptPay 1.65%, Thai cards 3.65% + ฿10; hosted Checkout, so no payment page of our own).
+- A Cloudflare Worker, plain ESM and Web Crypto only (runs under `node --test` too):
+  `GET /buy?lang=` creates a Checkout Session (`mode=payment`, PromptPay + card, THB
+  `PRICE_SATANG`, a custom field for the name on the key, `metadata.product =
+  nuzka-supporter`, `metadata.months`) and 303s to Stripe. `GET /done?session_id=` fetches
+  the session **from Stripe with the secret key** and only signs when it is paid, ours, THB
+  and at least the price; unpaid shows a self-refreshing waiting page; unknown ids 404.
+- **No database.** Key id = first 12 hex of SHA-256(session id); issued = the Bangkok date
+  it was created; expires = + `metadata.months`; Ed25519 is deterministic, so a session
+  always yields the same key. Lost key: reopen `/done`. Refund: `supporter-keys.js
+  shop-id cs_...` gives the id for `revoked-keys.json`.
+- **The signing secret now also lives in Cloudflare** (`SIGNING_KEY_PEM` Worker secret), next
+  to `STRIPE_SECRET_KEY`. cloud/README.md says what to do if either leaks.
+- PromptPay cannot be a Stripe subscription, so it stays one payment per month; the app's
+  7-day reminder is what brings people back. Card subscriptions are possible later.
+- Tests (`cloud/test/shop.test.js`, 11) fake Stripe and check, above all, that a shop key
+  passes the app's own `readKey` from `backend/build`; also same-key-on-reload, HTML in
+  names, unpaid, wrong product/currency/amount, bad and unknown ids, Stripe errors kept off
+  the page, the exact /buy request, Thai dates. Pages were looked at in a browser, desktop
+  and phone width, and the copy button clicked.
+- **Next, needs the user:** a Stripe account (test key first), a Cloudflare account,
+  `wrangler login / deploy / secret put` in their own terminal (cloud/README.md), then
+  `ShopUrl` in the app and a test purchase with card 4242... before the live key.
+
+**Before S1-S3 can ship:** the user sees the watermark in OBS; the key shop is deployed and a
+test purchase works; the commits are pushed, which also publishes `revoked-keys.json`.
 
 **Price: ฿159 a month** (user, 2026-09-28), in `SupporterOffer.MonthlyPrice`; no yearly price yet, so the yearly row is hidden (`ShowYearly`). Keys for it: `make --name "..." --months 1`.
 

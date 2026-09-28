@@ -119,51 +119,36 @@
                 </StackPanel>
             </Grid>
 
-            <!-- How to get a key: the QR on the left, the steps on the right -->
+            <!-- How to get a key: the steps, then the button that starts them -->
             <TextBlock Style="{StaticResource SectionTitle}" Text="{svc:T Support.How}" Margin="0,24,0,8"/>
             <Border Style="{StaticResource Card}" Padding="16,14">
-                <DockPanel>
-                    <Border DockPanel.Dock="Left" Width="168" Height="168" Margin="0,0,20,0" VerticalAlignment="Top"
-                            CornerRadius="6" Background="White" Padding="8"
-                            Visibility="{Binding HasQr, Converter={StaticResource BoolToVis}}">
-                        <Image Source="{Binding QrImage}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                    </Border>
-                    <Border DockPanel.Dock="Left" Width="168" Height="168" Margin="0,0,20,0" VerticalAlignment="Top"
-                            CornerRadius="6" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}"
-                            Background="{StaticResource Surface2Brush}"
-                            Visibility="{Binding HasQr, Converter={StaticResource BoolToVisInv}}">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="12">
-                            <TextBlock Style="{StaticResource Icon}" Text="&#xED14;" FontSize="28" HorizontalAlignment="Center"
-                                       Foreground="{StaticResource MutedBrush}"/>
-                            <TextBlock Text="{svc:T Support.QrSoon}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
-                                       TextAlignment="Center" Margin="0,8,0,0" FontSize="11.5"/>
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,10">
+                        <Border Style="{StaticResource StepNumber}"><TextBlock Text="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
+                        <TextBlock Text="{svc:T Support.Step1}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,10">
+                        <Border Style="{StaticResource StepNumber}"><TextBlock Text="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
+                        <TextBlock Text="{svc:T Support.Step2}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,10">
+                        <Border Style="{StaticResource StepNumber}"><TextBlock Text="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
+                        <TextBlock Text="{svc:T Support.Step3}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,10">
+                        <Border Style="{StaticResource StepNumber}"><TextBlock Text="4" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
+                        <TextBlock Text="{svc:T Support.Step4}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <Button Style="{StaticResource PrimaryButton}" Command="{Binding BuyCommand}" HorizontalAlignment="Left"
+                            Margin="32,4,0,0" Padding="18,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xEB51;" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding BuyText}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Border>
-
-                    <StackPanel>
-                        <DockPanel Margin="0,0,0,10">
-                            <Border Style="{StaticResource StepNumber}"><TextBlock Text="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
-                            <TextBlock Text="{svc:T Support.Step1}" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                        </DockPanel>
-                        <DockPanel Margin="0,0,0,6">
-                            <Border Style="{StaticResource StepNumber}"><TextBlock Text="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
-                            <TextBlock Text="{svc:T Support.Step2}" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                        </DockPanel>
-                        <Button Content="{Binding ContactText}" Command="{Binding ContactCommand}" HorizontalAlignment="Left"
-                                Margin="32,0,0,10" Style="{StaticResource PrimaryButton}"
-                                Visibility="{Binding HasContact, Converter={StaticResource BoolToVis}}"/>
-                        <TextBlock Text="{Binding ContactText}" Foreground="{StaticResource MutedBrush}" Margin="32,0,0,10"
-                                   Visibility="{Binding HasContact, Converter={StaticResource BoolToVisInv}}"/>
-                        <DockPanel Margin="0,0,0,10">
-                            <Border Style="{StaticResource StepNumber}"><TextBlock Text="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
-                            <TextBlock Text="{svc:T Support.Step3}" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                        </DockPanel>
-                        <DockPanel>
-                            <Border Style="{StaticResource StepNumber}"><TextBlock Text="4" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11.5"/></Border>
-                            <TextBlock Text="{svc:T Support.Step4}" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                        </DockPanel>
-                    </StackPanel>
-                </DockPanel>
+                    </Button>
+                    <TextBlock Text="{svc:T Support.SecureNote}" Foreground="{StaticResource MutedBrush}" FontSize="11.5"
+                               Margin="32,8,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
             </Border>
 
             <TextBlock Style="{StaticResource SectionTitle}" Text="{svc:T Support.Faq}" Margin="0,24,0,8"/>

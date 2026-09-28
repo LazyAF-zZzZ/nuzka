@@ -1,0 +1,13 @@
+# Nuzka key shop. Deploy with `npx wrangler deploy` from this folder (see README.md).
+name = "nuzka-keys"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+PRICE_SATANG = "15900"   # ฿159.00
+MONTHS = "1"
+PRODUCT_NAME = "Nuzka supporter, 1 month"
+
+# Secrets, set with `npx wrangler secret put <NAME>`, never written here:
+#   STRIPE_SECRET_KEY   sk_test_... while testing, sk_live_... for real payments
+#   SIGNING_KEY_PEM     contents of %USERPROFILE%\.rov-supporter\signing-key.pem

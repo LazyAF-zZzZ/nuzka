@@ -1,7 +1,4 @@
-using System.IO;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using RovOverlay.Desktop.Core;
 using RovOverlay.Desktop.Models;
 using RovOverlay.Desktop.Services;
@@ -90,27 +87,29 @@ public sealed class SupporterPanel : ObservableObject
     }
 }
 
-// The Support screen: what supporting gets you, what it costs, how to pay, and the key
-// box, so someone can go from "what is this watermark" to a clean overlay on one page.
-// Nothing here is bought inside the app; payment happens by PromptPay and the maker sends
-// the key (docs/PLAN.md §10).
+// The Support screen: what supporting gets you, what it costs, a button to buy, and the
+// key box, so someone can go from "what is this watermark" to a clean overlay on one page.
+// Nothing is bought inside the app: "Get a key" opens the key shop (cloud/) in the
+// browser, where Stripe takes PromptPay or a card and the shop shows the key at once
+// (docs/PLAN.md §10).
 public sealed class SupportViewModel : ObservableObject
 {
     public SupportViewModel(AppServices services)
     {
         Supporter = new SupporterPanel(services);
-        ContactCommand = new RelayCommand(() => Browser.Open(SupporterOffer.ContactUrl));
-        QrImage = LoadQr();
+        BuyCommand = new RelayCommand(
+            () => Browser.Open($"{SupporterOffer.ShopUrl.TrimEnd('/')}/buy?lang={Loc.Instance.Language}"),
+            () => CanBuy);
         Loc.Instance.Changed += () =>
         {
             OnPropertyChanged(nameof(MonthlyPrice));
             OnPropertyChanged(nameof(YearlyPrice));
-            OnPropertyChanged(nameof(ContactText));
+            OnPropertyChanged(nameof(BuyText));
         };
     }
 
     public SupporterPanel Supporter { get; }
-    public ICommand ContactCommand { get; }
+    public ICommand BuyCommand { get; }
 
     public string MonthlyPrice => Price(SupporterOffer.MonthlyPrice, "Support.PerMonth");
     public string YearlyPrice => Price(SupporterOffer.YearlyPrice, "Support.PerYear");
@@ -122,31 +121,9 @@ public sealed class SupportViewModel : ObservableObject
     private static string Price(string value, string per) =>
         value.Length > 0 ? $"{value} {Loc.T(per)}" : Loc.T("Support.PriceSoon");
 
-    public bool HasContact => SupporterOffer.ContactUrl.Length > 0;
-    public string ContactText => HasContact
-        ? (SupporterOffer.ContactLabel.Length > 0 ? SupporterOffer.ContactLabel : Loc.T("Support.Contact"))
-        : Loc.T("Support.ContactSoon");
-
-    public ImageSource? QrImage { get; }
-    public bool HasQr => QrImage is not null;
-
-    private static ImageSource? LoadQr()
-    {
-        var path = Path.Combine(AppContext.BaseDirectory, "Assets", "promptpay-qr.png");
-        if (!File.Exists(path)) return null;
-        try
-        {
-            var image = new BitmapImage();
-            image.BeginInit();
-            image.CacheOption = BitmapCacheOption.OnLoad;   // do not hold the file open
-            image.UriSource = new Uri(path);
-            image.EndInit();
-            image.Freeze();
-            return image;
-        }
-        catch
-        {
-            return null;   // a broken picture is the same as no picture
-        }
-    }
+    // Until the shop is deployed the button is there but disabled, and says so.
+    public bool CanBuy => SupporterOffer.ShopUrl.Length > 0;
+    public string BuyText => CanBuy
+        ? (SupporterOffer.MonthlyPrice.Length > 0 ? Loc.F("Support.BuyPrice", SupporterOffer.MonthlyPrice) : Loc.T("Support.Buy"))
+        : Loc.T("Support.BuySoon");
 }

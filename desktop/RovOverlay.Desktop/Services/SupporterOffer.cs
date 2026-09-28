@@ -2,20 +2,17 @@ namespace RovOverlay.Desktop.Services;
 
 // What the Support screen offers, in one place (docs/PLAN.md §10).
 //
-// Fill these in when they are decided; an empty value shows as "coming soon" rather than
-// as a blank or a made-up number. They ship inside the app, so changing one takes an
-// update.
-//
-// The PromptPay QR is not here: it is a picture, Assets/promptpay-qr.png next to the exe
-// (the project copies anything in Assets/). No file means the "QR coming soon" box.
+// An empty value shows as "coming soon" rather than as a blank or a made-up number. These
+// ship inside the app, so changing one takes an update.
 public static class SupporterOffer
 {
-    // Shown as written, e.g. "฿99".
+    // Shown as written, e.g. "฿159". The amount actually charged is the key shop's
+    // PRICE_SATANG (cloud/wrangler.toml): keep the two the same.
     public const string MonthlyPrice = "฿159";
     public const string YearlyPrice = "";
 
-    // Where people send their payment slip: a LINE, Facebook or other link the button
-    // opens, and the name shown on it, e.g. "LINE: @nuzka".
-    public const string ContactUrl = "";
-    public const string ContactLabel = "";
+    // The key shop (cloud/, a Cloudflare Worker in front of Stripe), e.g.
+    // "https://nuzka-keys.<account>.workers.dev". "Get a key" opens <ShopUrl>/buy?lang=th|en.
+    // Empty until it is deployed: the button then says buying opens soon.
+    public const string ShopUrl = "";
 }
