@@ -10,6 +10,9 @@
 //   ?columns=1..6      บังคับจำนวนคอลัมน์ ไม่ใส่ = เลือกให้ตามจำนวนทีม
 //   ?roster=off        ไม่ต้องแสดงรายชื่อผู้เล่น
 //   ?stagger=<ms>      ระยะห่างของการไล่เข้าทีละใบ ไม่ใส่ = 90ms
+//   ?perSet=4..64      ทีมสูงสุดต่อชุด ไม่ใส่ = 32
+//   ?seconds=3..120    ชุดหนึ่งค้างบนจอกี่วินาทีก่อนสลับ ไม่ใส่ = 12
+//   ?set=<n>           แสดงชุดที่ n ชุดเดียว ไม่วน
 //
 // หน้านี้เป็นหน้าดูอย่างเดียว ต่อ socket เปล่าๆ ไม่ต้องมีโทเคน
 // เหมือน /overlay กับ /result และไม่ได้ใช้ app-client.js
@@ -26,6 +29,28 @@ const SAFETY_MS = 700;
 const DEFAULT_STAGGER = 90;
 
 let settleTimer = null;
+let cycleTimer = null;
+
+// ทีมเยอะเกินหนึ่งจอ แบ่งเป็นชุดละไม่เกิน 32 แล้ววนสลับชุดไปเรื่อยๆ (ผู้ใช้ขอ 2026-09-28)
+//
+// เดิมใช้วิธีย่อทั้งตารางให้พอดีจอ 64 ทีมขึ้นไปตัวหนังสือเล็กจนอ่านบนสตรีมไม่ออก
+// แบ่งชุดแบบเฉลี่ย ไม่ใช่เต็ม 32 แล้วเศษ: 40 ทีมเป็น 20 + 20 ไม่ใช่ 32 + 8
+// การ์ดทุกชุดจึงขนาดเท่ากัน ไม่ใช่ชุดสุดท้ายโหรงเหรงแปดใบใหญ่เบ้อเริ่ม
+// ตอนเปิดตัวแก้ layout (?edit=1) ไม่วน ให้ค้างชุดแรก การ์ดจะได้ไม่เปลี่ยนใต้เมาส์
+const perSet = window.RovOverlay.intParam(params, 'perSet', 32, 4, 64);
+const holdMs = window.RovOverlay.intParam(params, 'seconds', 12, 3, 120) * 1000;
+const EXIT_MS = 420;          // ต้องตรงกับ tlCardOut ใน overlay-teams.css
+const EXIT_STEP_MAX = 14;     // ออกเร็วกว่าเข้า ทั้งชุดจบในราวครึ่งวินาที
+const cycling = params.get('edit') !== '1';
+
+function splitIntoSets(teams) {
+    if (teams.length <= perSet) return [teams];
+    const count = Math.ceil(teams.length / perSet);
+    const size = Math.ceil(teams.length / count);
+    const sets = [];
+    for (let i = 0; i < teams.length; i += size) sets.push(teams.slice(i, i + size));
+    return sets;
+}
 
 
 const stagger = window.RovOverlay.intParam(params, 'stagger', DEFAULT_STAGGER, 0, 1000);
@@ -209,15 +234,22 @@ function fitToStage() {
     grid.style.transformOrigin = 'top left';
     grid.style.transform = 'scale(' + scale + ')';
 }
-function render(tournament, teams) {
+// วาดหนึ่งชุด total คือจำนวนทีมทั้งทัวร์นาเมนต์ ไม่ใช่ของชุดนี้
+function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1) {
     const grid = document.getElementById('grid');
+    const stage = document.getElementById('stage');
     grid.textContent = '';
+    // หัวข้อเข้ามาครั้งเดียวตอนเปิดหน้า สลับชุดแล้วไม่ต้องเข้าใหม่
+    if (stage.classList.contains('settled')) document.getElementById('head').classList.add('settled');
+    // ชุดก่อนถูกบังคับจบอนิเมชันไว้แล้ว ต้องถอดออก ไม่งั้นชุดใหม่โผล่มาเฉยๆ ไม่ไล่เข้า
+    stage.classList.remove('settled', 'leaving');
 
     const step = staggerFor(teams.length);
-    document.getElementById('stage').style.setProperty('--stagger', step + 'ms');
+    stage.style.setProperty('--stagger', step + 'ms');
     document.getElementById('title').textContent = params.get('title') || tournament.name || '';
-    document.getElementById('subtitle').textContent = params.get('subtitle')
-        || (teams.length === 1 ? '1 team' : teams.length + ' teams');
+    const counted = total === 1 ? '1 team' : total + ' teams';
+    document.getElementById('subtitle').textContent = (params.get('subtitle') || counted)
+        + (setCount > 1 ? `  ·  ${setNo} / ${setCount}` : '');
     document.title = (tournament.name || 'Teams') + ' - ROV Team List';
 
     grid.style.setProperty('--cols', String(columnsFor(teams.length)));
@@ -231,6 +263,40 @@ function render(tournament, teams) {
     settleSoon(teams.length, step);
 }
 
+// ชุดปัจจุบันไหลออกทางขวา แล้วชุดถัดไปไล่เข้าจากซ้ายเหมือนตอนเปิดหน้า
+//
+// ใช้ตัวจับเวลาล้วนๆ ไม่รอ animationend เหตุผลเดียวกับ settleSoon:
+// OBS หยุด source ที่ไม่ได้ออกอากาศ อนิเมชันขาออกอาจไม่จบ แต่ชุดต้องสลับต่อได้
+function showSets(tournament, teams) {
+    clearTimeout(cycleTimer);
+    const sets = splitIntoSets(teams);
+    const only = window.RovOverlay.intParam(params, 'set', 0, 0, sets.length);
+    let index = only ? only - 1 : 0;
+
+    const draw = () => render(tournament, sets[index], teams.length, index + 1, sets.length);
+    draw();
+    if (only || sets.length < 2 || !cycling) return;
+
+    const next = () => {
+        const stage = document.getElementById('stage');
+        const count = sets[index].length;
+        const exitStep = Math.min(EXIT_STEP_MAX, Math.floor(300 / Math.max(1, count - 1)));
+        stage.style.setProperty('--exit-stagger', exitStep + 'ms');
+        stage.classList.add('leaving');
+        cycleTimer = setTimeout(() => {
+            index = (index + 1) % sets.length;
+            draw();
+            cycleTimer = setTimeout(next, entranceMs(sets[index].length) + holdMs);
+        }, EXIT_MS + exitStep * Math.max(0, count - 1));
+    };
+    cycleTimer = setTimeout(next, entranceMs(sets[index].length) + holdMs);
+}
+
+// นับเวลาค้างจากตอนที่ใบสุดท้ายเข้ามาครบ ไม่ใช่จากตอนเริ่มวาด
+function entranceMs(count) {
+    return staggerFor(count) * Math.max(0, count - 1) + ENTER_MS;
+}
+
 async function load() {
     const id = await resolveTournamentId();
     if (!id) {
@@ -241,7 +307,7 @@ async function load() {
 
     try {
         const data = await getJson('/api/tournaments/' + encodeURIComponent(id));
-        render(data.tournament || {}, data.teams || []);
+        showSets(data.tournament || {}, data.teams || []);
     } catch (error) {
         window.RovOverlay.note('Could not load that tournament.');
         settleSoon(0);

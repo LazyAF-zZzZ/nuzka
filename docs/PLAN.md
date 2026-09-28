@@ -511,6 +511,15 @@ docs/v2/            v2's plan, guide and notes, for reference
   with its count of moved parts; Reset works on the chosen one. The watermark re-picks its
   corner on a `rov-layout` event, since a move changes no content.
 
+- **Team list in looping sets (3.2.0-beta.19, user's request).** `/overlay-teams` shows at most
+  32 teams at a time (`?perSet=4..64`), split evenly (40 = 20 + 20, so every set has the same
+  card size), each held 12 s (`?seconds=3..120`) after its last card is in, then the cards
+  slide out to the right and the next set slides in; it loops. The subtitle ends in
+  `· 1 / 2`. `?set=n` shows one set without looping, and `?edit=1` holds the first set so
+  cards do not change under the mouse. Timers only, no `animationend`, for the same OBS reason
+  as `settleSoon`. The heading gets `.settled` after its first entrance so a new set does not
+  replay it. Layout parts `team-N` are positions within the set.
+
 ## 9. Traps already paid for
 
 - **Boards that shrink to fit measure their cards**, so a card the operator dragged down read
