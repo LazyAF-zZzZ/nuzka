@@ -446,8 +446,24 @@ docs/v2/            v2's plan, guide and notes, for reference
 - **Code signing.** An unsigned installer gets a SmartScreen warning.
 - **`CONTROL_TOKEN`** is not used by v3 (the server binds 127.0.0.1 only). Revisit if
   the server is ever exposed on the LAN.
-- **Logo size hint visible again** (user noticed it was gone, 2026-09-28). v2 showed it under the  logo buttons; the native Control screen had it only as a tooltip on the logo box. Now a muted  line under Upload / Clear logo (`Control.LogoSize`: square, 184 × 184 px or larger), and the  team profile's `Team.LogoHint` gives the size too. 184 is the largest any overlay draws a logo  (the draft overlay at 1440p; the team card is ~170 at 1440p, the rest smaller).
-- **Release 3.2.0, ready but not published (2026-09-28).** Version bumped in `backend/package.json`  (+ lock) and the csproj; notes in `docs/release-notes/3.2.0.md`; README rewritten for the  public (download, the supporter key table, Stripe, a 7-day refund policy, licence, disclaimer,  developer notes). **The README's contact line is a placeholder** until the user gives an email  or LINE ID. `pack.ps1 -Version 3.2.0` built it (stable channel) and `smoke.ps1 -FreshLicence`  opened a window titled "Nuzka"; the exe says product Nuzka, 3.2.0. Shortcuts: Velopack updates  them when `--packTitle` changes (velopack#67, fixed by PR #165, July 2024; our vpk is newer),  so existing "ROV Overlay Tool" shortcuts should become "Nuzka"; confirm on the first real  update. To publish: the contact, the user's OK, push, a heads-up in `notices.json`, then  `pack.ps1 -Version 3.2.0 -Publish` with `GITHUB_TOKEN` from `gh auth token`.
+- **Logo size hint visible again** (user noticed it was gone, 2026-09-28). v2 showed it under the
+  logo buttons; the native Control screen had it only as a tooltip on the logo box. Now a muted
+  line under Upload / Clear logo (`Control.LogoSize`: square, 184 × 184 px or larger), and the
+  team profile's `Team.LogoHint` gives the size too. 184 is the largest any overlay draws a logo
+  (the draft overlay at 1440p; the team card is ~170 at 1440p, the rest smaller).
+- **Release 3.2.0, ready but not published (2026-09-28).** Version bumped in
+  `backend/package.json` (+ lock) and the csproj; notes in `docs/release-notes/3.2.0.md`;
+  README rewritten for the public (download, the supporter key table, Stripe, a 7-day refund
+  policy, licence, disclaimer, developer notes). **The README's contact line is a placeholder**
+  until the user gives an email or LINE ID. `pack.ps1 -Version 3.2.0` built it (stable channel)
+  and `smoke.ps1 -FreshLicence` opened a window titled "Nuzka"; the exe says product Nuzka,
+  3.2.0. **That local 3.2.0 pack is now stale** (the watermark changed after it): delete
+  `releases/RovOverlayTool3-3.2.0-*` and the 3.2.0 entries vpk wrote, then re-pack, before
+  publishing. Shortcuts: Velopack updates them when `--packTitle` changes (velopack#67, fixed
+  by PR #165, July 2024; our vpk is newer), so existing "ROV Overlay Tool" shortcuts should
+  become "Nuzka"; confirm on the first real update. To publish: the contact, the user's OK,
+  push, a heads-up in `notices.json`, then `pack.ps1 -Version 3.2.0 -Publish` with
+  `GITHUB_TOKEN` from `gh auth token`.
 
 ## 9. Traps already paid for
 
