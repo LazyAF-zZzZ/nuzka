@@ -110,9 +110,11 @@
     // <body data-watermark="top-right | top-left | bottom-left"> if bottom-right covers
     // something on that graphic.
     //
-    // A page with a banner marks it <... data-watermark-slot>: the text then goes inside
-    // the banner, and the app logo sits behind the banner's centre at 60% (user's
-    // request, 2026-09-28). Being children of the panel, both scale with it at 1440.
+    // A page with a banner marks it <... data-watermark-slot>, and the text goes inside
+    // it. A page can also mark <... data-watermark-logo-slot>, and the app logo sits in
+    // it at 60%: on the draft overlay that is the score column, with the logo behind
+    // the VS (user's requests, 2026-09-28). Being inside the panel, both scale with it
+    // at 1440.
     const WATERMARK_TEXT = 'ROV Overlay Tool · by LazyAF';
     const watermarkStyle = document.createElement('style');
     watermarkStyle.textContent = `
@@ -136,11 +138,13 @@
             position: absolute; right: 336px; top: 32px; bottom: auto; transform: none;
             font-size: 17px;
         }
-        /* Behind the tournament name: prepended to the panel, so everything positioned
-           after it in the panel paints on top. The banner is about 95px tall. */
+        /* Centred on the score's VS, behind the score boxes and the timer. Its slot is
+           .match-center, which is its own stacking context (z-index 6 and a transform), so
+           z-index -1 puts it above the panel but under everything in the column. The VS
+           sits 44px down that column in the 1080 layout. */
         .rov-watermark-logo {
-            position: absolute; left: 50%; top: 6px; height: 84px; transform: translateX(-50%);
-            opacity: 0.6; pointer-events: none; user-select: none;
+            position: absolute; left: 50%; top: 44px; height: 150px; transform: translate(-50%, -50%);
+            z-index: -1; opacity: 0.6; pointer-events: none; user-select: none;
         }
         .rov-watermark-logo[hidden] { display: none; }
     `;
@@ -152,19 +156,23 @@
     watermark.hidden = true;
 
     const slot = document.querySelector('[data-watermark-slot]');
-    /** @type {HTMLImageElement | null} */
-    let watermarkLogo = null;
     if (slot) {
         watermark.classList.add('in-banner');
         slot.appendChild(watermark);
+    } else {
+        body.appendChild(watermark);
+    }
+
+    const logoSlot = document.querySelector('[data-watermark-logo-slot]');
+    /** @type {HTMLImageElement | null} */
+    let watermarkLogo = null;
+    if (logoSlot) {
         watermarkLogo = document.createElement('img');
         watermarkLogo.className = 'rov-watermark-logo';
         watermarkLogo.src = '/images/watermark-logo.png';
         watermarkLogo.alt = '';
         watermarkLogo.hidden = true;
-        slot.prepend(watermarkLogo);
-    } else {
-        body.appendChild(watermark);
+        logoSlot.prepend(watermarkLogo);
     }
 
     if (typeof socket !== 'undefined') {

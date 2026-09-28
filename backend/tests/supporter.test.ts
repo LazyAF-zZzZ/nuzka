@@ -307,6 +307,7 @@ test('the draft overlays carry the watermark in their banner, logo included', ()
   for (const file of ['overlay.html', 'overlay-1440.html']) {
     const html = fs.readFileSync(path.join(publicDir, file), 'utf8');
     assert.match(html, /<div class="pick-section" data-watermark-slot>/, `${file} marks its banner`);
+    assert.match(html, /<div class="match-center" data-watermark-logo-slot>/, `${file} puts the logo in the score column`);
   }
   const png = fs.readFileSync(path.join(publicDir, 'images', 'watermark-logo.png'));
   assert.strictEqual(png.subarray(1, 4).toString(), 'PNG', 'the logo the banner loads is shipped');
