@@ -626,7 +626,7 @@ dropped: **the user chose keys only, no accounts and no server.**
 - The watermark is created and styled by `public/js/overlay-size.js`, which all ten
   broadcast graphics load after the script that declares `socket`. Styles are injected
   from there because broadcast pages share no stylesheet. Text "ROV Overlay Tool · by
-  LazyAF", 19px bold, white at 85% with a dark shadow (was 15px at 60% in beta.1; the user asked for bigger and brighter), `pointer-events: none`, scaled 4/3 at 1440.
+  LazyAF", 23px bold (21px in the draft banner), pure white with a dark shadow, the logo at full strength (was 15px at 60% in beta.1, then 19/17px at 85%; the user asked twice for bigger and brighter), `pointer-events: none`, scaled 4/3 at 1440.
 - **It starts hidden** and appears only when the `supporter` event says inactive. Showing
   it first would flash it on a supporter's stream every time OBS loads a source. The flip
   side: an overlay that never reaches the server shows no watermark, which is acceptable
