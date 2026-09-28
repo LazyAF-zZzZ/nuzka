@@ -26,6 +26,9 @@ test/           npm test (needs `npm run build` in ../backend first)
 2. **Settings → Payment methods**: switch on **PromptPay** (cards are on already).
 3. **Developers → API keys**: you will need the **secret key**. Start with the **test**
    one (`sk_test_...`). Never paste it into chat, a file in this repo, or the app.
+   For real money, create a **restricted** live key instead of using the full secret key:
+   Developers → API keys → Create restricted key → Custom permissions → **Checkout
+   Sessions: Write**, everything else None (`rk_live_...`). That is all the shop needs.
 
 ### 2. Cloudflare
 
