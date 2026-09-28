@@ -135,7 +135,7 @@
         /* The logo is at full strength like the text; a drop shadow stands in for the text shadow,
            which images do not get. */
         .rov-watermark img {
-            height: 2.1em; width: auto;
+            height: 2.8em; width: auto;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
         }
         .rov-watermark[data-corner="top-right"] { top: 14px; bottom: auto; transform-origin: top right; }
@@ -176,32 +176,50 @@
     const preferred = CORNERS.indexOf(body.dataset.watermark || '') >= 0 ? body.dataset.watermark : 'bottom-right';
     const cornerOrder = [preferred].concat(CORNERS.filter((c) => c !== preferred));
 
-    // Rectangles of everything drawn: text, pictures, and boxes with a fill, a picture or
-    // a border. Anything covering a quarter of the screen or more is a backdrop (the
-    // stage, a panel behind a table), not something the mark would hide. Elements still
-    // at opacity 0 count: that is an entrance animation about to show them.
+    // What is drawn, in two kinds.
+    //   content: text (only where its letters are: a footnote's box can span the whole
+    //            screen while its words fill the left third), pictures, and small boxes
+    //            with a fill, a picture or a border. The mark must never cover these.
+    //   panels:  big painted boxes (a quarter of the screen or more, but not the whole
+    //            screen, which is the stage backdrop). The mark may sit on one, but a
+    //            corner clear of every panel looks cleaner: under the last row of a full
+    //            standings table the mark reads as part of the table.
+    // Elements still at opacity 0 count: that is an entrance animation about to show them.
     function drawnBoxes() {
         const screen = window.innerWidth * window.innerHeight;
-        const boxes = [];
+        const content = [];
+        const panels = [];
         body.querySelectorAll('*').forEach((el) => {
             if (el === watermark || watermark.contains(el)) return;
             const r = el.getBoundingClientRect();
-            if (r.width < 1 || r.height < 1 || r.width * r.height >= screen / 4) return;
+            if (r.width < 1 || r.height < 1) return;
             const cs = getComputedStyle(el);
             if (cs.visibility === 'hidden') return;
-            const text = Array.prototype.some.call(el.childNodes, (n) => n.nodeType === 3 && n.textContent.trim() !== '');
+            const area = r.width * r.height;
             const media = /^(IMG|SVG|CANVAS|VIDEO|svg)$/.test(el.tagName);
             const painted = cs.backgroundImage !== 'none'
-                || (cs.backgroundColor !== 'transparent' && !/rgba\(.*,\s*0\)$/.test(cs.backgroundColor))
+                || (cs.backgroundColor !== 'transparent' && !/rgba(.*,s*0)$/.test(cs.backgroundColor))
                 || parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderBottomWidth) > 0;
-            if (text || media || painted) boxes.push(r);
+            if (area >= screen / 4) {
+                if (painted && area < screen * 0.9) panels.push(r);
+            } else if (media || painted) {
+                content.push(r);
+                return;
+            }
+            el.childNodes.forEach((n) => {
+                if (n.nodeType !== 3 || !n.textContent || !n.textContent.trim()) return;
+                const range = document.createRange();
+                range.selectNodeContents(n);
+                Array.prototype.forEach.call(range.getClientRects(), (tr) => {
+                    if (tr.width >= 1 && tr.height >= 1) content.push(tr);
+                });
+            });
         });
-        return boxes;
+        return { content, panels };
     }
 
-    function covered(boxes) {
+    function overlap(boxes, pad) {
         const r = watermark.getBoundingClientRect();
-        const pad = 8;
         let area = 0;
         boxes.forEach((b) => {
             const w = Math.min(r.right + pad, b.right) - Math.max(r.left - pad, b.left);
@@ -211,19 +229,20 @@
         return area;
     }
 
+    // Covering content is always worse than sitting on a panel, so it weighs far more.
     function placeWatermark() {
         if (slot) return;
         // A hidden mark has no size to measure; lay it out invisibly for the check.
         const wasHidden = watermark.hidden;
         if (wasHidden) { watermark.hidden = false; watermark.style.visibility = 'hidden'; }
-        const boxes = drawnBoxes();
+        const drawn = drawnBoxes();
         let best = cornerOrder[0];
-        let bestArea = Infinity;
+        let bestScore = Infinity;
         for (const corner of cornerOrder) {
             watermark.dataset.corner = corner;
-            const area = covered(boxes);
-            if (area < bestArea) { best = corner; bestArea = area; }
-            if (area === 0) break;
+            const score = overlap(drawn.content, 8) * 1000 + overlap(drawn.panels, 0);
+            if (score < bestScore) { best = corner; bestScore = score; }
+            if (score === 0) break;
         }
         watermark.dataset.corner = best;
         if (wasHidden) { watermark.hidden = true; watermark.style.visibility = ''; }
