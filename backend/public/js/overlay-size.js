@@ -110,16 +110,17 @@
     // <body data-watermark="top-right | top-left | bottom-left"> if bottom-right covers
     // something on that graphic.
     //
-    // A page with a banner marks it <... data-watermark-slot>, and the text goes inside
-    // it. A page can also mark <... data-watermark-logo-slot>, and the app logo sits in
-    // it at 60%: on the draft overlay that is the score column, with the logo behind
-    // the VS (user's requests, 2026-09-28). Being inside the panel, both scale with it
-    // at 1440.
+    // The app's shield sits just before the text, a little taller than a capital
+    // letter, so the two read as one mark (user's request, 2026-09-28).
+    //
+    // A page with a banner marks it <... data-watermark-slot>, and the mark goes inside
+    // it instead of in a corner. Being inside the panel, it scales with it at 1440.
     const WATERMARK_TEXT = 'ROV Overlay Tool · by LazyAF';
     const watermarkStyle = document.createElement('style');
     watermarkStyle.textContent = `
         .rov-watermark {
             position: fixed; right: 18px; bottom: 14px; z-index: 2147483647;
+            display: flex; align-items: center; gap: 0.4em;
             font: 700 19px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 0.04em;
             color: rgba(255, 255, 255, 0.85);
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.6);
@@ -127,32 +128,35 @@
             transform-origin: bottom right;
         }
         .rov-watermark[hidden] { display: none; }
+        /* The shield matches the text's 85%; a drop shadow stands in for the text shadow,
+           which images do not get. */
+        .rov-watermark img {
+            height: 1.45em; width: auto; opacity: 0.85;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+        }
         body[data-watermark="top-right"] .rov-watermark { top: 14px; bottom: auto; transform-origin: top right; }
         body[data-watermark="top-left"] .rov-watermark { top: 14px; bottom: auto; left: 18px; right: auto; transform-origin: top left; }
         body[data-watermark="bottom-left"] .rov-watermark { left: 18px; right: auto; transform-origin: bottom left; }
         body[data-size="1440"] .rov-watermark { transform: scale(calc(4 / 3)); }
         /* Inside the draft overlay's banner (the top strip of .pick-section, 1080 layout
            pixels): right-aligned just left of the red ban slots (x 1600-1906, y 12-70),
-           and centred on them. The container already scales at 1440, so no scale here. */
+           its middle on theirs, 41px down. The container already scales at 1440, so the
+           only transform here is that centring. */
         body .rov-watermark.in-banner {
-            position: absolute; right: 336px; top: 32px; bottom: auto; transform: none;
+            position: absolute; right: 336px; top: 41px; bottom: auto; transform: translateY(-50%);
             font-size: 17px;
         }
-        /* Centred on the score's VS, behind the score boxes and the timer. Its slot is
-           .match-center, which is its own stacking context (z-index 6 and a transform), so
-           z-index -1 puts it above the panel but under everything in the column. The VS
-           sits 44px down that column in the 1080 layout. */
-        .rov-watermark-logo {
-            position: absolute; left: 50%; top: 44px; height: 150px; transform: translate(-50%, -50%);
-            z-index: -1; opacity: 0.6; pointer-events: none; user-select: none;
-        }
-        .rov-watermark-logo[hidden] { display: none; }
     `;
     document.head.appendChild(watermarkStyle);
 
     const watermark = document.createElement('div');
     watermark.className = 'rov-watermark';
-    watermark.textContent = WATERMARK_TEXT;
+    const watermarkLogo = document.createElement('img');
+    watermarkLogo.src = '/images/watermark-logo.png';
+    watermarkLogo.alt = '';
+    const watermarkText = document.createElement('span');
+    watermarkText.textContent = WATERMARK_TEXT;
+    watermark.append(watermarkLogo, watermarkText);
     watermark.hidden = true;
 
     const slot = document.querySelector('[data-watermark-slot]');
@@ -163,23 +167,9 @@
         body.appendChild(watermark);
     }
 
-    const logoSlot = document.querySelector('[data-watermark-logo-slot]');
-    /** @type {HTMLImageElement | null} */
-    let watermarkLogo = null;
-    if (logoSlot) {
-        watermarkLogo = document.createElement('img');
-        watermarkLogo.className = 'rov-watermark-logo';
-        watermarkLogo.src = '/images/watermark-logo.png';
-        watermarkLogo.alt = '';
-        watermarkLogo.hidden = true;
-        logoSlot.prepend(watermarkLogo);
-    }
-
     if (typeof socket !== 'undefined') {
         socket.on('supporter', (status) => {
-            const supporter = Boolean(status && status.active);
-            watermark.hidden = supporter;
-            if (watermarkLogo) watermarkLogo.hidden = supporter;
+            watermark.hidden = Boolean(status && status.active);
         });
     }
 

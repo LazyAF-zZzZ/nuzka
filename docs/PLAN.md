@@ -359,7 +359,7 @@ docs/v2/            v2's plan, guide and notes, for reference
 | M7 | Packaging: bundled node, Velopack installer, updates, notice feed, licence dialog | done, commit after `c615d39` |
 | M8 | Release 3.0.0 | done. 3.0.0 could not open a window; **3.0.5** was the first published release and **3.0.6** the first that reached anyone by updating itself |
 | S1 | Supporter key check in the backend (Ed25519, offline) + API + tests (§10) | **done 2026-09-27**, commit after `b493e35`. `domain/supporter.ts`, `store/supporter.ts`, `http/api-supporter.ts`, `tests/supporter.test.ts` (18 tests; 420 in all) |
-| S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | **done 2026-09-27**, commit after `2a1fa96`. In `overlay-size.js`, starts hidden; `data-watermark` per page (result: `bottom-left`); draft overlays: text inside the banner, app logo 150px at 60% behind the score (2026-09-28). Placement checked in a browser; **look in OBS not yet confirmed by the user** |
+| S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | **done 2026-09-27**, commit after `2a1fa96`. In `overlay-size.js`, starts hidden; `data-watermark` per page (result: `bottom-left`); draft overlays: inside the banner; the app shield sits before the text as one mark (2026-09-28). Placement checked in a browser; **look in OBS not yet confirmed by the user** |
 | S3 | Settings: Supporter section, expiry reminder, Garena/Tencent disclaimer (§10). S1-S3 ship **together** | **done 2026-09-28**, commit after `7bec2f0`. Settings section, reminder toast, disclaimer. Clicked through for real with `scripts/uia.ps1` (new `set-text` action) against a throwaway backend |
 | S4 | Key generator on the maker's PC (secret key outside the repo); manual PromptPay sales (§10) | **tool done** in S1 (`backend/tools/supporter-keys.js`, the real pair made 2026-09-27); PromptPay process not started |
 | S5 | Later: sales website on Cloudflare Pages; a gateway issuing the same keys automatically | not started |
@@ -626,21 +626,18 @@ dropped: **the user chose keys only, no accounts and no server.**
   bottom padding, so bottom-right is clear on them.
 - **Draft overlays: inside the banner** (user's request, 2026-09-28, replacing an
   "above the panel" spot from the same day). `/overlay` and `/overlay-1440` mark
-  `.pick-section` with `data-watermark-slot`; `overlay-size.js` then puts the text inside it
-  (17px, right-aligned 336px from the right edge, top 32px: just left of the red ban slots
-  and centred on them).
-- **Draft overlays: the logo behind the score** (user's request, 2026-09-28, replacing 84px
-  behind the tournament name from the same day). `.match-center` is marked
-  `data-watermark-logo-slot`; `images/watermark-logo.png` is prepended there at 60%, 150px
-  tall, centred on the VS (top 44px in the column, `translate(-50%, -50%)`). It needs
-  **`z-index: -1`**: the score is in normal flow, and a positioned logo would otherwise paint
-  over it. That works only because `.match-center` is its own stacking context (z-index 6 and
-  a transform); without that, -1 would drop it behind the whole panel. Checked: logo centre =
-  VS centre at 1080 (960,921) and 1440 (1280,1229), and the VS is what `elementFromPoint`
-  finds on top. It runs behind the score boxes (85% dark fill) and the top of the timer.
-- Both are inside the panel, so the container's 4/3 scale carries them to 1440. **These are
-  layout pixels tied to the panel; move them if it changes.** `overlay.js` never rebuilds
-  `.pick-section` or `.match-center`, which is why adding children to them is safe.
+  `.pick-section` with `data-watermark-slot`; `overlay-size.js` then puts the mark inside it
+  (17px, right-aligned 336px from the right edge, `top: 41px; translateY(-50%)`: just left
+  of the red ban slots, its middle on theirs). Inside the panel, the container's 4/3 scale
+  carries it to 1440. **Layout pixels tied to the banner; move them if it changes.**
+  `overlay.js` never rebuilds `.pick-section`, which is why appending into it is safe.
+- **The logo is part of the mark** (user's request, 2026-09-28): `<img>` of
+  `watermark-logo.png` then a `<span>` with the text, inside the one `.rov-watermark` flex
+  row, 1.45em tall (25px in the banner, 28px in corners) at 85% like the text, with a drop
+  shadow. Being a child, it hides with the mark: no second element for a key to miss. Two
+  earlier tries the same day were dropped: 84px behind the tournament name, then 150px at 60%
+  behind the score's VS (that one needed `z-index: -1` inside `.match-center`, a stacking
+  context, to stay under the score; worth knowing if a logo ever goes back there).
 - `watermark-logo.png` is the app icon's shield with the dark tile cut away (kept: pixels
   with `luminance + 200 × saturation` above ~140, i.e. the gold and silver), cropped to
   169x175. Made once from `app-icon.ico`; remake it the same way if the icon changes.
