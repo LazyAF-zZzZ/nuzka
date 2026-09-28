@@ -732,3 +732,13 @@ test purchase works; the commits are pushed, which also publishes `revoked-keys.
 a month or 990-1,990 a year), watermark text and corner, perks beyond the watermark, and
 whether the free licence should require shared modified copies to keep the watermark
 (changing it bumps `LicenceVersion`).
+
+**New app icon (2026-09-28, user's artwork).** A white, round-headed figure in a black-and-red
+ink swirl with a red crown. The source WebP already had a transparent background, so it was
+only cropped square (1123 px) and resized with WPF (`HighQuality` scaling) into:
+`backend/public/images/app-icon.ico` (PNG entries 16-256 px; the exe icon via the csproj and the
+installer icon via pack.ps1), `backend/public/images/watermark-logo.png` (128 px, the mark in the
+overlay watermark, replacing the gold shield), and `docs/brand/nuzka-logo-1024.png` /
+`-512.png` (masters; 512 is small enough for Stripe's branding upload). At 16 px the artwork
+turns into a red-and-black blob; a simplified 16 px frame (the face and crown only) would
+fix that if it bothers anyone.
