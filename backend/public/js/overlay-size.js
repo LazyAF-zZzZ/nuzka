@@ -107,8 +107,12 @@
     //
     // Its styles are injected here rather than put in each page's CSS: broadcast pages
     // share no stylesheet, and ten copies would drift. A page can move it with
-    // <body data-watermark="top-right | top-left | bottom-left | above-draft"> if
-    // bottom-right covers something on that graphic.
+    // <body data-watermark="top-right | top-left | bottom-left"> if bottom-right covers
+    // something on that graphic.
+    //
+    // A page with a banner marks it <... data-watermark-slot>: the text then goes inside
+    // the banner, and the app logo sits behind the banner's centre at 60% (user's
+    // request, 2026-09-28). Being children of the panel, both scale with it at 1440.
     const WATERMARK_TEXT = 'ROV Overlay Tool · by LazyAF';
     const watermarkStyle = document.createElement('style');
     watermarkStyle.textContent = `
@@ -125,10 +129,20 @@
         body[data-watermark="top-left"] .rov-watermark { top: 14px; bottom: auto; left: 18px; right: auto; transform-origin: top left; }
         body[data-watermark="bottom-left"] .rov-watermark { left: 18px; right: auto; transform-origin: bottom left; }
         body[data-size="1440"] .rov-watermark { transform: scale(calc(4 / 3)); }
-        /* The draft overlay's panel fills the bottom 430px (573 at 1440), and bottom-right
-           sat on red player 5's name. This parks it 8px above the panel's right end. */
-        body[data-watermark="above-draft"] .rov-watermark { bottom: 438px; }
-        body[data-watermark="above-draft"][data-size="1440"] .rov-watermark { bottom: 584px; }
+        /* Inside the draft overlay's banner (the top strip of .pick-section, 1080 layout
+           pixels): right-aligned just left of the red ban slots (x 1600-1906, y 12-70),
+           and centred on them. The container already scales at 1440, so no scale here. */
+        body .rov-watermark.in-banner {
+            position: absolute; right: 336px; top: 32px; bottom: auto; transform: none;
+            font-size: 17px;
+        }
+        /* Behind the tournament name: prepended to the panel, so everything positioned
+           after it in the panel paints on top. The banner is about 95px tall. */
+        .rov-watermark-logo {
+            position: absolute; left: 50%; top: 6px; height: 84px; transform: translateX(-50%);
+            opacity: 0.6; pointer-events: none; user-select: none;
+        }
+        .rov-watermark-logo[hidden] { display: none; }
     `;
     document.head.appendChild(watermarkStyle);
 
@@ -136,11 +150,28 @@
     watermark.className = 'rov-watermark';
     watermark.textContent = WATERMARK_TEXT;
     watermark.hidden = true;
-    body.appendChild(watermark);
+
+    const slot = document.querySelector('[data-watermark-slot]');
+    /** @type {HTMLImageElement | null} */
+    let watermarkLogo = null;
+    if (slot) {
+        watermark.classList.add('in-banner');
+        slot.appendChild(watermark);
+        watermarkLogo = document.createElement('img');
+        watermarkLogo.className = 'rov-watermark-logo';
+        watermarkLogo.src = '/images/watermark-logo.png';
+        watermarkLogo.alt = '';
+        watermarkLogo.hidden = true;
+        slot.prepend(watermarkLogo);
+    } else {
+        body.appendChild(watermark);
+    }
 
     if (typeof socket !== 'undefined') {
         socket.on('supporter', (status) => {
-            watermark.hidden = Boolean(status && status.active);
+            const supporter = Boolean(status && status.active);
+            watermark.hidden = supporter;
+            if (watermarkLogo) watermarkLogo.hidden = supporter;
         });
     }
 

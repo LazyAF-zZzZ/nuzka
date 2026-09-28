@@ -359,7 +359,7 @@ docs/v2/            v2's plan, guide and notes, for reference
 | M7 | Packaging: bundled node, Velopack installer, updates, notice feed, licence dialog | done, commit after `c615d39` |
 | M8 | Release 3.0.0 | done. 3.0.0 could not open a window; **3.0.5** was the first published release and **3.0.6** the first that reached anyone by updating itself |
 | S1 | Supporter key check in the backend (Ed25519, offline) + API + tests (§10) | **done 2026-09-27**, commit after `b493e35`. `domain/supporter.ts`, `store/supporter.ts`, `http/api-supporter.ts`, `tests/supporter.test.ts` (18 tests; 420 in all) |
-| S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | **done 2026-09-27**, commit after `2a1fa96`. In `overlay-size.js`, starts hidden; `data-watermark` per page (draft overlays: `above-draft`, result: `bottom-left`). Placement checked in a browser; **look in OBS not yet confirmed by the user** |
+| S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | **done 2026-09-27**, commit after `2a1fa96`. In `overlay-size.js`, starts hidden; `data-watermark` per page (result: `bottom-left`); draft overlays: text inside the banner and the app logo behind its centre at 60% (2026-09-28). Placement checked in a browser; **look in OBS not yet confirmed by the user** |
 | S3 | Settings: Supporter section, expiry reminder, Garena/Tencent disclaimer (§10). S1-S3 ship **together** | **done 2026-09-28**, commit after `7bec2f0`. Settings section, reminder toast, disclaimer. Clicked through for real with `scripts/uia.ps1` (new `set-text` action) against a throwaway backend |
 | S4 | Key generator on the maker's PC (secret key outside the repo); manual PromptPay sales (§10) | **tool done** in S1 (`backend/tools/supporter-keys.js`, the real pair made 2026-09-27); PromptPay process not started |
 | S5 | Later: sales website on Cloudflare Pages; a gateway issuing the same keys automatically | not started |
@@ -621,11 +621,22 @@ dropped: **the user chose keys only, no accounts and no server.**
   because such an overlay shows nothing else either.
 - Position is bottom-right unless `<body data-watermark>` says otherwise. Checked with
   `elementsFromPoint` on all ten pages at 1920x1080 (2560x1440 for `/overlay-1440`):
-  bottom-right sat on red player 5's name on the draft overlay, so `/overlay` and
-  `/overlay-1440` use `above-draft` (438px up, 584px at 1440: 8px above the 430px panel,
-  **a hard-coded number that must follow the panel if its height changes**); `/result` uses
-  `bottom-left` (empty lower part of the red side panel). The stage graphics all keep 62px
-  or more of bottom padding, so bottom-right is clear on them.
+  bottom-right sat on red player 5's name on the draft overlay; `/result` uses `bottom-left`
+  (empty lower part of the red side panel). The stage graphics all keep 62px or more of
+  bottom padding, so bottom-right is clear on them.
+- **Draft overlays: inside the banner** (user's request, 2026-09-28, replacing an
+  "above the panel" spot from the same day). `/overlay` and `/overlay-1440` mark
+  `.pick-section` with `data-watermark-slot`; `overlay-size.js` then puts the text inside it
+  (17px, right-aligned 336px from the right edge, top 32px: just left of the red ban slots
+  and centred on them) and **prepends** `images/watermark-logo.png` at 60% opacity, 84px
+  tall, centred behind the tournament name. Prepending is what keeps it under the name:
+  everything positioned later in the panel paints on top. Both are children of the panel,
+  so the container's 4/3 scale carries them to 1440 (checked: 81x84 → 108x112). **These are
+  layout pixels tied to the banner; move them if the banner changes.** `overlay.js` never
+  rebuilds `.pick-section`, which is why appending into it is safe.
+- `watermark-logo.png` is the app icon's shield with the dark tile cut away (kept: pixels
+  with `luminance + 200 × saturation` above ~140, i.e. the gold and silver), cropped to
+  169x175. Made once from `app-icon.ico`; remake it the same way if the icon changes.
 - Tests: every `/overlay*` route and `/result` (derived from `PAGES`) loads
   `overlay-size.js` after its own script; the watermark starts hidden.
 

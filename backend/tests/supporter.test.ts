@@ -298,6 +298,18 @@ test('the watermark starts hidden and only the server can show it', () => {
   assert.match(js, /watermark\.hidden = true;/);
   assert.match(js, /socket\.on\('supporter'/);
   assert.ok(js.includes('ROV Overlay Tool · by LazyAF'), 'the watermark text');
+  assert.match(js, /watermarkLogo\.hidden = true;/, 'the banner logo starts hidden too');
+  assert.match(js, /if \(watermarkLogo\) watermarkLogo\.hidden = supporter;/, 'a key hides the logo as well');
+});
+
+test('the draft overlays carry the watermark in their banner, logo included', () => {
+  const publicDir = path.join(__dirname, '..', '..', 'public');
+  for (const file of ['overlay.html', 'overlay-1440.html']) {
+    const html = fs.readFileSync(path.join(publicDir, file), 'utf8');
+    assert.match(html, /<div class="pick-section" data-watermark-slot>/, `${file} marks its banner`);
+  }
+  const png = fs.readFileSync(path.join(publicDir, 'images', 'watermark-logo.png'));
+  assert.strictEqual(png.subarray(1, 4).toString(), 'PNG', 'the logo the banner loads is shipped');
 });
 
 test('the real maker key in the code is a valid Ed25519 public key', () => {
