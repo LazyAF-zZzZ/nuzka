@@ -8,7 +8,7 @@ session with no conversation history should be able to continue from here and
 
 ## 0. Where things stand
 
-**Last updated 2026-09-28: the app is renamed **Nuzka** (§1). Supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
+**Last updated 2026-09-28: 3.2.0 is packed and smoke-tested locally, NOT published (see "Release 3.2.0" below). The app is renamed **Nuzka** (§1). Supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
 
 | Area | State |
 |---|---|
@@ -447,6 +447,7 @@ docs/v2/            v2's plan, guide and notes, for reference
 - **`CONTROL_TOKEN`** is not used by v3 (the server binds 127.0.0.1 only). Revisit if
   the server is ever exposed on the LAN.
 - **Logo size hint visible again** (user noticed it was gone, 2026-09-28). v2 showed it under the  logo buttons; the native Control screen had it only as a tooltip on the logo box. Now a muted  line under Upload / Clear logo (`Control.LogoSize`: square, 184 × 184 px or larger), and the  team profile's `Team.LogoHint` gives the size too. 184 is the largest any overlay draws a logo  (the draft overlay at 1440p; the team card is ~170 at 1440p, the rest smaller).
+- **Release 3.2.0, ready but not published (2026-09-28).** Version bumped in `backend/package.json`  (+ lock) and the csproj; notes in `docs/release-notes/3.2.0.md`; README rewritten for the  public (download, the supporter key table, Stripe, a 7-day refund policy, licence, disclaimer,  developer notes). **The README's contact line is a placeholder** until the user gives an email  or LINE ID. `pack.ps1 -Version 3.2.0` built it (stable channel) and `smoke.ps1 -FreshLicence`  opened a window titled "Nuzka"; the exe says product Nuzka, 3.2.0. Shortcuts: Velopack updates  them when `--packTitle` changes (velopack#67, fixed by PR #165, July 2024; our vpk is newer),  so existing "ROV Overlay Tool" shortcuts should become "Nuzka"; confirm on the first real  update. To publish: the contact, the user's OK, push, a heads-up in `notices.json`, then  `pack.ps1 -Version 3.2.0 -Publish` with `GITHUB_TOKEN` from `gh auth token`.
 
 ## 9. Traps already paid for
 
