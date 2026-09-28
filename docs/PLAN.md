@@ -697,7 +697,7 @@ The user is trying it with a one-month test key. **3.2.0-beta.2** (same way, 202
 - Verified by snapshots in both languages. The Settings button was not clicked in a live
   window: the user's installed app held the single-instance lock.
 
-**Key shop, `cloud/` (S5, built 2026-09-28, not deployed).** User's choice after comparing
+**Key shop, `cloud/` (S5, built 2026-09-28; deployed the same day to `https://nuzka-keys.nuzka.workers.dev` with the Stripe *sandbox* key; `SupporterOffer.ShopUrl` points there. /buy verified to 303 to a `cs_test_` Checkout. Live key not set yet).** User's choice after comparing
 Stripe, Opn/Omise and GB Prime Pay: **Stripe** (sole proprietors allowed in Thailand;
 PromptPay 1.65%, Thai cards 3.65% + ฿10; hosted Checkout, so no payment page of our own).
 - A Cloudflare Worker, plain ESM and Web Crypto only (runs under `node --test` too):

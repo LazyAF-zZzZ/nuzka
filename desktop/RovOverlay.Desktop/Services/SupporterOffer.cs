@@ -14,5 +14,5 @@ public static class SupporterOffer
     // The key shop (cloud/, a Cloudflare Worker in front of Stripe), e.g.
     // "https://nuzka-keys.<account>.workers.dev". "Get a key" opens <ShopUrl>/buy?lang=th|en.
     // Empty until it is deployed: the button then says buying opens soon.
-    public const string ShopUrl = "";
+    public const string ShopUrl = "https://nuzka-keys.nuzka.workers.dev";
 }

@@ -28,3 +28,7 @@ publish/
 *.bak
 Thumbs.db
 .DS_Store
+
+# Cloudflare key shop: wrangler's local cache holds the account id
+cloud/.wrangler/
+cloud/node_modules/
