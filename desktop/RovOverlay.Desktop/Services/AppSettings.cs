@@ -29,6 +29,10 @@ public sealed class AppSettings
     // changed licence can be shown again instead of being assumed.
     public int AgreedLicence { get; set; }
 
+    // The day (yyyy-MM-dd) the supporter-key reminder was last shown, so it comes at
+    // most once a day however often the app restarts.
+    public string? SupporterRemindedOn { get; set; }
+
     // Which sections the operator folded away, by key, so a 128-team roster stays folded
     // the next time the page opens.
     public Dictionary<string, bool> Folds { get; set; } = new();

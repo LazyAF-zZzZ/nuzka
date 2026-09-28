@@ -261,12 +261,12 @@ test('API: paste a key, read it back without the key itself, remove it', async (
 test('API: a bad key gets a 400 with a reason a person can act on', async () => {
   const junk = await request('PUT', '/api/supporter', { key: 'hello' });
   assert.strictEqual(junk.status, 400);
-  assert.strictEqual(junk.body.problem, 'format');
+  assert.strictEqual(junk.body.code, 'format');
   assert.match(junk.body.error, /RVS1-/);
 
   const old = await request('PUT', '/api/supporter', { key: good({ id: 'old2', expires: '2020-01-31' }) });
   assert.strictEqual(old.status, 400);
-  assert.strictEqual(old.body.problem, 'expired');
+  assert.strictEqual(old.body.code, 'expired');
   assert.strictEqual(old.body.status.expires, '2020-01-31');
 
   const missing = await request('PUT', '/api/supporter', {});

@@ -3,6 +3,7 @@
 #
 #   -Action click           press the button showing -Text, in the main window (not in a dialog)
 #   -Action click-dialog    press the button showing -Text, inside an open dialog
+#   -Action set-text        put -Text into the one editable text box on the screen
 #   -Action capture         PrintWindow the main window to -Out (PNG)
 #   -Action capture-dialog  PrintWindow the open dialog to -Out (PNG)
 #   -Action windows         list this process's windows, dialogs included
@@ -129,6 +130,23 @@ switch ($Action) {
         } "'$Text' in a dialog"
         Invoke-Around $element
         "clicked '$Text' in a dialog"
+    }
+    'set-text' {
+        # The only editable text box on the screen gets -Text, as if typed or pasted. Read-only
+        # boxes (the server log) are skipped. More than one editable box is an error, not a guess.
+        $editCondition = New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Edit)
+        $box = Wait-For {
+            $main = Get-MainWindow
+            if (-not $main) { return $null }
+            $editable = @($main.FindAll($Scope::Descendants, $editCondition) | Where-Object {
+                -not $_.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.IsReadOnly
+            })
+            if ($editable.Count -gt 1) { throw "$($editable.Count) editable text boxes on this screen; set-text needs exactly one" }
+            if ($editable.Count -eq 1) { return $editable[0] }
+            return $null
+        } 'an editable text box'
+        $box.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($Text)
+        "typed $($Text.Length) characters"
     }
     'capture' {
         $main = Wait-For { Get-MainWindow } 'the main window'

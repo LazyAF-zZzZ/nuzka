@@ -136,3 +136,8 @@ public sealed record RestoreReport(
 public sealed record RestoreReply(bool Ok, RestoreReport Report);
 
 public sealed record OkReply(bool Ok);
+
+// GET/PUT/DELETE /api/supporter and the 'supporter' socket event (backend/server/store/supporter.ts).
+// State is "none", "active", "expired", "revoked", "format" or "signature". Expires is the last
+// valid day, YYYY-MM-DD, Bangkok time.
+public sealed record SupporterStatus(bool Active, string State, string? Name, string? Plan, string? Expires, int? DaysLeft);

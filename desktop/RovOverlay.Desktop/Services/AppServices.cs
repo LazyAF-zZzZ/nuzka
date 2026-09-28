@@ -59,6 +59,18 @@ public sealed class AppServices : IAsyncDisposable
 
         socket.On("controlError", node => Toasts.Error(J.Str(node?["message"]) ?? "Control error"));
 
+        // Sent on every connect and on every change: a key pasted or removed, one that
+        // runs out while the app is open, or one the revoked list switches off.
+        socket.On("supporter", node =>
+        {
+            SupporterStatus? status = null;
+            try { status = node?.Deserialize<SupporterStatus>(ApiClient.Json); } catch { /* ignore a malformed push */ }
+            if (status is null) return;
+            Supporter = status;
+            SupporterChanged?.Invoke(status);
+            RemindAboutSupporter(status);
+        });
+
         // The data room carries "something changed, re-read it" pushes. Rooms do not
         // survive a reconnect, so every connect joins again.
         socket.Connected += () =>
@@ -85,6 +97,31 @@ public sealed class AppServices : IAsyncDisposable
     }
 
     public GlobalHotkeyHost? Hotkeys { get; private set; }
+
+    // Null until the server has said; the Settings screen shows "waiting" rather than
+    // guessing "no key".
+    public SupporterStatus? Supporter { get; private set; }
+    public event Action<SupporterStatus>? SupporterChanged;
+
+    // A toast, at most once a day, when a key has a week or less left or has run out.
+    // A toast and not a dialog: this can arrive mid-broadcast, and nothing about a key
+    // is worth interrupting a match for. The date is kept so a restart does not repeat it.
+    private void RemindAboutSupporter(SupporterStatus status)
+    {
+        var soon = status.Active && status.DaysLeft is <= 7;
+        var ranOut = status.State == "expired";
+        if (!soon && !ranOut) return;
+
+        // Invariant: under th-TH, "yyyy" writes the Buddhist year (2569), not 2026.
+        var today = DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        if (Settings.SupporterRemindedOn == today) return;
+        Settings.SupporterRemindedOn = today;
+        Settings.Save();
+
+        var date = SupporterDates.Show(status.Expires);
+        if (soon) Toasts.Info(Loc.F("Supporter.RemindSoon", status.DaysLeft, date));
+        else Toasts.Error(Loc.F("Supporter.RemindExpired", date));
+    }
 
     public string Url(string route) => new Uri(Backend.BaseUri, route.TrimStart('/')).ToString();
 

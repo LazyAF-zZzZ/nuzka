@@ -8,7 +8,7 @@ session with no conversation history should be able to continue from here and
 
 ## 0. Where things stand
 
-**Last updated 2026-09-27: supporter keys S1 and S2 done (§10), S3 next. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
+**Last updated 2026-09-28: supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
 
 | Area | State |
 |---|---|
@@ -360,7 +360,7 @@ docs/v2/            v2's plan, guide and notes, for reference
 | M8 | Release 3.0.0 | done. 3.0.0 could not open a window; **3.0.5** was the first published release and **3.0.6** the first that reached anyone by updating itself |
 | S1 | Supporter key check in the backend (Ed25519, offline) + API + tests (§10) | **done 2026-09-27**, commit after `b493e35`. `domain/supporter.ts`, `store/supporter.ts`, `http/api-supporter.ts`, `tests/supporter.test.ts` (18 tests; 420 in all) |
 | S2 | Watermark on every overlay via `overlay-size.js`, hidden for supporters (§10) | **done 2026-09-27**, commit after `2a1fa96`. In `overlay-size.js`, starts hidden; `data-watermark` per page (draft overlays: `above-draft`, result: `bottom-left`). Placement checked in a browser; **look in OBS not yet confirmed by the user** |
-| S3 | Settings: Supporter section, expiry reminder, Garena/Tencent disclaimer (§10). S1-S3 ship **together** | not started |
+| S3 | Settings: Supporter section, expiry reminder, Garena/Tencent disclaimer (§10). S1-S3 ship **together** | **done 2026-09-28**, commit after `7bec2f0`. Settings section, reminder toast, disclaimer. Clicked through for real with `scripts/uia.ps1` (new `set-text` action) against a throwaway backend |
 | S4 | Key generator on the maker's PC (secret key outside the repo); manual PromptPay sales (§10) | **tool done** in S1 (`backend/tools/supporter-keys.js`, the real pair made 2026-09-27); PromptPay process not started |
 | S5 | Later: sales website on Cloudflare Pages; a gateway issuing the same keys automatically | not started |
 
@@ -439,6 +439,11 @@ docs/v2/            v2's plan, guide and notes, for reference
 
 ## 9. Traps already paid for
 
+- **`"yyyy"` writes the Buddhist year under th-TH.** The app runs with a Thai culture, so
+  `DateTime.Now.ToString("yyyy-MM-dd")` gave `2569-09-28`. Anything stored or compared uses
+  `CultureInfo.InvariantCulture`; only text shown to people should follow the language (found
+  in S3, 2026-09-28). The backup file name in Settings (`rov-overlay-backup-{DateTime.Now:yyyy-MM-dd}`)
+  still follows the culture: not fixed, since a Thai year in a Thai user's file name is harmless.
 - **Do not run anything in `../rov_pickban_overlay`.** Its `npm start` rebuilds its
   `build/` and opens its `data/tournament.db`.
 - **The Browser pane's `preview_start` by name runs v2.** It reads `.claude/launch.json` from the
@@ -591,7 +596,8 @@ dropped: **the user chose keys only, no accounts and no server.**
   expired paste never replaces a good key. A download that is not a JSON array (offline,
   404, captive portal) leaves the old list in force, so going offline never un-revokes.
 - API: `GET /api/supporter` (no token, never returns the key), `PUT` `{ key }` (400 with
-  `problem`: format / signature / expired / revoked and a readable `error`), `DELETE`.
+  `code`: format / signature / expired / revoked and a readable `error`; renamed from
+  `problem` in S3 so `ApiException.Code` picks it up), `DELETE`.
   Socket event **`supporter`** on connect and on every visible change; overlays use it in S2.
 - `startSupporterWatch()` runs from `start()` only (tests never reach the network):
   revoked list from `REVOKED_LIST_URL` (`revoked-keys.json` at the repo root) every 6 h,
@@ -622,6 +628,28 @@ dropped: **the user chose keys only, no accounts and no server.**
   or more of bottom padding, so bottom-right is clear on them.
 - Tests: every `/overlay*` route and `/result` (derived from `PAGES`) loads
   `overlay-size.js` after its own script; the watermark starts hidden.
+
+**Built in S3 (2026-09-28).**
+- Settings, second section (under Language): the hint, a status line with a gold star when
+  active, **Remove key** (confirm first, `danger`), a paste box with a placeholder and
+  **Use this key**. Errors are toasts in the app's language by `code` (`Supporter.Err.*`).
+  **Become a supporter** is hidden while `SettingsViewModel.SupporterPageUrl` is empty,
+  which it is until the maker has a page.
+- `AppServices` listens to the `supporter` socket event (`Supporter`, `SupporterChanged`).
+  Status is null until the server speaks, and the screen says "waiting" rather than "no key".
+- **Reminder:** a toast, never a dialog, when an active key has 7 days or fewer left or a key
+  has run out, at most once a day (`AppSettings.SupporterRemindedOn`, invariant date).
+- Dates show as `2 Oct 2026` / `2 ต.ค. 2569` via `SupporterDates.Show` and `Loc.Instance.Culture`.
+- Disclaimer (`Settings.Disclaimer`) under About, in the same words Spectra uses for Riot.
+- Verified: snapshots of no key, 5 days left (Thai) and expired (English), with the toasts;
+  then `scripts/uia.ps1 -Action set-text` (new) and clicks in a live window against a
+  throwaway backend on port 3000: bad key → error toast; a key wrapped over three lines →
+  accepted with the thank-you; Remove → confirm → gone. The user's real data folder was
+  never written.
+
+**Before S1-S3 can ship:** the user sees the watermark in OBS; prices are chosen; a way to pay
+exists (manual PromptPay is enough); ideally a page for "Become a supporter"; the commits
+are pushed, which also publishes `revoked-keys.json`.
 
 **Not decided yet:** prices and tiers (Spectra: EUR 15/25/40 a month; Thai guess THB 99-199
 a month or 990-1,990 a year), watermark text and corner, perks beyond the watermark, and

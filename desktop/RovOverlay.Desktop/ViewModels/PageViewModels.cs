@@ -74,12 +74,90 @@ public sealed class SettingsViewModel : ObservableObject
         SaveBackupCommand = new AsyncRelayCommand(SaveBackupAsync);
         RestoreCommand = new AsyncRelayCommand(RestoreAsync);
         CheckUpdateCommand = new AsyncRelayCommand(() => Updates.CheckAsync(manual: true));
+        UseKeyCommand = new AsyncRelayCommand(UseKeyAsync);
+        RemoveKeyCommand = new AsyncRelayCommand(RemoveKeyAsync);
+        BecomeSupporterCommand = new RelayCommand(() => Browser.Open(SupporterPageUrl));
+        _services.SupporterChanged += _ => RaiseSupporter();
         Loc.Instance.Changed += () =>
         {
             OnPropertyChanged(nameof(Language));
             OnPropertyChanged(nameof(ModeText));
+            RaiseSupporter();
         };
         RefreshLog();
+    }
+
+    // ---- Supporter (docs/PLAN.md §10) --------------------------------------
+
+    // Where "Become a supporter" goes. Empty until the maker has a page for it, and the
+    // button stays hidden until then rather than opening nothing.
+    public const string SupporterPageUrl = "";
+    public bool HasSupporterPage => SupporterPageUrl.Length > 0;
+
+    private string _keyInput = "";
+    public string KeyInput { get => _keyInput; set => Set(ref _keyInput, value); }
+
+    public ICommand UseKeyCommand { get; }
+    public ICommand RemoveKeyCommand { get; }
+    public ICommand BecomeSupporterCommand { get; }
+
+    public bool IsSupporter => _services.Supporter?.Active == true;
+
+    // A key is saved (working or not), so there is something to remove.
+    public bool HasKey => _services.Supporter is { State: not "none" };
+
+    public string SupporterText
+    {
+        get
+        {
+            var s = _services.Supporter;
+            if (s is null) return Loc.T("Supporter.Offline");
+            var name = s.Name ?? "?";
+            var date = SupporterDates.Show(s.Expires);
+            return s.State switch
+            {
+                "none" => Loc.T("Supporter.None"),
+                "active" when s.DaysLeft is <= 7 => Loc.F("Supporter.ActiveSoon", name, date, s.DaysLeft),
+                "active" => Loc.F("Supporter.Active", name, date),
+                "expired" => Loc.F("Supporter.Expired", name, date),
+                "revoked" => Loc.F("Supporter.Revoked", name),
+                _ => Loc.T("Supporter.Broken")
+            };
+        }
+    }
+
+    private void RaiseSupporter()
+    {
+        OnPropertyChanged(nameof(IsSupporter));
+        OnPropertyChanged(nameof(HasKey));
+        OnPropertyChanged(nameof(SupporterText));
+    }
+
+    // The server checks the key and says why it will not take one; the reason is shown
+    // in the app's language by its code, with the server's English as the fallback.
+    private async Task UseKeyAsync()
+    {
+        if (string.IsNullOrWhiteSpace(KeyInput)) return;
+        try
+        {
+            var status = await _services.Api.PutAsync<SupporterStatus>("/api/supporter", new { key = KeyInput });
+            KeyInput = "";
+            Toasts.Info(Loc.F("Supporter.Thanks", status.Name));
+        }
+        catch (ApiException error) when (error.Status == 400)
+        {
+            var key = $"Supporter.Err.{error.Code}";
+            var text = Loc.T(key);
+            Toasts.Error(text == key ? error.Message : text);
+        }
+    }
+
+    private async Task RemoveKeyAsync()
+    {
+        string[] body = [Loc.T("Supporter.RemoveBody"), Loc.T("Supporter.RemoveBody2")];
+        if (!Dialogs.Confirm(Loc.T("Supporter.RemoveTitle"), body, Loc.T("Supporter.Remove"), danger: true)) return;
+        await _services.Api.DeleteAsync<SupporterStatus>("/api/supporter");
+        Toasts.Info(Loc.T("Supporter.Removed"));
     }
 
     public string Language

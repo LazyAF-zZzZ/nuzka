@@ -30,7 +30,7 @@ export function supporterRoutes(): Router {
     const body = (req.body || {}) as { key?: unknown };
     const result = saveSupporterKey(body.key);
     if (!result.ok) {
-      res.status(400).json({ error: MESSAGES[result.problem], problem: result.problem, ...(result.status ? { status: result.status } : {}) });
+      res.status(400).json({ error: MESSAGES[result.problem], code: result.problem, ...(result.status ? { status: result.status } : {}) });
       return;
     }
     res.json(result.status);
