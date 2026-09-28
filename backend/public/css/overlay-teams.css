@@ -113,14 +113,16 @@ body[data-size="1440"] .tl-stage {
 /* สลับชุด: ทั้งชุดจางออกพร้อมกัน แล้วชุดถัดไปจางเข้าพร้อมกัน ไม่เลื่อน (ผู้ใช้ขอ)
  * ตอนเปิดหน้าก็จางเข้าแบบเดียวกัน ทั้งการ์ดและหัวข้อ
  * .leaving ต้องอยู่หลัง .settled: ชุดที่ถูกบังคับจบไว้แล้วก็ยังต้องจางออกได้
- * ความเจาะจงเท่ากัน ตัวที่มาทีหลังชนะ ส่วน .fading ไม่มี !important
- * .settled จึงยังบังคับจบให้ได้ถ้า OBS หยุดอนิเมชันไว้ */
+ * ความเจาะจงเท่ากัน ตัวที่มาทีหลังชนะ
+ * .fading ต้องไม่ติดเมื่อ .settled มาแล้ว ทั้งที่เวทีและที่การ์ด: .settled ถอดอนิเมชันออก
+ * ถ้า opacity: 0 ของ .fading ยังติดอยู่ การ์ดทั้งหมดหายไปหลังจางเข้าได้วินาทีเดียว
+ * (บั๊กจริงใน beta.20-22 ผู้ใช้เจอบน OBS) */
 .tl-stage.leaving .tl-card {
     animation: tlCardFadeOut 500ms ease forwards !important;
     animation-delay: 0s !important;
 }
 
-.tl-stage.fading .tl-card {
+.tl-stage.fading:not(.settled) .tl-card:not(.settled) {
     opacity: 0;
     transform: none;
     animation: tlCardFadeIn 500ms ease forwards;

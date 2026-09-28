@@ -529,6 +529,13 @@ docs/v2/            v2's plan, guide and notes, for reference
 
 ## 9. Traps already paid for
 
+- **The team list vanished a second after fading in** (beta.20 to .22, found by the user in OBS).
+  `.tl-stage.fading .tl-card { opacity: 0; animation: fade-in forwards }` has the same
+  specificity as the `.settled` rule that forces the end state, and comes later, so once
+  `.settled` removed the animation the cards fell back to opacity 0. Now
+  `.tl-stage.fading:not(.settled) .tl-card:not(.settled)`. My test checked at 150 ms and at the
+  set switch, never in between: **check an animated graphic after its settle timer too.**
+
 - **Boards that shrink to fit measure their cards**, so a card the operator dragged down read
   as overflow and shrank the whole board. `fitToStage()` in teams, analytics, prev and
   standings now runs inside `window.RovLayout.asDesigned()`, which takes the moves off for
