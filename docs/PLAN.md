@@ -701,7 +701,9 @@ The user is trying it with a one-month test key. **3.2.0-beta.2** (same way, 202
 contact for slips go into the Support screen; the commits are pushed, which also publishes
 `revoked-keys.json`.
 
-**Not decided yet:** prices and tiers (Spectra: EUR 15/25/40 a month; Thai guess THB 99-199
+**Price: ฿159 a month** (user, 2026-09-28), in `SupporterOffer.MonthlyPrice`; no yearly price yet, so the yearly row is hidden (`ShowYearly`). Keys for it: `make --name "..." --months 1`.
+
+**Not decided yet:** a yearly price (Spectra: EUR 15/25/40 a month; Thai guess THB 99-199
 a month or 990-1,990 a year), watermark text and corner, perks beyond the watermark, and
 whether the free licence should require shared modified copies to keep the watermark
 (changing it bumps `LicenceVersion`).

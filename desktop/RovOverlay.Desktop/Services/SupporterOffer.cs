@@ -11,7 +11,7 @@ namespace RovOverlay.Desktop.Services;
 public static class SupporterOffer
 {
     // Shown as written, e.g. "฿99".
-    public const string MonthlyPrice = "";
+    public const string MonthlyPrice = "฿159";
     public const string YearlyPrice = "";
 
     // Where people send their payment slip: a LINE, Facebook or other link the button

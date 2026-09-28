@@ -114,6 +114,11 @@ public sealed class SupportViewModel : ObservableObject
 
     public string MonthlyPrice => Price(SupporterOffer.MonthlyPrice, "Support.PerMonth");
     public string YearlyPrice => Price(SupporterOffer.YearlyPrice, "Support.PerYear");
+
+    // With only a monthly price set, "Yearly: coming soon" beside a real number reads as
+    // a promise, so the yearly row stays out until it has a price. Before any price is
+    // set, both rows show "coming soon" together.
+    public bool ShowYearly => SupporterOffer.YearlyPrice.Length > 0 || SupporterOffer.MonthlyPrice.Length == 0;
     private static string Price(string value, string per) =>
         value.Length > 0 ? $"{value} {Loc.T(per)}" : Loc.T("Support.PriceSoon");
 
