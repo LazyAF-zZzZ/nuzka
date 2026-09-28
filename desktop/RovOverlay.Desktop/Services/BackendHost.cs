@@ -34,11 +34,17 @@ public sealed class BackendHost : IDisposable
     private Process? _process;
     private bool _disposed;
 
-    public BackendHost(int port)
+    // attachOnly: connect to a backend already running on the port, never start one. For
+    // tests (--port): a test must never end up starting a backend on the operator's real
+    // data folder because the throwaway one it meant to use was not there (2026-09-28).
+    public BackendHost(int port, bool attachOnly = false)
     {
         Port = port;
+        AttachOnly = attachOnly;
         BaseUri = new Uri($"http://127.0.0.1:{port}/");
     }
+
+    public bool AttachOnly { get; }
 
     public int Port { get; }
     public Uri BaseUri { get; }
@@ -73,6 +79,8 @@ public sealed class BackendHost : IDisposable
             Append($"-- attached to a backend already running on port {Port} (pid {existing.Pid})");
             return;
         }
+
+        if (AttachOnly) throw new BackendException($"No Nuzka server is running on port {Port} to attach to (--port never starts one).");
 
         if (await IsPortTakenAsync()) throw new BackendException(Loc.F("Error.PortBusy", Port));
 

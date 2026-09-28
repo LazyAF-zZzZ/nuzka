@@ -14,6 +14,7 @@
 
 import { flushState } from './store/live-state';
 import { closeDatabase } from './store/db';
+import { takeBackup } from './services/auto-backup';
 
 export function shutdown(code = 0): void {
   try {
@@ -21,6 +22,9 @@ export function shutdown(code = 0): void {
   } catch (error) {
     console.warn(`Could not save state on shutdown: ${(error as Error).message}`);
   }
+  // A last automatic backup (skipped if nothing changed), which also checkpoints the WAL,
+  // so the database file on disk is complete when the app is gone.
+  takeBackup('shutdown');
   try {
     closeDatabase();
   } catch (error) {

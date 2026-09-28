@@ -465,6 +465,24 @@ docs/v2/            v2's plan, guide and notes, for reference
   push, a heads-up in `notices.json`, then `pack.ps1 -Version 3.2.0 -Publish` with
   `GITHUB_TOKEN` from `gh auth token`.
 
+- **Automatic backups (2026-09-28, after the user lost a whole tournament that day).**
+  `server/services/auto-backup.ts`: a backup in the Save-a-backup format (logos included) in
+  `<data>/backups/auto-YYYYMMDD-HHMMSS.json` (UTC) 60 s after any `notifyData` change
+  (`sync.onDataChange`, new), every 15 min, on clean shutdown (`lifecycle.shutdown`), and before
+  any restore. Never written when identical to the newest (sha256 fingerprint in
+  `backups/index.json`, rebuilt from the files if lost) or when there are no teams and no
+  tournaments, so an empty moment can never evict good backups. Newest 30 kept. Every backup ends
+  with `PRAGMA wal_checkpoint(TRUNCATE)`, so the main file is complete: the loss happened because
+  the main file had not been written since 07:31 and the data lived only in the WAL. No backup
+  creates a database that does not exist yet. API: `GET /api/backup/auto` (list, no
+  fingerprints), `POST /api/backup/auto/:name/restore` (name must match the pattern; merge only,
+  never deletes). Settings lists the newest five with Restore, and Open backups folder. Tests:
+  `tests/auto-backup.test.ts` (10). Checked end to end on a throwaway server: seeded 32 teams, a
+  backup appeared a minute later with the WAL at 0 bytes, everything was deleted, no empty backup
+  followed, and Restore brought back 32 teams, the tournament and 112 matches.
+- **`--port <n>` for the desktop app**: attach-only (`BackendHost(port, attachOnly: true)`), never
+  starts a backend and is never saved. Every test of the app goes through it now (CLAUDE.md).
+
 ## 9. Traps already paid for
 
 - **`"yyyy"` writes the Buddhist year under th-TH.** The app runs with a Thai culture, so

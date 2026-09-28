@@ -33,6 +33,17 @@ export interface DataChange {
   teamId?: string | null;
 }
 
+// Listeners inside the server that also want to know (automatic backups). Pages still
+// get the socket signal above; this is for code that is not a page.
+const listeners: ((change: DataChange) => void)[] = [];
+
+export function onDataChange(listener: (change: DataChange) => void): void {
+  listeners.push(listener);
+}
+
 export function notifyData(change: DataChange): void {
   emitToRoom(DATA_ROOM, DATA_EVENT, change);
+  for (const listener of listeners) {
+    try { listener(change); } catch (error) { console.warn(`Data listener failed: ${(error as Error).message}`); }
+  }
 }

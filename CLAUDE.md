@@ -9,6 +9,21 @@ serves the HTML overlays to OBS. The design, decisions, status and traps are in
 **Never modify, build or run anything in `../rov_pickban_overlay`** (v2). Read from it
 only. Even `npm start` there changes its `build/` and opens its database.
 
+## Hard rule: never test against the operator's real data
+
+On 2026-09-28 the user's whole tournament was lost while test runs of the app (snapshots,
+smoke.ps1, betas) kept starting and force-closing backends on the real data folder. Test
+with a throwaway backend and `--port`:
+
+```bash
+ROV_USER_DATA_DIR=<temp>/data ROV_USER_MEDIA_DIR=<temp>/media PORT=3918 node server.js
+RovOverlay.Desktop/bin/Debug/net10.0-windows/RovOverlayTool.exe --port 3918 --page Home --snapshot out.png
+```
+
+`--port` only ever attaches; it never starts a backend of its own. Plain `--snapshot` without
+`--port` still attaches to, or starts, the real one: don't. smoke.ps1 launches the real app on
+purpose, so copy the data folder aside first if the operator has anything in it.
+
 ## Standing rule: keep the plan current
 
 Every change that moves a milestone updates `docs/PLAN.md` in the same change: §0

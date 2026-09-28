@@ -22,6 +22,7 @@ import { teamRoutes } from './http/api-teams';
 import { hotkeyRoutes } from './http/api-hotkeys';
 import { backupRoutes } from './http/api-backup';
 import { supporterRoutes } from './http/api-supporter';
+import { startAutoBackups } from './services/auto-backup';
 import { supporterStatus, onSupporterChange, startSupporterWatch } from './store/supporter';
 import { registerHandlers } from './sockets/handlers';
 import { attachDraftCapture } from './services/live-match';
@@ -166,6 +167,10 @@ export function start(
   // The revoked-keys download and the hourly expiry check. Here and not in
   // createServer, so tests never reach the network.
   startSupporterWatch();
+
+  // Automatic backups and WAL checkpoints (services/auto-backup.ts). Here, not in
+  // createServer, so tests never write backups on their own.
+  startAutoBackups();
 
   server.listen(port, host, () => {
     console.log('===========================================');

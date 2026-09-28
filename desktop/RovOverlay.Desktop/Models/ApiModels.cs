@@ -141,3 +141,7 @@ public sealed record OkReply(bool Ok);
 // State is "none", "active", "expired", "revoked", "format" or "signature". Expires is the last
 // valid day, YYYY-MM-DD, Bangkok time.
 public sealed record SupporterStatus(bool Active, string State, string? Name, string? Plan, string? Expires, int? DaysLeft);
+
+// GET /api/backup/auto (backend/server/services/auto-backup.ts). At is ms since 1970.
+public sealed record AutoBackup(string Name, long At, string Reason, long Bytes, int Teams, int Tournaments, int Matches, int Drafts);
+public sealed record AutoBackupList(string Folder, List<AutoBackup> Backups);

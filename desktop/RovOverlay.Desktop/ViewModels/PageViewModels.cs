@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -72,6 +73,17 @@ public sealed class SettingsViewModel : ObservableObject
         _services = services;
         Supporter = new SupporterPanel(services);
         OpenSupportCommand = new RelayCommand(() => shell.NavigateTo("Support"));
+        RefreshAutoBackupsCommand = new AsyncRelayCommand(LoadAutoBackupsAsync);
+        OpenBackupFolderCommand = new RelayCommand(() => { if (_backupFolder.Length > 0) Browser.OpenFolder(_backupFolder); },
+            () => _backupFolder.Length > 0);
+        // The server writes a backup a minute after data changes, so the list is read again
+        // a little after that, and whenever the connection comes back.
+        _services.DataChanged += c =>
+        {
+            if (c.Topic is "teams" or "tournaments" or "roster" or "matches" or "games") _backupsLater.Run(() => _ = SafeLoadAutoBackupsAsync());
+        };
+        _services.ConnectionChanged += up => { if (up) _ = SafeLoadAutoBackupsAsync(); };
+        _ = SafeLoadAutoBackupsAsync();
         RefreshLogCommand = new RelayCommand(RefreshLog);
         SaveBackupCommand = new AsyncRelayCommand(SaveBackupAsync);
         RestoreCommand = new AsyncRelayCommand(RestoreAsync);
@@ -82,6 +94,51 @@ public sealed class SettingsViewModel : ObservableObject
             OnPropertyChanged(nameof(ModeText));
         };
         RefreshLog();
+    }
+
+    // ---- Automatic backups (backend/server/services/auto-backup.ts) ------------
+
+    private readonly Debouncer _backupsLater = new(70_000);
+    private string _backupFolder = "";
+    private int _moreBackups;
+
+    public ObservableCollection<AutoBackupRow> AutoBackups { get; } = new();
+    public ICommand RefreshAutoBackupsCommand { get; }
+    public ICommand OpenBackupFolderCommand { get; }
+    public bool HasAutoBackups => AutoBackups.Count > 0;
+    public string MoreBackupsText => _moreBackups > 0 ? Loc.F("AutoBackup.More", _moreBackups) : "";
+
+    private async Task SafeLoadAutoBackupsAsync()
+    {
+        try { await LoadAutoBackupsAsync(); } catch { /* the server may still be starting; the next change retries */ }
+    }
+
+    // The newest five are listed; the rest are in the folder.
+    private async Task LoadAutoBackupsAsync()
+    {
+        if (_services.Api is null) return;
+        var list = await _services.Api.GetAsync<AutoBackupList>("/api/backup/auto");
+        _backupFolder = list.Folder ?? "";
+        AutoBackups.Clear();
+        foreach (var b in list.Backups.Take(5)) AutoBackups.Add(new AutoBackupRow(b, RestoreAutoBackupAsync));
+        _moreBackups = Math.Max(0, list.Backups.Count - 5);
+        OnPropertyChanged(nameof(HasAutoBackups));
+        OnPropertyChanged(nameof(MoreBackupsText));
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private async Task RestoreAutoBackupAsync(AutoBackup backup)
+    {
+        string[] body =
+        [
+            Loc.F("AutoBackup.RestoreBody", AutoBackupRow.When(backup.At), backup.Teams, backup.Tournaments),
+            Loc.T("Backup.MergeRule"),
+            Loc.T("AutoBackup.Undo")
+        ];
+        if (!Dialogs.Confirm(Loc.T("AutoBackup.RestoreTitle"), body, Loc.T("Backup.Restore"))) return;
+        var reply = await _services.Api.PostAsync<RestoreReply>($"/api/backup/auto/{Uri.EscapeDataString(backup.Name)}/restore", null);
+        Toasts.Info(Loc.F("Backup.Restored", reply.Report.TeamsAdded, reply.Report.TournamentsAdded));
+        await LoadAutoBackupsAsync();
     }
 
     // ---- Supporter (docs/PLAN.md §10) --------------------------------------
@@ -177,4 +234,23 @@ public sealed class SettingsViewModel : ObservableObject
         var reply = await _services.Api.PostJsonTextAsync<RestoreReply>("/api/backup/restore", "{\"file\":" + text + ",\"mode\":\"merge\"}");
         Toasts.Info(Loc.F("Backup.Restored", reply.Report.TeamsAdded, reply.Report.TournamentsAdded));
     }
+}
+
+// One automatic backup in the Settings list: when, what it holds, and a Restore button.
+public sealed class AutoBackupRow
+{
+    public AutoBackupRow(AutoBackup backup, Func<AutoBackup, Task> restore)
+    {
+        Backup = backup;
+        RestoreCommand = new AsyncRelayCommand(() => restore(backup));
+    }
+
+    public AutoBackup Backup { get; }
+    public ICommand RestoreCommand { get; }
+    public string WhenText => When(Backup.At);
+    public string ContentsText => Loc.F("AutoBackup.Contents", Backup.Teams, Backup.Tournaments, Backup.Matches, Backup.Drafts);
+
+    // Local time, in the app's language: "28 Sept 2026, 19:15" or "28 ก.ย. 2569 19:15".
+    public static string When(long at) =>
+        DateTimeOffset.FromUnixTimeMilliseconds(at).ToLocalTime().ToString("d MMM yyyy  HH:mm", Loc.Instance.Culture);
 }

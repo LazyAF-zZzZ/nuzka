@@ -82,6 +82,42 @@
                         </Button>
                         <Button Content="{svc:T Backup.RestoreButton}" Command="{Binding RestoreCommand}" Margin="8,0,0,0"/>
                     </StackPanel>
+
+                    <!-- Automatic backups: the newest five, each with Restore -->
+                    <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,14,0,12"/>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Content="&#xE72C;"
+                                Command="{Binding RefreshAutoBackupsCommand}" ToolTip="{svc:T Common.Refresh}"/>
+                        <TextBlock Text="{svc:T AutoBackup.Title}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource MutedText}" Text="{svc:T AutoBackup.Hint}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                    <TextBlock Text="{svc:T AutoBackup.None}" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"
+                               Visibility="{Binding HasAutoBackups, Converter={StaticResource BoolToVisInv}}"/>
+                    <ItemsControl ItemsSource="{Binding AutoBackups}" Focusable="False"
+                                  Visibility="{Binding HasAutoBackups, Converter={StaticResource BoolToVis}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,0,0,6">
+                                    <Button DockPanel.Dock="Right" Content="{svc:T Backup.Restore}" Command="{Binding RestoreCommand}"
+                                            MinWidth="84" Margin="10,0,0,0"/>
+                                    <TextBlock DockPanel.Dock="Left" Text="{Binding WhenText}" Width="190" VerticalAlignment="Center"
+                                               FontFamily="{StaticResource MonoFont}" FontSize="12"/>
+                                    <TextBlock Text="{Binding ContentsText}" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <DockPanel Margin="0,4,0,0">
+                        <Button DockPanel.Dock="Left" Command="{Binding OpenBackupFolderCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE838;" FontSize="12" Margin="0,0,7,0"/>
+                                <TextBlock Text="{svc:T AutoBackup.OpenFolder}"/>
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="{Binding MoreBackupsText}" Foreground="{StaticResource MutedBrush}" FontSize="11.5"
+                                   VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </DockPanel>
                 </StackPanel>
             </Border>
 

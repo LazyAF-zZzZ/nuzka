@@ -22,6 +22,7 @@ import { getState, setState, emitState } from '../store/live-state';
 import { defaultState, sanitizeState } from '../domain/match';
 import { carryOverSettings } from '../domain/settings';
 import { releaseLiveMatch } from '../services/live-match';
+import { backupDir, listBackups, restoreBackup } from '../services/auto-backup';
 
 // อ่านผ่าน ROOT_DIR ของ config ไม่ใช่นับ ../ เอาเอง
 //
@@ -76,6 +77,22 @@ export function backupRoutes(): Router {
         tournaments: file.data.tournaments.filter((t) => tournamentIds.has(t.id)).length
       }
     });
+  });
+
+  // Automatic backups (services/auto-backup.ts): the list, newest first, and a restore
+  // that only ever adds back what is missing. The file is read on the server, so a backup
+  // full of logos never has to travel through the app.
+  router.get('/api/backup/auto', requireControl, (_req, res) => {
+    res.json({ folder: backupDir(), backups: listBackups().map(({ fingerprint: _f, ...rest }) => rest) });
+  });
+
+  router.post('/api/backup/auto/:name/restore', requireControl, (req, res) => {
+    const result = restoreBackup(String(req.params.name));
+    if ('error' in result) {
+      res.status(result.status).json({ error: result.error });
+      return;
+    }
+    res.json({ ok: true, report: result.report });
   });
 
   router.post('/api/backup/restore', requireControl, bigJson, (req, res) => {

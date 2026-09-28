@@ -59,7 +59,7 @@ public partial class App : Application
             settings.Save();
         };
 
-        _services = new AppServices(settings);
+        _services = new AppServices(settings, args.Port);
         var shell = new ShellViewModel(_services, args.Page) { OpenOnStart = args.Open, ThenOnStart = args.Then };
         var window = new MainWindow { DataContext = shell };
         if (args.Size is { } size)
@@ -173,9 +173,12 @@ public partial class App : Application
 //   --snapshot <file.png>                      render the window to a PNG and exit
 //   --snapshot-delay <ms>                      wait before the snapshot (default 2500)
 //   --size <width>x<height>                    open at this size, to fit a whole screen in one snapshot
+//   --port <n>                                 connect to a backend already running on port n
+//                                              (a test one with throwaway data); never starts
+//                                              one, and the port is not saved
 // The snapshot switches exist so a screen can be checked without a person at the
 // keyboard; the operator never needs them.
-internal sealed record StartupArgs(string? Page, string? Open, string? Then, string? Language, string? SnapshotPath, int SnapshotDelayMs, System.Windows.Size? Size)
+internal sealed record StartupArgs(string? Page, string? Open, string? Then, string? Language, string? SnapshotPath, int SnapshotDelayMs, System.Windows.Size? Size, int? Port = null)
 {
     public static StartupArgs Parse(string[] args)
     {
@@ -194,6 +197,7 @@ internal sealed record StartupArgs(string? Page, string? Open, string? Then, str
             size = new System.Windows.Size(Math.Clamp(width, 800, 4000), Math.Clamp(height, 600, 4000));
         }
 
-        return new StartupArgs(Value("--page"), Value("--open"), Value("--then"), language, Value("--snapshot"), delay, size);
+        int? port = int.TryParse(Value("--port"), out var p) && p is > 1023 and < 65536 ? p : null;
+        return new StartupArgs(Value("--page"), Value("--open"), Value("--then"), language, Value("--snapshot"), delay, size, port);
     }
 }

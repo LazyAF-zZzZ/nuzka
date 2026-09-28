@@ -12,10 +12,10 @@ namespace RovOverlay.Desktop.Services;
 // bound collections directly.
 public sealed class AppServices : IAsyncDisposable
 {
-    public AppServices(AppSettings settings)
+    public AppServices(AppSettings settings, int? port = null)
     {
         Settings = settings;
-        Backend = new BackendHost(settings.Port);
+        Backend = port is int p ? new BackendHost(p, attachOnly: true) : new BackendHost(settings.Port);
         Updates = new UpdateService(settings);
         Notices = new NoticeService(settings);
     }

@@ -181,7 +181,16 @@ public sealed partial class Loc
         ["Backup.AlreadyHere"] = "Already on this machine: {0} teams, {1} tournaments.",
         ["Backup.MergeRule"] = "Anything already on this machine is kept. Records that are already here are skipped, not replaced.",
         ["Backup.Restore"] = "Restore",
-        ["Backup.Restored"] = "Restored {0} teams and {1} tournaments"
+        ["Backup.Restored"] = "Restored {0} teams and {1} tournaments",
+        ["AutoBackup.Title"] = "Automatic backups",
+        ["AutoBackup.Hint"] = "Nuzka saves a backup by itself about a minute after teams or tournaments change, and every 15 minutes. The newest 30 are kept. Restoring one only adds back what is missing; nothing you have now is deleted.",
+        ["AutoBackup.None"] = "No automatic backups yet. The first one is saved a minute after you add a team or a tournament.",
+        ["AutoBackup.Contents"] = "{0} teams · {1} tournaments · {2} matches · {3} drafts",
+        ["AutoBackup.More"] = "{0} older backups are in the folder.",
+        ["AutoBackup.OpenFolder"] = "Open backups folder",
+        ["AutoBackup.RestoreTitle"] = "Restore this automatic backup?",
+        ["AutoBackup.RestoreBody"] = "Backup from {0}: {1} teams and {2} tournaments.",
+        ["AutoBackup.Undo"] = "What you have now is backed up first, so this can be undone."
     };
 
     private static readonly Dictionary<string, string> ScreensTh = new()
@@ -361,6 +370,15 @@ public sealed partial class Loc
         ["Backup.AlreadyHere"] = "มีอยู่ในเครื่องแล้ว: {0} ทีม {1} ทัวร์นาเมนต์",
         ["Backup.MergeRule"] = "ของที่มีอยู่ในเครื่องแล้วจะไม่ถูกแตะ รายการที่ซ้ำจะถูกข้าม ไม่ใช่เขียนทับ",
         ["Backup.Restore"] = "กู้คืน",
-        ["Backup.Restored"] = "กู้คืนแล้ว {0} ทีม และ {1} ทัวร์นาเมนต์"
+        ["Backup.Restored"] = "กู้คืนแล้ว {0} ทีม และ {1} ทัวร์นาเมนต์",
+        ["AutoBackup.Title"] = "สำรองข้อมูลอัตโนมัติ",
+        ["AutoBackup.Hint"] = "Nuzka สำรองข้อมูลให้เองประมาณหนึ่งนาทีหลังทีมหรือทัวร์นาเมนต์เปลี่ยน และทุก 15 นาที เก็บไว้ 30 ชุดล่าสุด การกู้คืนจะเพิ่มเฉพาะสิ่งที่หายไป ไม่ลบของที่มีอยู่ตอนนี้",
+        ["AutoBackup.None"] = "ยังไม่มีไฟล์สำรองอัตโนมัติ ชุดแรกจะถูกบันทึกหนึ่งนาทีหลังเพิ่มทีมหรือทัวร์นาเมนต์",
+        ["AutoBackup.Contents"] = "{0} ทีม · {1} ทัวร์นาเมนต์ · {2} คู่แข่ง · ดราฟต์ {3} ชุด",
+        ["AutoBackup.More"] = "มีไฟล์สำรองเก่ากว่านี้อีก {0} ชุดในโฟลเดอร์",
+        ["AutoBackup.OpenFolder"] = "เปิดโฟลเดอร์ไฟล์สำรอง",
+        ["AutoBackup.RestoreTitle"] = "กู้คืนจากไฟล์สำรองอัตโนมัตินี้ใช่ไหม",
+        ["AutoBackup.RestoreBody"] = "ไฟล์สำรองเมื่อ {0}: {1} ทีม และ {2} ทัวร์นาเมนต์",
+        ["AutoBackup.Undo"] = "ข้อมูลตอนนี้จะถูกสำรองไว้ก่อน จึงย้อนกลับได้"
     };
 }
