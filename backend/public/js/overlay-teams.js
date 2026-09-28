@@ -39,8 +39,7 @@ let cycleTimer = null;
 // ตอนเปิดตัวแก้ layout (?edit=1) ไม่วน ให้ค้างชุดแรก การ์ดจะได้ไม่เปลี่ยนใต้เมาส์
 const perSet = window.RovOverlay.intParam(params, 'perSet', 32, 4, 64);
 const holdMs = window.RovOverlay.intParam(params, 'seconds', 12, 3, 120) * 1000;
-const EXIT_MS = 420;          // ต้องตรงกับ tlCardOut ใน overlay-teams.css
-const EXIT_STEP_MAX = 14;     // ออกเร็วกว่าเข้า ทั้งชุดจบในราวครึ่งวินาที
+const FADE_MS = 500;          // ต้องตรงกับ tlCardFadeOut / tlCardFadeIn ใน overlay-teams.css
 const cycling = params.get('edit') !== '1';
 
 function splitIntoSets(teams) {
@@ -235,7 +234,8 @@ function fitToStage() {
     grid.style.transform = 'scale(' + scale + ')';
 }
 // วาดหนึ่งชุด total คือจำนวนทีมทั้งทัวร์นาเมนต์ ไม่ใช่ของชุดนี้
-function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1) {
+// fade = ชุดที่สลับเข้ามา จางเข้าทั้งชุดพร้อมกันแทนการไล่เข้าทีละใบ
+function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1, fade = false) {
     const grid = document.getElementById('grid');
     const stage = document.getElementById('stage');
     grid.textContent = '';
@@ -243,6 +243,7 @@ function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1
     if (stage.classList.contains('settled')) document.getElementById('head').classList.add('settled');
     // ชุดก่อนถูกบังคับจบอนิเมชันไว้แล้ว ต้องถอดออก ไม่งั้นชุดใหม่โผล่มาเฉยๆ ไม่ไล่เข้า
     stage.classList.remove('settled', 'leaving');
+    stage.classList.toggle('fading', fade);
 
     const step = staggerFor(teams.length);
     stage.style.setProperty('--stagger', step + 'ms');
@@ -260,10 +261,11 @@ function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1
 
     window.RovOverlay.note(teams.length === 0 ? 'No teams have been added to this tournament yet.' : '');
     fitToStage();
-    settleSoon(teams.length, step);
+    // จางเข้าทั้งชุดพร้อมกัน ตัวสำรองจึงนับเหมือนการ์ดใบเดียว
+    settleSoon(fade ? 1 : teams.length, step);
 }
 
-// ชุดปัจจุบันไหลออกทางขวา แล้วชุดถัดไปไล่เข้าจากซ้ายเหมือนตอนเปิดหน้า
+// ชุดปัจจุบันจางออก แล้วชุดถัดไปจางเข้า ทั้งชุดพร้อมกัน
 //
 // ใช้ตัวจับเวลาล้วนๆ ไม่รอ animationend เหตุผลเดียวกับ settleSoon:
 // OBS หยุด source ที่ไม่ได้ออกอากาศ อนิเมชันขาออกอาจไม่จบ แต่ชุดต้องสลับต่อได้
@@ -273,28 +275,21 @@ function showSets(tournament, teams) {
     const only = window.RovOverlay.intParam(params, 'set', 0, 0, sets.length);
     let index = only ? only - 1 : 0;
 
-    const draw = () => render(tournament, sets[index], teams.length, index + 1, sets.length);
-    draw();
+    const draw = (fade) => render(tournament, sets[index], teams.length, index + 1, sets.length, fade);
+    draw(false);
     if (only || sets.length < 2 || !cycling) return;
 
     const next = () => {
-        const stage = document.getElementById('stage');
-        const count = sets[index].length;
-        const exitStep = Math.min(EXIT_STEP_MAX, Math.floor(300 / Math.max(1, count - 1)));
-        stage.style.setProperty('--exit-stagger', exitStep + 'ms');
-        stage.classList.add('leaving');
+        document.getElementById('stage').classList.add('leaving');
         cycleTimer = setTimeout(() => {
             index = (index + 1) % sets.length;
-            draw();
-            cycleTimer = setTimeout(next, entranceMs(sets[index].length) + holdMs);
-        }, EXIT_MS + exitStep * Math.max(0, count - 1));
+            draw(true);
+            cycleTimer = setTimeout(next, FADE_MS + holdMs);
+        }, FADE_MS);
     };
-    cycleTimer = setTimeout(next, entranceMs(sets[index].length) + holdMs);
-}
-
-// นับเวลาค้างจากตอนที่ใบสุดท้ายเข้ามาครบ ไม่ใช่จากตอนเริ่มวาด
-function entranceMs(count) {
-    return staggerFor(count) * Math.max(0, count - 1) + ENTER_MS;
+    // ชุดแรกยังไล่เข้าทีละใบ นับเวลาค้างจากตอนที่ใบสุดท้ายเข้ามาครบ
+    const first = sets[index].length;
+    cycleTimer = setTimeout(next, staggerFor(first) * Math.max(0, first - 1) + ENTER_MS + holdMs);
 }
 
 async function load() {

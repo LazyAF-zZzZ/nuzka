@@ -104,22 +104,37 @@ body[data-size="1440"] .tl-stage {
     transform: none;
 }
 
-/* สลับชุด: การ์ดไหลออกทางขวาทีละใบ ต้องอยู่หลัง .settled
- * ชุดที่ถูกบังคับจบไว้แล้วก็ยังต้องไหลออกได้ ความเจาะจงเท่ากัน ตัวที่มาทีหลังชนะ */
 .tl-head.settled {
     animation: none !important;
     opacity: 1;
     transform: none;
 }
 
+/* สลับชุด: ทั้งชุดจางออกพร้อมกัน แล้วชุดถัดไปจางเข้าพร้อมกัน ไม่เลื่อน (ผู้ใช้ขอ)
+ * ตอนเปิดหน้าครั้งแรกยังไล่เข้าจากซ้ายทีละใบเหมือนเดิม
+ * .leaving ต้องอยู่หลัง .settled: ชุดที่ถูกบังคับจบไว้แล้วก็ยังต้องจางออกได้
+ * ความเจาะจงเท่ากัน ตัวที่มาทีหลังชนะ ส่วน .fading ไม่มี !important
+ * .settled จึงยังบังคับจบให้ได้ถ้า OBS หยุดอนิเมชันไว้ */
 .tl-stage.leaving .tl-card {
-    animation: tlCardOut 420ms cubic-bezier(0.55, 0, 0.8, 0.3) forwards !important;
-    animation-delay: calc(var(--i, 0) * var(--exit-stagger, 10ms)) !important;
+    animation: tlCardFadeOut 500ms ease forwards !important;
+    animation-delay: 0s !important;
 }
 
-@keyframes tlCardOut {
-    from { opacity: 1; transform: translateX(0); }
-    to   { opacity: 0; transform: translateX(48px); }
+.tl-stage.fading .tl-card {
+    opacity: 0;
+    transform: none;
+    animation: tlCardFadeIn 500ms ease forwards;
+    animation-delay: 0s;
+}
+
+@keyframes tlCardFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@keyframes tlCardFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 @keyframes tlCardIn {
