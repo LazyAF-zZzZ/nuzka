@@ -6,7 +6,7 @@ import {
   sanitizeLayout, sanitizeLayoutEntry, patchLayout, resetSceneLayout
 } from '../server/domain/layout';
 import { sanitizeState, defaultState } from '../server/domain/match';
-import { carryOverSettings } from '../server/domain/settings';
+import { carryOverSettings, sanitizeTeamListPerSet } from '../server/domain/settings';
 
 test('an entry is rounded and clamped', () => {
   assert.deepEqual(sanitizeLayoutEntry({ x: 10.6, y: -99999, s: 9, h: true }), { x: 11, y: -3000, s: 4, h: true });
@@ -91,4 +91,17 @@ test('every broadcast graphic has a layout scene and loads the layout script las
     if (scenes.has(scene) && scene !== 'draft') assert.fail(`${route} and ${scenes.get(scene)} share the scene ${scene}`);
     scenes.set(scene, route);
   }
+});
+
+test('teams per set on the team list: 32 unless set, kept between 4 and 64, and kept across matches', () => {
+  assert.strictEqual(defaultState.teamListPerSet, 32);
+  assert.strictEqual(sanitizeTeamListPerSet(undefined), 32);
+  assert.strictEqual(sanitizeTeamListPerSet('abc'), 32);
+  assert.strictEqual(sanitizeTeamListPerSet(''), 32);
+  assert.strictEqual(sanitizeTeamListPerSet(1), 4);
+  assert.strictEqual(sanitizeTeamListPerSet(500), 64);
+  assert.strictEqual(sanitizeTeamListPerSet('24.4'), 24);
+  const state = sanitizeState({ teamListPerSet: 20 });
+  assert.strictEqual(state.teamListPerSet, 20);
+  assert.strictEqual(carryOverSettings(sanitizeState({}), state).teamListPerSet, 20);
 });

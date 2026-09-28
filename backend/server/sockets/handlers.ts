@@ -31,6 +31,7 @@ import {
 } from '../domain/settings';
 import { deepClone } from '../lib/json';
 import { patchLayout, resetSceneLayout } from '../domain/layout';
+import { sanitizeTeamListPerSet } from '../domain/settings';
 import { getState, emitState, pushUndo, popUndo } from '../store/live-state';
 import {
   setDraftSeconds,
@@ -328,6 +329,11 @@ export function registerHandlers(socket: Socket): void {
 
   // ลากชิ้นส่วนบน overlay ในโหมดแก้ layout ส่งมาทีละชิ้น { scene, key, value }
   // value เป็น null หรือเท่ากับค่าเดิมของหน้า = คืนที่เดิม
+  controlEvent(socket, 'updateTeamListPerSet', ({ perSet }) => {
+    getState().teamListPerSet = sanitizeTeamListPerSet(perSet);
+    emitState();
+  });
+
   controlEvent(socket, 'updateLayout', ({ scene, key, value }) => {
     const state = getState();
     state.layout = patchLayout(state.layout, scene, key, value);

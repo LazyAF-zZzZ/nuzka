@@ -521,6 +521,11 @@ docs/v2/            v2's plan, guide and notes, for reference
   cards do not change under the mouse. Timers only, no `animationend`, for the same OBS reason
   as `settleSoon`. The heading gets `.settled` after its first entrance so a new set does not
   replay it. Layout parts `team-N` are positions within the set.
+  **Teams per set in the app (beta.22):** Design > Team list has a − [n] + box (4..64) bound to
+  `state.teamListPerSet` (carried over, socket `updateTeamListPerSet`, default 32). The overlay
+  waits up to 1.5 s for the first state so it does not draw 32 and then re-split, and re-splits
+  live when the value changes. A `?perSet=` in the URL still wins. The box is read on Enter or
+  on losing focus, not per key, and the state echo does not overwrite it while it has focus.
 
 ## 9. Traps already paid for
 

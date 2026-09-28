@@ -93,6 +93,18 @@ export function sanitizeThemeColor(value: unknown, fallback: string): string {
     : fallback;
 }
 
+// ทีมสูงสุดต่อชุดของหน้า /overlay-teams (ผู้ใช้ขอช่องตั้งค่าในแอพ 2026-09-28)
+// ?perSet= ใน URL ยังชนะค่านี้ ใครใส่ไว้ใน OBS แล้วจะไม่เปลี่ยนเอง
+export const TEAM_LIST_PER_SET_DEFAULT = 32;
+export const TEAM_LIST_PER_SET_RANGE: [number, number] = [4, 64];
+
+export function sanitizeTeamListPerSet(value: unknown): number {
+  const n = Number(value);
+  if (value === null || value === undefined || value === '' || !Number.isFinite(n)) return TEAM_LIST_PER_SET_DEFAULT;
+  const [min, max] = TEAM_LIST_PER_SET_RANGE;
+  return Math.min(max, Math.max(min, Math.round(n)));
+}
+
 export function sanitizeTheme(value: unknown): Theme {
   const source = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>;
   const theme = {} as Theme;
@@ -171,7 +183,7 @@ export function sanitizeSfx(value: unknown): SfxLevels {
 // ตอนทำโหมดทัวร์นาเมนต์ การกดเลือกแมตช์ก็คือการเปลี่ยนแมตช์เหมือนกัน
 // ให้ใช้ทางนี้ อย่าเขียนทับ state ทั้งก้อน
 export const CARRIED_OVER_KEYS = [
-  'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound', 'layout'
+  'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound', 'layout', 'teamListPerSet'
 ] as const;
 
 export type CarriedOverKey = typeof CARRIED_OVER_KEYS[number];

@@ -10,7 +10,7 @@
 //   ?columns=1..6      บังคับจำนวนคอลัมน์ ไม่ใส่ = เลือกให้ตามจำนวนทีม
 //   ?roster=off        ไม่ต้องแสดงรายชื่อผู้เล่น
 //   ?stagger=<ms>      ไม่มีผลแล้ว: ตั้งแต่ 3.2.0 การ์ดจางเข้าทั้งชุดพร้อมกัน ไม่ไล่ทีละใบ
-//   ?perSet=4..64      ทีมสูงสุดต่อชุด ไม่ใส่ = 32
+//   ?perSet=4..64      ทีมสูงสุดต่อชุด ไม่ใส่ = ค่าในแอพ (ดีไซน์ > รายชื่อทีม) ซึ่งเริ่มที่ 32
 //   ?seconds=3..120    ชุดหนึ่งค้างบนจอกี่วินาทีก่อนสลับ ไม่ใส่ = 12
 //   ?set=<n>           แสดงชุดที่ n ชุดเดียว ไม่วน
 //
@@ -37,7 +37,30 @@ let cycleTimer = null;
 // แบ่งชุดแบบเฉลี่ย ไม่ใช่เต็ม 32 แล้วเศษ: 40 ทีมเป็น 20 + 20 ไม่ใช่ 32 + 8
 // การ์ดทุกชุดจึงขนาดเท่ากัน ไม่ใช่ชุดสุดท้ายโหรงเหรงแปดใบใหญ่เบ้อเริ่ม
 // ตอนเปิดตัวแก้ layout (?edit=1) ไม่วน ให้ค้างชุดแรก การ์ดจะได้ไม่เปลี่ยนใต้เมาส์
-const perSet = window.RovOverlay.intParam(params, 'perSet', 32, 4, 64);
+// ?perSet= ใน URL ชนะค่าในแอพ ไม่ใส่ = ตามช่อง "ทีมต่อชุด" ในแอพ ซึ่งมาทาง stateUpdate
+// เปลี่ยนในแอพแล้วหน้านี้แบ่งชุดใหม่ทันที ไม่ต้อง Refresh ใน OBS
+const urlPerSet = params.get('perSet') ? window.RovOverlay.intParam(params, 'perSet', 32, 4, 64) : 0;
+let perSet = urlPerSet || 32;
+let shown = null;             // { tournament, teams } ที่แสดงอยู่ ไว้แบ่งชุดใหม่ตอนค่าเปลี่ยน
+
+// รอ state แรกก่อนวาด ไม่งั้นหน้าจะวาดด้วย 32 แล้วกระพริบแบ่งใหม่ทันทีที่ค่าจริงมาถึง
+// รอไม่เกินหนึ่งวินาทีครึ่ง ต่อเซิร์ฟเวอร์ไม่ได้ก็ยังต้องขึ้นจอ
+/** @type {(value?: unknown) => void} */
+let markStateSeen = () => {};
+const firstState = new Promise((resolve) => {
+    markStateSeen = resolve;
+    setTimeout(resolve, 1500);
+});
+
+socket.on('stateUpdate', (state) => {
+    markStateSeen();
+    if (urlPerSet) return;
+    const n = Number(state && state.teamListPerSet);
+    const next = Number.isInteger(n) && n >= 4 && n <= 64 ? n : 32;
+    if (next === perSet) return;
+    perSet = next;
+    if (shown) showSets(shown.tournament, shown.teams);
+});
 const holdMs = window.RovOverlay.intParam(params, 'seconds', 12, 3, 120) * 1000;
 const FADE_MS = 500;          // ต้องตรงกับ tlCardFadeOut / tlCardFadeIn ใน overlay-teams.css
 const cycling = params.get('edit') !== '1';
@@ -271,6 +294,7 @@ function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1
 // OBS หยุด source ที่ไม่ได้ออกอากาศ อนิเมชันขาออกอาจไม่จบ แต่ชุดต้องสลับต่อได้
 function showSets(tournament, teams) {
     clearTimeout(cycleTimer);
+    shown = { tournament, teams };
     const sets = splitIntoSets(teams);
     const only = window.RovOverlay.intParam(params, 'set', 0, 0, sets.length);
     let index = only ? only - 1 : 0;
@@ -292,6 +316,7 @@ function showSets(tournament, teams) {
 }
 
 async function load() {
+    await firstState;
     const id = await resolveTournamentId();
     if (!id) {
         window.RovOverlay.note('No tournament found. Create one, or add ?tournament=<id> to this URL.');

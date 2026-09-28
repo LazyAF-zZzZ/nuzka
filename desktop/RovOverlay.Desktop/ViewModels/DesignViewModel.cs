@@ -215,6 +215,9 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
 {
     private readonly AppServices _s;
     private readonly Debouncer _themeSend = new(120);
+    private readonly Debouncer _perSetSend = new(250);
+    private int _perSet = 32;
+    private string _perSetText = "32";
     private readonly Dictionary<string, object> _pendingTheme = new();
     private bool _skinEnabled;
     private bool _showPanels = true;
@@ -294,6 +297,9 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
             Toasts.Info(Loc.T("Layout.WasReset"));
         }, () => LayoutScene.Moved > 0);
 
+        PerSetDownCommand = new RelayCommand(() => SetPerSet(_perSet - 1), () => _perSet > PerSetMin);
+        PerSetUpCommand = new RelayCommand(() => SetPerSet(_perSet + 1), () => _perSet < PerSetMax);
+
         services.StateUpdated += OnState;
         Loc.Instance.Changed += OnLanguageChanged;
         if (services.LastState is not null) OnState(services.LastState);
@@ -306,6 +312,43 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
     public ICommand OpenPreviewCommand { get; }
     public ICommand EditLayoutCommand { get; }
     public ICommand ResetLayoutCommand { get; }
+
+    // Teams per set on the Team list overlay (state.teamListPerSet). Sent a moment after the
+    // last change, so holding + does not re-split the overlay on every step.
+    private const int PerSetMin = 4;
+    private const int PerSetMax = 64;
+    public bool PerSetEditing { get; set; }
+    public ICommand PerSetDownCommand { get; }
+    public ICommand PerSetUpCommand { get; }
+
+    // Text rather than int, so a half-typed or empty box is not a binding error; it is
+    // read on Enter or when the box loses focus, and anything unreadable puts back the value.
+    public string PerSetText
+    {
+        get => _perSetText;
+        set
+        {
+            if (!Set(ref _perSetText, value)) return;
+            if (int.TryParse(value, out var n)) SetPerSet(n, fromText: true);
+        }
+    }
+
+    public void CommitPerSetText() => PerSetText = _perSet.ToString();
+
+    private void SetPerSet(int value, bool fromText = false)
+    {
+        var clamped = Math.Clamp(value, PerSetMin, PerSetMax);
+        if (!fromText || clamped == value)
+        {
+            _perSetText = clamped.ToString();
+            OnPropertyChanged(nameof(PerSetText));
+        }
+        if (clamped == _perSet) return;
+        _perSet = clamped;
+        CommandManager.InvalidateRequerySuggested();
+        if (_applying) return;
+        _perSetSend.Run(() => _s.Socket?.EmitAsync("updateTeamListPerSet", new { perSet = _perSet }));
+    }
 
     public IReadOnlyList<LayoutSceneRow> LayoutScenes { get; }
     private LayoutSceneRow _layoutScene;
@@ -411,6 +454,10 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
             ShowPanels = J.Bool(skin?["showPanels"]) != false;
 
             foreach (var slot in Slots) _ = slot.ApplyAsync(J.Int(skin?["slots"]?[slot.Key]), _s);
+
+            // Not while someone is typing in the box: the echo of their own change would
+            // overwrite what they are still typing.
+            if (J.Int(node["teamListPerSet"], 32) is var perSet && perSet != _perSet && !PerSetEditing) SetPerSet(perSet);
 
             foreach (var scene in LayoutScenes) scene.Apply((node["layout"]?[scene.Key] as JsonObject)?.Count ?? 0);
             OnPropertyChanged(nameof(LayoutStatus));

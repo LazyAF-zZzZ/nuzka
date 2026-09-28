@@ -17,6 +17,7 @@ import { sanitizeHero } from './heroes';
 import type { TeamKey, SlotType } from './draft';
 import { DRAFT_SEQUENCE, PICK_COUNT, BAN_COUNT, isSlotId, sanitizeTimer } from './draft';
 import type { OverlaySize, Theme, Hotkeys, SfxLevels, GlobalHotkeys } from './settings';
+import { TEAM_LIST_PER_SET_DEFAULT, sanitizeTeamListPerSet } from './settings';
 import {
   DEFAULT_OVERLAY_SIZE,
   THEME_DEFAULTS,
@@ -98,6 +99,8 @@ export interface GameState {
   // เป็นการตั้งค่าเครื่องมือ ไม่ใช่ข้อมูลของแมตช์ จึงอยู่ใน CARRIED_OVER_KEYS
   // ปิดได้สำหรับรายการที่ให้ทีมเลือกฝั่งเอง
   swapSidesEachRound: boolean;
+  // ทีมสูงสุดต่อชุดของหน้ารายชื่อทีม ดู sanitizeTeamListPerSet
+  teamListPerSet: number;
 }
 
 export interface SlotOwner {
@@ -162,7 +165,8 @@ export const defaultState: GameState = {
   },
   round: FIRST_ROUND,
   rounds: [],
-  swapSidesEachRound: true
+  swapSidesEachRound: true,
+  teamListPerSet: TEAM_LIST_PER_SET_DEFAULT
 };
 
 export function isTeamKey(team: unknown): team is TeamKey {
@@ -322,6 +326,7 @@ export function sanitizeState(state: unknown): GameState {
     round: sanitizeRoundNumber(source.round ?? FIRST_ROUND),
     rounds: sanitizeRounds(source.rounds),
     // เปิดไว้ถ้าไม่ได้บอกว่าปิด ไฟล์ state รุ่นเก่าที่ไม่มีคีย์นี้จึงได้ค่าเริ่มต้นเอง
-    swapSidesEachRound: source.swapSidesEachRound !== false
+    swapSidesEachRound: source.swapSidesEachRound !== false,
+    teamListPerSet: sanitizeTeamListPerSet(source.teamListPerSet)
   });
 }
