@@ -8,7 +8,7 @@ body {
     width: 1920px;
     height: 1080px;
     background: transparent;
-    font-family: 'Kanit', 'Segoe UI', Arial, sans-serif;
+    font-family: var(--ov-font-body, 'Kanit', 'Segoe UI', Arial, sans-serif);
     overflow: hidden;
 }
 
@@ -272,7 +272,7 @@ body {
 
 /* ===== Result overlay polish ===== */
 body {
-    font-family: 'Kanit', "Segoe UI", Arial, sans-serif;
+    font-family: var(--ov-font-body, 'Kanit', 'Segoe UI', Arial, sans-serif);
 }
 
 .result-container {
@@ -390,7 +390,7 @@ body {
 .team-name-text,
 .ban-label-badge,
 .pick-player-name {
-    font-family: 'Kanit', 'Segoe UI', Arial, sans-serif;
+    font-family: var(--ov-font-name, 'Kanit', 'Segoe UI', Arial, sans-serif);
 }
 
 .team-name-text,

@@ -38,6 +38,11 @@
     /* Neutral grey, no blue in it - --ov-text-dim is slate and reads cool
        next to white. For labels that should look like metal, not tint. */
     --ov-silver: #c0c0c0;
+    /* ขอบซ้ายกับป้ายตัวย่อของการ์ดในหน้ารายชื่อทีม กระดานนี้ไม่ได้ใช้เอง
+       แต่ค่าเริ่มต้นของธีมทุกตัวอยู่ที่เดียวกันหมด (ดู tests/theme-defaults.test.ts) */
+    --ov-team-card: #3b82f6;
+    --ov-team-card-bg: #111220;
+    --ov-team-card-radius: 12px;
 
     --ov-type-caption: 14px;
     /* Player names and the tournament name were one token. They start at the
@@ -274,7 +279,7 @@ body {
     width: 1920px;
     height: 1080px;
     background: transparent;
-    font-family: 'Kanit', "Segoe UI", Arial, sans-serif;
+    font-family: var(--ov-font-body, 'Kanit', 'Segoe UI', Arial, sans-serif);
     overflow: hidden;
 }
 
@@ -874,8 +879,16 @@ body {
 .team-center-name,
 .player-name,
 #draftLabel {
-    font-family: 'Kanit', 'Segoe UI', Arial, sans-serif;
+    font-family: var(--ov-font-name, 'Kanit', 'Segoe UI', Arial, sans-serif);
     font-weight: 600;
+}
+
+/* Two of the names above are really headings: the match title and the phase
+   label name the screen, they do not name a team or a player. They share the
+   rule because they share a weight, so the font is split back out here. */
+.match-title,
+#draftLabel {
+    font-family: var(--ov-font-heading, 'Kanit', 'Segoe UI', Arial, sans-serif);
 }
 
 .ban-label,
@@ -899,7 +912,7 @@ body {
 .score-number,
 .timer,
 .position-indicator {
-    font-family: 'Kanit', 'Segoe UI', Arial, sans-serif;
+    font-family: var(--ov-font-number, 'Kanit', 'Segoe UI', Arial, sans-serif);
     font-weight: 900;
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1;

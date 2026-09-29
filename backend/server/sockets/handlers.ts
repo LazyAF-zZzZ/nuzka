@@ -31,7 +31,16 @@ import {
 } from '../domain/settings';
 import { deepClone } from '../lib/json';
 import { patchLayout, resetSceneLayout } from '../domain/layout';
-import { sanitizeTeamListPerSet } from '../domain/settings';
+import {
+  sanitizeTeamListPerSet,
+  sanitizeTeamListAutoText,
+  sanitizeTeamListColumns,
+  sanitizeFontFamily,
+  FONT_ROLES,
+  FONT_SCENES,
+  sanitizeTeamListScrollSpeed,
+  sanitizeTeamListStyle
+} from '../domain/settings';
 import { getState, emitState, pushUndo, popUndo } from '../store/live-state';
 import {
   setDraftSeconds,
@@ -331,6 +340,58 @@ export function registerHandlers(socket: Socket): void {
   // value เป็น null หรือเท่ากับค่าเดิมของหน้า = คืนที่เดิม
   controlEvent(socket, 'updateTeamListPerSet', ({ perSet }) => {
     getState().teamListPerSet = sanitizeTeamListPerSet(perSet);
+    emitState();
+  });
+
+  controlEvent(socket, 'updateTeamListStyle', ({ style }) => {
+    getState().teamListStyle = sanitizeTeamListStyle(style);
+    emitState();
+  });
+
+  controlEvent(socket, 'updateTeamListScrollSpeed', ({ speed }) => {
+    getState().teamListScrollSpeed = sanitizeTeamListScrollSpeed(speed);
+    emitState();
+  });
+
+  controlEvent(socket, 'updateTeamListAutoText', ({ autoText }) => {
+    getState().teamListAutoText = sanitizeTeamListAutoText(autoText);
+    emitState();
+  });
+
+  controlEvent(socket, 'updateTeamListColumns', ({ columns }) => {
+    getState().teamListColumns = sanitizeTeamListColumns(columns);
+    emitState();
+  });
+
+  // scene = 'all' ตั้งให้ทุกหน้า และล้างค่าเฉพาะหน้าของบทบาทนั้นทิ้งด้วย
+  //
+  // ไม่ล้างแล้วจะเกิดอาการ 'กดใช้ทุกหน้าแล้วหน้าที่เคยตั้งไว้ไม่เปลี่ยน' ซึ่งดูเหมือนของเสีย
+  // ผู้ใช้เลือก 'ทุกหน้า' เพราะอยากให้เหมือนกันหมด ไม่ใช่อยากตั้งค่าพื้นหลังที่ถูกทับอยู่ดี
+  controlEvent(socket, 'updateFont', ({ scene, role, family }) => {
+    // ค่าที่มาจาก socket เป็น unknown ต้องกรองให้เหลือคีย์ที่รู้จักก่อนเอาไปใช้เป็น index
+    const key = FONT_ROLES.find((candidate) => candidate === role);
+    if (!key) return;
+
+    const state = getState();
+    const clean = sanitizeFontFamily(family);
+
+    if (scene === 'all') {
+      state.fonts.all[key] = clean;
+      Object.keys(state.fonts.pages).forEach((name) => {
+        const page = state.fonts.pages[name];
+        delete page[key];
+        if (Object.keys(page).length === 0) delete state.fonts.pages[name];
+      });
+    } else {
+      const sceneKey = (FONT_SCENES as readonly string[]).find((candidate) => candidate === scene);
+      if (!sceneKey) return;
+
+      const page = state.fonts.pages[sceneKey] || (state.fonts.pages[sceneKey] = {});
+      if (clean) page[key] = clean;
+      else delete page[key];
+      if (Object.keys(page).length === 0) delete state.fonts.pages[sceneKey];
+    }
+
     emitState();
   });
 

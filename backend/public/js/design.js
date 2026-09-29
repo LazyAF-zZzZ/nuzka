@@ -216,10 +216,10 @@ function renderSkin(skin) {
 // ทั้งสามที่ ไม่งั้นปุ่ม Reset จะพาไปคนละหน้าตากับของเดิม
 const THEME_DEFAULTS = {
   blue: '#38bdf8', red: '#f87171', accent: '#f59e0b',
-  text: '#ffffff', label: '#c0c0c0',
+  text: '#ffffff', label: '#c0c0c0', teamCard: '#3b82f6', teamCardBg: '#111220',
   typeCaption: 14, typePlayer: 22, typeTournament: 18,
   typeTitle: 24, typeScore: 42, typeTimer: 40,
-  logoSize: 138, logoInset: 10
+  logoSize: 138, logoInset: 10, teamCardRadius: 12
 };
 
 // จัดกลุ่มตามตำแหน่งบนแถบ ไม่ใช่ตามชนิดของค่า

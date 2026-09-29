@@ -21,7 +21,7 @@ body {
     width: 1920px;
     height: 1080px;
     background: transparent;
-    font-family: 'Kanit', 'Segoe UI', Arial, sans-serif;
+    font-family: var(--ov-font-body, 'Kanit', 'Segoe UI', Arial, sans-serif);
     overflow: hidden;
 }
 
@@ -38,7 +38,7 @@ body[data-size="1440"] .mu-stage { transform: scale(calc(4 / 3)); transform-orig
 }
 
 .mu-head { flex: 0 0 auto; text-align: center; opacity: 0; transform: translateY(-24px); animation: muIn 480ms cubic-bezier(0.16,0.84,0.32,1) forwards; }
-.mu-title { font-size: 44px; font-weight: 800; letter-spacing: 6px; text-transform: uppercase; color: var(--ov-text); text-shadow: 0 4px 22px rgba(0,0,0,0.85); }
+.mu-title { font-family: var(--ov-font-heading, 'Kanit', 'Segoe UI', Arial, sans-serif); font-size: 44px; font-weight: 800; letter-spacing: 6px; text-transform: uppercase; color: var(--ov-text); text-shadow: 0 4px 22px rgba(0,0,0,0.85); }
 .mu-sub { margin-top: 6px; font-size: 18px; font-weight: 600; letter-spacing: 7px; text-transform: uppercase; color: var(--ov-accent); }
 
 @keyframes muIn { to { opacity: 1; transform: translateY(0); } }
@@ -65,10 +65,10 @@ body[data-size="1440"] .mu-stage { transform: scale(calc(4 / 3)); transform-orig
 .mu-dot { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 12px; }
 .mu-team.blue .mu-dot { background: var(--ov-blue); }
 .mu-team.red .mu-dot { background: var(--ov-red); }
-.mu-name { font-size: 40px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--ov-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mu-name { font-family: var(--ov-font-name, 'Kanit', 'Segoe UI', Arial, sans-serif); font-size: 40px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--ov-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .mu-tally { display: flex; align-items: baseline; gap: 16px; font-weight: 800; }
-.mu-num { font-size: 66px; line-height: 1; color: var(--ov-text); }
+.mu-num { font-family: var(--ov-font-number, 'Kanit', 'Segoe UI', Arial, sans-serif); font-size: 66px; line-height: 1; color: var(--ov-text); }
 .mu-num.lead { color: var(--ov-accent); }
 .mu-vs { font-size: 22px; letter-spacing: 4px; color: var(--ov-silver); }
 .mu-scope { grid-column: 1 / -1; text-align: center; font-size: 15px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: var(--ov-silver); }

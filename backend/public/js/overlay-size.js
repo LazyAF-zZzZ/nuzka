@@ -117,13 +117,19 @@
     // The app's shield sits just before the text, a little taller than a capital
     // letter, so the two read as one mark (user's request, 2026-09-28).
     //
+    // That height is 1.8em, not more: at 2.8em the shield rendered 63px against 23px of
+    // text and made the mark 64px tall, which does not fit under a full 32-team list.
+    // The teams overlay at perSet=8 ends its last card at y 1006, leaving a 74px band, so
+    // the mark overlapped the bottom row by 4px. 1.8em with bottom:8px clears it by 25px
+    // (measured, 2026-09-29). Moving it down alone could never buy more than 10px.
+    //
     // A page with a banner marks it <... data-watermark-slot>, and the mark goes inside
     // it instead of in a corner. Being inside the panel, it scales with it at 1440.
     const WATERMARK_TEXT = 'Powered by Nuzka';
     const watermarkStyle = document.createElement('style');
     watermarkStyle.textContent = `
         .rov-watermark {
-            position: fixed; right: 18px; bottom: 14px; z-index: 2147483647;
+            position: fixed; right: 18px; bottom: 8px; z-index: 2147483647;
             display: flex; align-items: center; gap: 0.55em;
             font: 700 23px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 0.04em;
             color: #ffffff;
@@ -135,7 +141,7 @@
         /* The logo is at full strength like the text; a drop shadow stands in for the text shadow,
            which images do not get. */
         .rov-watermark img {
-            height: 2.8em; width: auto;
+            height: 1.8em; width: auto;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
         }
         .rov-watermark[data-corner="top-right"] { top: 14px; bottom: auto; transform-origin: top right; }

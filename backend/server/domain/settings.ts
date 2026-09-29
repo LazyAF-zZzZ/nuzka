@@ -13,10 +13,10 @@ export type OverlaySize = typeof OVERLAY_SIZES[number];
 // ถ้าอ้างกลับไปจะกลายเป็น import วนกัน
 export const DEFAULT_OVERLAY_SIZE: OverlaySize = '1080';
 
-export type ThemeColorKey = 'blue' | 'red' | 'accent' | 'text' | 'label';
+export type ThemeColorKey = 'blue' | 'red' | 'accent' | 'text' | 'label' | 'teamCard' | 'teamCardBg';
 export type ThemeNumberKey =
   | 'typeCaption' | 'typePlayer' | 'typeTournament' | 'typeTitle'
-  | 'typeScore' | 'typeTimer' | 'logoSize' | 'logoInset';
+  | 'typeScore' | 'typeTimer' | 'logoSize' | 'logoInset' | 'teamCardRadius';
 
 export type Theme = Record<ThemeColorKey, string> & Record<ThemeNumberKey, number>;
 
@@ -39,6 +39,12 @@ export const THEME_DEFAULTS: Theme = {
   accent: '#f59e0b',
   text: '#ffffff',
   label: '#c0c0c0',
+  // เส้นขอบซ้ายกับป้ายตัวย่อของการ์ดในหน้ารายชื่อทีม (ผู้ใช้ขอ 2026-09-29)
+  // ค่าเดิมที่เคยฝังไว้ใน overlay-teams.css ใครไม่เคยแตะก็จะได้สีเดิมเป๊ะ
+  teamCard: '#3b82f6',
+  // พื้นการ์ดในหน้ารายชื่อทีม ค่าเดิมคือหยุดแรกของเกรเดียนต์ที่เคยฝังไว้ใน overlay-teams.css
+  // ความโปร่งใสไม่ได้ตั้งค่าได้ ฟุตเทจข้างหลังจึงยังทะลุขึ้นมาเหมือนเดิมเสมอ
+  teamCardBg: '#111220',
   typeCaption: 14,
   typePlayer: 22,
   typeTournament: 18,
@@ -46,7 +52,8 @@ export const THEME_DEFAULTS: Theme = {
   typeScore: 42,
   typeTimer: 40,
   logoSize: 138,
-  logoInset: 10
+  logoInset: 10,
+  teamCardRadius: 12
 };
 
 // ช่วงที่ยอมให้ปรับ กว้างพอให้เล่นได้ แต่ไม่ถึงขั้นทำ layout พัง
@@ -58,10 +65,12 @@ export const THEME_NUMBER_RANGE: Record<ThemeNumberKey, [number, number]> = {
   typeScore: [12, 96],
   typeTimer: [12, 96],
   logoSize: [40, 260],
-  logoInset: [-40, 200]
+  logoInset: [-40, 200],
+  // มุมโค้งของการ์ดในหน้ารายชื่อทีม 0 = มุมฉาก (ผู้ใช้ขอ 2026-09-29)
+  teamCardRadius: [0, 40]
 };
 
-export const THEME_COLOR_KEYS: ThemeColorKey[] = ['blue', 'red', 'accent', 'text', 'label'];
+export const THEME_COLOR_KEYS: ThemeColorKey[] = ['blue', 'red', 'accent', 'text', 'label', 'teamCard', 'teamCardBg'];
 
 // คีย์ลัดของหน้า Control Panel ตั้งค่าได้จากหน้า /hotkeys
 //
@@ -102,6 +111,122 @@ export function sanitizeTeamListPerSet(value: unknown): number {
   const n = Number(value);
   if (value === null || value === undefined || value === '' || !Number.isFinite(n)) return TEAM_LIST_PER_SET_DEFAULT;
   const [min, max] = TEAM_LIST_PER_SET_RANGE;
+  return Math.min(max, Math.max(min, Math.round(n)));
+}
+
+// สไตล์ของหน้า /overlay-teams (ผู้ใช้ขอ 2026-09-29)
+//   sets   = แบ่งเป็นชุดละ teamListPerSet แล้วสลับชุดไปเรื่อยๆ (แบบเดิม)
+//   scroll = ทุกทีมอยู่ในรายการเดียว เลื่อนขึ้นช้าๆ แล้ววนกลับมาเริ่มใหม่
+//
+// ค่าที่อ่านไม่ออกต้องตกมาที่ 'sets' ซึ่งเป็นพฤติกรรมเดิม ไฟล์ state รุ่นเก่า
+// ที่ยังไม่มีคีย์นี้จึงแสดงผลเหมือนก่อนอัปเดตทุกประการ
+export type TeamListStyle = 'sets' | 'scroll';
+export const TEAM_LIST_STYLE_DEFAULT: TeamListStyle = 'sets';
+
+// ตัวอักษรบนการ์ดสลับเป็นสีเข้มเองเมื่อพื้นการ์ดสว่าง (ผู้ใช้ขอ 2026-09-29)
+//
+// เปิดไว้เป็นค่าเริ่มต้น: พื้นเริ่มต้นเป็นสีเข้มอยู่แล้ว ตัวช่วยนี้จึงไม่เปลี่ยนอะไรเลย
+// จนกว่าจะมีคนเลือกพื้นสว่าง ของเดิมของทุกคนจึงหน้าตาเท่าเดิมเป๊ะ
+// ไฟล์ state รุ่นเก่าที่ไม่มีคีย์นี้ก็ได้ true ตามกติกา 'ไม่ได้บอกว่าปิด = เปิด'
+// จำนวนคอลัมน์ของหน้ารายชื่อทีม 0 = เลือกเองตามจำนวนทีม (ผู้ใช้ขอให้เลือกหนึ่งคอลัมน์ได้ 2026-09-29)
+// ?columns= ใน URL ยังชนะค่านี้
+export const TEAM_LIST_COLUMNS_DEFAULT = 0;
+export const TEAM_LIST_COLUMNS_RANGE: [number, number] = [0, 6];
+
+export function sanitizeTeamListColumns(value: unknown): number {
+  const n = Number(value);
+  if (value === null || value === undefined || value === "" || !Number.isFinite(n)) {
+    return TEAM_LIST_COLUMNS_DEFAULT;
+  }
+  const [min, max] = TEAM_LIST_COLUMNS_RANGE;
+  return Math.min(max, Math.max(min, Math.round(n)));
+}
+
+// ฟอนต์ของกราฟิกออกอากาศ (ผู้ใช้ขอ 2026-09-29)
+//
+// เลือกตาม "บทบาทของข้อความ" ไม่ใช่ทีละชิ้น: หัวเรื่อง ชื่อ ตัวเลข และตัวเนื้อความ
+// ตั้งทีเดียวทุกหน้าที่ all แล้วหน้าไหนอยากต่างค่อยทับเฉพาะหน้านั้นที่ pages[scene]
+// ค่าว่าง = ใช้ของเดิมของหน้านั้น ซึ่งคือ Kanit ที่แถมมากับตัวแอพ
+//
+// ชื่อฉากคือ data-layout-scene ของแต่ละหน้า ตัวเดียวกับที่ตัวแก้ layout ใช้อยู่แล้ว
+// (/overlay กับ /overlay-1440 เป็นฉาก 'draft' ด้วยกัน ตั้งทีเดียวได้ทั้งคู่)
+export type FontRole = 'heading' | 'name' | 'number' | 'body';
+export const FONT_ROLES: FontRole[] = ['heading', 'name', 'number', 'body'];
+
+export const FONT_SCENES = [
+  'draft', 'teams', 'standings', 'result', 'analytics',
+  'matchup', 'prev', 'team-card', 'team-drafts'
+] as const;
+
+export type FontChoices = Record<FontRole, string>;
+
+export interface Fonts {
+  all: FontChoices;
+  pages: Record<string, Partial<FontChoices>>;
+}
+
+// ชื่อฟอนต์ถูกยัดลงใน CSS custom property ของกราฟิกที่กำลังออกอากาศ
+//
+// เหลือไว้แค่ตัวอักษร ตัวเลข ช่องว่าง ขีด และขีดล่าง ซึ่งครอบคลุมชื่อฟอนต์จริงเกือบทั้งหมด
+// ชื่อที่มี ; หรือ } หรือเครื่องหมายคำพูดจะพาโค้ด CSS แปลกปลอมเข้าไปในหน้าได้
+// ไฟล์สำรองที่มาจากเครื่องอื่นก็ผ่านทางนี้ จึงกรองที่นี่ ไม่ใช่ที่หน้าเว็บ
+export function sanitizeFontFamily(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  return value.replace(/[^A-Za-z0-9 \-_]/g, '').replace(/\s+/g, ' ').trim().slice(0, 64);
+}
+
+export function emptyFonts(): Fonts {
+  const all = {} as FontChoices;
+  FONT_ROLES.forEach((role) => { all[role] = ''; });
+  return { all, pages: {} };
+}
+
+export function sanitizeFonts(value: unknown): Fonts {
+  const source = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>;
+  const fonts = emptyFonts();
+
+  const all = (source.all && typeof source.all === 'object' ? source.all : {}) as Record<string, unknown>;
+  FONT_ROLES.forEach((role) => { fonts.all[role] = sanitizeFontFamily(all[role]); });
+
+  // ฉากที่ไม่รู้จักถูกทิ้ง ไม่งั้นไฟล์สำรองจะพาคีย์ขยะมาสะสมใน state ได้เรื่อยๆ
+  const pages = (source.pages && typeof source.pages === 'object' ? source.pages : {}) as Record<string, unknown>;
+  FONT_SCENES.forEach((scene) => {
+    const raw = pages[scene];
+    const entry = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+    const out: Partial<FontChoices> = {};
+    FONT_ROLES.forEach((role) => {
+      const family = sanitizeFontFamily(entry[role]);
+      if (family) out[role] = family;
+    });
+    if (Object.keys(out).length > 0) fonts.pages[scene] = out;
+  });
+
+  return fonts;
+}
+
+export const TEAM_LIST_AUTO_TEXT_DEFAULT = true;
+
+export function sanitizeTeamListAutoText(value: unknown): boolean {
+  return value !== false;
+}
+
+export function sanitizeTeamListStyle(value: unknown): TeamListStyle {
+  return value === 'scroll' ? 'scroll' : TEAM_LIST_STYLE_DEFAULT;
+}
+
+// ความเร็วของสไตล์ scroll เป็นพิกเซลต่อวินาทีบนผืน 1920x1080
+//
+// 40px/s = การ์ดสูง ~180px ใช้เวลาราวสี่วินาทีครึ่งต่อแถว ซึ่งพออ่านชื่อทีมทัน
+// โหมด 1440 ขยายทั้งเวทีด้วย 4/3 อยู่แล้ว ความเร็วที่เห็นจริงจึงโตตามเอง
+export const TEAM_LIST_SCROLL_SPEED_DEFAULT = 40;
+export const TEAM_LIST_SCROLL_SPEED_RANGE: [number, number] = [10, 200];
+
+export function sanitizeTeamListScrollSpeed(value: unknown): number {
+  const n = Number(value);
+  if (value === null || value === undefined || value === '' || !Number.isFinite(n)) {
+    return TEAM_LIST_SCROLL_SPEED_DEFAULT;
+  }
+  const [min, max] = TEAM_LIST_SCROLL_SPEED_RANGE;
   return Math.min(max, Math.max(min, Math.round(n)));
 }
 
@@ -183,7 +308,8 @@ export function sanitizeSfx(value: unknown): SfxLevels {
 // ตอนทำโหมดทัวร์นาเมนต์ การกดเลือกแมตช์ก็คือการเปลี่ยนแมตช์เหมือนกัน
 // ให้ใช้ทางนี้ อย่าเขียนทับ state ทั้งก้อน
 export const CARRIED_OVER_KEYS = [
-  'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound', 'layout', 'teamListPerSet'
+  'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound', 'layout', 'teamListPerSet',
+  'teamListStyle', 'teamListScrollSpeed', 'teamListAutoText', 'teamListColumns', 'fonts'
 ] as const;
 
 export type CarriedOverKey = typeof CARRIED_OVER_KEYS[number];

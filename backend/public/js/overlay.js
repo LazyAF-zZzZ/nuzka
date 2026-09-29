@@ -75,6 +75,10 @@ const THEME_VARS = {
     accent: ['--ov-accent', (v) => v],
     text: ['--ov-text', (v) => v],
     label: ['--ov-silver', (v) => v],
+    // ใช้จริงที่หน้ารายชื่อทีม (overlay-teams.css) ไม่ใช่ที่กระดานดราฟต์
+    // แต่เป็นสีของธีมเหมือนกัน จึงต้องมี token กับค่าเริ่มต้นครบชุดเหมือนตัวอื่น
+    teamCard: ['--ov-team-card', (v) => v],
+    teamCardBg: ['--ov-team-card-bg', (v) => v],
     typeCaption: ['--ov-type-caption', (v) => `${v}px`],
     typePlayer: ['--ov-type-player', (v) => `${v}px`],
     typeTournament: ['--ov-type-tournament', (v) => `${v}px`],
@@ -82,7 +86,8 @@ const THEME_VARS = {
     typeScore: ['--ov-type-score', (v) => `${v}px`],
     typeTimer: ['--ov-type-timer', (v) => `${v}px`],
     logoSize: ['--ov-logo-size', (v) => `${v}px`],
-    logoInset: ['--ov-logo-inset', (v) => `${v}px`]
+    logoInset: ['--ov-logo-inset', (v) => `${v}px`],
+    teamCardRadius: ['--ov-team-card-radius', (v) => `${v}px`]
 };
 
 // rgb() needs the channels separately for the borders that use alpha

@@ -35,4 +35,30 @@ public partial class DesignView : UserControl
         PerSetBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
         if (done) vm.PerSetEditing = false;
     }
+
+    // Scroll speed reads the same way, and for the same reason: typing "120" would
+    // otherwise run the overlay at 1 px/s (clamped to 10) on the way through.
+    private void SpeedBox_GotFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (Vm is { } vm) vm.SpeedEditing = true;
+    }
+
+    private void SpeedBox_LostFocus(object sender, KeyboardFocusChangedEventArgs e) => CommitSpeed(done: true);
+
+    private void SpeedBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        CommitSpeed(done: false);
+        SpeedBox.SelectAll();
+        e.Handled = true;
+    }
+
+    private void CommitSpeed(bool done)
+    {
+        SpeedBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+        if (Vm is not { } vm) return;
+        vm.CommitScrollSpeedText();
+        SpeedBox.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
+        if (done) vm.SpeedEditing = false;
+    }
 }

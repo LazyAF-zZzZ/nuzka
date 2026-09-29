@@ -535,8 +535,163 @@ docs/v2/            v2's plan, guide and notes, for reference
   waits up to 1.5 s for the first state so it does not draw 32 and then re-split, and re-splits
   live when the value changes. A `?perSet=` in the URL still wins. The box is read on Enter or
   on losing focus, not per key, and the state echo does not overwrite it while it has focus.
+  **List style (2026-09-29):** Design > Team list also has Sets / Scrolling radio buttons bound
+  to `state.teamListStyle` and a speed box (10..200 px/s) bound to `state.teamListScrollSpeed`,
+  both carried over, sockets `updateTeamListStyle` / `updateTeamListScrollSpeed`, defaults
+  `sets` and 40. An unreadable style falls back to `sets`, so a state file written before this
+  existed looks exactly as it did. Scrolling lays every team out in one list at the same row
+  height as Sets — `teamListPerSet` becomes "how many fill one screen", so the card size does
+  not change between styles — draws the list twice inside `.tl-viewport > .tl-track`, and
+  translates it up by exactly one run plus the gap, so the second copy lands where the first
+  began and the loop has no seam. Only the first screenful gets the one-by-one entrance; the
+  rest start visible, because a card that begins at `opacity: 0` may never appear while OBS has
+  the source stopped. `fitToStage()` is skipped (this list is meant to overrun the screen), and
+  `?edit=1` falls back to Sets so the layout editor still drags a still grid. `?style=` and
+  `?scrollSpeed=` in the URL win over the app. The speed box is greyed out under Sets rather
+  than hidden.
+  **Card colour (2026-09-29):** the card's left stripe and its tag chip both read
+  `state.theme.teamCard`, default `#3b82f6` — the value that used to be hard-coded in
+  `overlay-teams.css`, so a theme nobody has touched draws exactly the card it drew before.
+  It shows as "Team card" in Design > Colours and sizes. It is a real theme colour, so it lives
+  in all three default files that `tests/theme-defaults.test.ts` keeps in step
+  (`THEME_DEFAULTS`, `:root` in `overlay.css`, `THEME_DEFAULTS` in `design.js`) and carries over
+  with the rest of the theme, even though the draft overlay never draws with it — that test
+  requires every theme key to own a `--ov-*` token, and a key wired to only one page would fail
+  it. `overlay-teams.js` derives two more variables from it: `--ov-team-card-rgb` for the tag's
+  `rgba()` fills and `--ov-team-card-soft`, mixed toward white in JS for the tag text, because
+  `color-mix()` is too new for the CEF in older OBS builds and an unsupported function would
+  drop the whole declaration.
+  **Card background (2026-09-29):** `state.theme.teamCardBg`, default `#111220`, shown as
+  "Team card background". One colour drives both stops of the gradient: the second is mixed
+  3.2% toward white in `applyCardColour()`, which reproduces the old hard-coded
+  `rgba(17,18,32,.94) -> rgba(24,25,41,.86)` to within a couple of levels per channel. **The two
+  alpha values stay in the stylesheet and are deliberately not settable**, so whatever colour is
+  picked, the footage behind the overlay still shows through the card; a test asserts they are
+  still there. The names on the card are white and their colour is not tied to this one, so a
+  light background reads at about 1.39:1 and is unreadable (measured).
+  **Dark text on a light card (2026-09-29):** `state.teamListAutoText`, default **on**, the
+  "Dark text on a light card" tick under the card colours; `?autoText=off` in the URL forces
+  white. It compares the real contrast of dark ink and white ink against the chosen background
+  and takes the better one, rather than cutting at one lightness value — yellows and limes are
+  brighter than they look. On by default is safe because the default background is dark, so it
+  changes nothing until someone picks a pale colour: measured 1.39:1 before, 15.53:1 after, and
+  1.22:1 with the tick cleared. Everything drawn on the card hangs off one `--ov-team-card-ink-rgb`
+  (names, roster, borders, the logo well, and the tag text, which mixes toward black instead of
+  white), plus `--ov-team-card-captain`, because flipping only the team name would leave the
+  roster unreadable beneath it. A test forbids a hard-coded white anywhere in the card blocks.
+  **Where the controls live (2026-09-29):** the two card colours and this tick sit in Design >
+  Team list, not in Colours and sizes, which is now the draft overlay's theme alone. They are
+  still ordinary theme colours underneath — `DesignViewModel` keeps them in `TeamListColors`
+  beside `Colors`, and anything that walks every colour must use `AllColors` or the new ones
+  will not take a state update or a language change. The colour row template moved to
+  `DesignView.xaml`'s resources as `ColourRow` so both sections draw the same control.
+  **Card corner radius (2026-09-29):** `state.theme.teamCardRadius`, a theme *number* (0-40,
+  default 12, 0 gives square corners), so it lives in the same three default files and follows
+  the same `--ov-*` token rule as every other theme number. It is still multiplied by `--k`, or
+  a table that shrank to fit would keep full-size corners on half-size cards. The slider sits in
+  Design > Team list beside the card colours, which is why `DesignViewModel` also splits
+  `TeamListNumbers` off `Numbers` — anything walking every number must use `AllNumbers`. The
+  number row template is the shared `NumberRow` resource, the same trick as `ColourRow`.
+  **Columns (2026-09-29):** `state.teamListColumns`, 0 = work it out from the team count (what
+  it always did), 1-6 = fixed; `?columns=` in the URL still wins. Picking 1 gives one tall
+  column. Note the interaction with the roster: player names only draw while `rows <= 6`, and in
+  one column `rows` equals teams-per-set, so a single column shows rosters only at 6 or fewer per
+  set. At 8 the cards are 86px tall and the names are dropped on purpose (verified 2026-09-29).
+
+### Fonts on the broadcast graphics (2026-09-29)
+
+`state.fonts` = `{ all: {role: family}, pages: {scene: {role: family}} }`, carried over with the
+rest of the tool settings. Four roles — `heading`, `name`, `number`, `body` — chosen in Design >
+Fonts, which sits above Team list because it reaches every graphic. "Applies to" picks **All
+pages** or one scene; the scene keys are the `data-layout-scene` values the layout editor already
+uses, so `/overlay` and `/overlay-1440` are both `draft` and are set together. A test fails if a
+broadcast page has a scene the app offers no way to pick.
+
+- **Setting a role for All pages also clears that role from every page override.** Otherwise the
+  operator picks "all pages", a page they once customised does not move, and the app looks
+  broken. Choosing "all" means *make them the same*, not *set a value that stays overridden*.
+- **Kanit stays at the end of every stack** (`"Chosen", 'Kanit', 'Segoe UI', Arial, sans-serif`).
+  The list offers fonts installed on the operator's machine, and nearly all of them are Latin
+  only. Without Kanit behind them a Thai team name drops to Arial mid-broadcast, which is exactly
+  what `fonts.css` warns about. With it, the browser falls back per character: Latin in the
+  chosen face, Thai in Kanit. The app marks a font "(no Thai)" by opening its glyph table and
+  asking for U+0E01, so the operator knows the page will show two faces before they pick.
+- **Font names are sanitised on the server** (`sanitizeFontFamily`: letters, digits, spaces,
+  hyphens, underscores, 64 chars). The name is written into a custom property on a live graphic,
+  so a name carrying `;` or `}` could inject CSS into something on air; backups from another
+  machine come through the same door. The app leaves out families the sanitiser would rewrite,
+  including the `@`-prefixed vertical duplicates Windows lists, rather than offering a font that
+  then arrives as something else. Verified with `Arial; } body { display: none`, which stores as
+  `Arial body display none` and leaves the page rendering.
+- `overlay-fonts.js` is loaded by all ten broadcast pages, like `overlay-size.js`, and sets the
+  four `--ov-font-*` properties. It applies the plain Kanit chain immediately at load, before the
+  socket connects, so a page that cannot reach the server still has fonts and nothing jumps face
+  mid-air. Each stylesheet hands its `body` to `--ov-font-body` and tags its headings, names and
+  numbers; a test fails if a broadcast stylesheet never reads the body role.
+
+### The Design screen is organised by page (2026-09-29)
+
+One "Design for" picker at the top drives the whole screen: the layout editor's scene, the
+fonts scope, and which sections appear. There used to be two page pickers on this screen (the
+layout scene and the fonts "applies to") which could point at different pages at the same time.
+The selected page is remembered in `settings.json` (`DesignPage`), since an operator mostly
+styles the same graphic over and over.
+
+What each page shows, taken from what the stylesheets actually read, not from guesswork:
+
+- **All pages (shared)** — fonts for every graphic, plus the five shared colours. No layout,
+  because there is no one overlay to edit.
+- **Draft overlay** — layout, fonts, shared colours (blue, red, text, label — it never uses
+  accent), text sizes and logo size/inset (`--ov-type-*` and `--ov-logo-*` appear only in
+  `overlay.css`), and its background image slot.
+- **Team list** — layout, fonts, and every team-list setting. No shared colours: it paints
+  with its own card colours only.
+- **Standings** — layout, fonts, shared colours (accent, text, label — no blue or red).
+- **Result** — layout, fonts, and its two background image slots. `result.css` reads no theme
+  colour at all.
+- **Matchup / Previous games / Team card / Team drafts** — layout, fonts, all five shared
+  colours. `team-drafts` has no stylesheet of its own; it loads `overlay-matchup.css`.
+- **Analytics** — layout and fonts only.
+
+- **A shared colour is shown on every page that paints with it, and says which others it
+  moves** ("Shared: changing these also changes Matchup, Previous games, …"). The list is built
+  from `ColourPages` in `DesignViewModel`, which must be kept honest against the stylesheets:
+  a colour that silently reaches further than the label claims is worse than no label.
+  The tick beside them turns the repetition off, leaving them under All pages only. It is on by
+  default and lives in `settings.json`, not in overlay state: it is how this operator likes the
+  screen, not something that goes to air.
+- **Background images follow `data-skin-slots`**, which only `/overlay` (+1440) and `/result`
+  declare, so only those two pages offer them.
+- `DesignViewModel` now keeps `Colors`/`TeamListColors` and `Numbers`/`TeamListNumbers` apart so
+  each section can show its own. **Anything that walks every colour or number must use
+  `AllColors` / `AllNumbers`**, or the split-off rows stop taking state updates and language
+  changes. The constructor sets `_designPage` directly, which skips the setter that keeps the
+  layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
+  exists — and it has to be after, or a remembered page reads a collection that is still null.
 
 ## 9. Traps already paid for
+
+- **A layout group cannot clip its own contents** (2026-09-29). `#grid` on the team list carries
+  `data-layout-items`, and `overlay-layout.js` adds `data-layout-overflow` to a group whenever a
+  part sits outside it, which has `overflow: visible !important` waiting behind it. The scrolling
+  style's list is always outside by design, so the attribute stuck and every card spilled across
+  the whole screen while `overflow: hidden` on `#grid` was silently overridden. The clip now sits
+  on an inner `.tl-viewport`, which carries no `data-layout-*` and so the editor leaves it alone.
+  **Anything that must clip inside a layout group needs its own element to clip on.**
+
+- **The agent preview pane freezes `document.timeline` at 0**, so CSS animations never advance
+  there and a scrolling graphic looks stone dead however correct it is. Do not chase it: read
+  `el.getAnimations()[0]`, set its `currentTime` by hand and read the computed transform back.
+  That proves the keyframes, the distance and the wrap without needing a clock (2026-09-29).
+
+- **A running app serves the overlay files from a bundle fixed at startup** (2026-09-29), so
+  editing `backend/public/js/*` changes nothing on screen until it restarts. Two rounds of
+  "still overlapping" went into a watermark fix that had been correct on disk the whole time.
+  To tell in one step: a brand-new file in `public/js/` comes back 404, and `touch`ing a served
+  file leaves its `Last-Modified` alone. **Check a graphic change on a throwaway backend
+  (`PORT=3918` with temp data dirs), never against the app the operator is running** — and note
+  the installed `current/backend/public` can be an older build than the one being served, so
+  comparing against it proves nothing.
 
 - **The team list vanished a second after fading in** (beta.20 to .22, found by the user in OBS).
   `.tl-stage.fading .tl-card { opacity: 0; animation: fade-in forwards }` has the same

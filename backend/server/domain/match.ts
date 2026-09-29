@@ -17,7 +17,21 @@ import { sanitizeHero } from './heroes';
 import type { TeamKey, SlotType } from './draft';
 import { DRAFT_SEQUENCE, PICK_COUNT, BAN_COUNT, isSlotId, sanitizeTimer } from './draft';
 import type { OverlaySize, Theme, Hotkeys, SfxLevels, GlobalHotkeys } from './settings';
-import { TEAM_LIST_PER_SET_DEFAULT, sanitizeTeamListPerSet } from './settings';
+import {
+  TEAM_LIST_PER_SET_DEFAULT,
+  TEAM_LIST_AUTO_TEXT_DEFAULT,
+  TEAM_LIST_COLUMNS_DEFAULT,
+  TEAM_LIST_SCROLL_SPEED_DEFAULT,
+  TEAM_LIST_STYLE_DEFAULT,
+  sanitizeTeamListPerSet,
+  sanitizeTeamListAutoText,
+  emptyFonts,
+  sanitizeFonts,
+  sanitizeTeamListColumns,
+  sanitizeTeamListScrollSpeed,
+  sanitizeTeamListStyle
+} from './settings';
+import type { Fonts, TeamListStyle } from './settings';
 import {
   DEFAULT_OVERLAY_SIZE,
   THEME_DEFAULTS,
@@ -101,6 +115,19 @@ export interface GameState {
   swapSidesEachRound: boolean;
   // ทีมสูงสุดต่อชุดของหน้ารายชื่อทีม ดู sanitizeTeamListPerSet
   teamListPerSet: number;
+  // สไตล์ของหน้ารายชื่อทีม: 'sets' สลับชุด หรือ 'scroll' เลื่อนวน ดู sanitizeTeamListStyle
+  //
+  // ในสไตล์ scroll ค่า teamListPerSet ยังใช้อยู่ แต่หมายถึง "กี่ใบเต็มหนึ่งจอ"
+  // ขนาดการ์ดจึงเท่าเดิมทั้งสองสไตล์ ต่างกันแค่รายการเลื่อนผ่านแทนที่จะสลับทั้งชุด
+  teamListStyle: TeamListStyle;
+  // ความเร็วของสไตล์ scroll เป็นพิกเซลต่อวินาที ดู sanitizeTeamListScrollSpeed
+  teamListScrollSpeed: number;
+  // สลับตัวอักษรบนการ์ดเป็นสีเข้มเองเมื่อพื้นการ์ดสว่าง ดู sanitizeTeamListAutoText
+  teamListAutoText: boolean;
+  // จำนวนคอลัมน์ของหน้ารายชื่อทีม 0 = เลือกเองตามจำนวนทีม ดู sanitizeTeamListColumns
+  teamListColumns: number;
+  // ฟอนต์ของกราฟิกออกอากาศ แยกตามบทบาทข้อความและตามหน้า ดู sanitizeFonts
+  fonts: Fonts;
 }
 
 export interface SlotOwner {
@@ -166,7 +193,12 @@ export const defaultState: GameState = {
   round: FIRST_ROUND,
   rounds: [],
   swapSidesEachRound: true,
-  teamListPerSet: TEAM_LIST_PER_SET_DEFAULT
+  teamListPerSet: TEAM_LIST_PER_SET_DEFAULT,
+  teamListStyle: TEAM_LIST_STYLE_DEFAULT,
+  teamListScrollSpeed: TEAM_LIST_SCROLL_SPEED_DEFAULT,
+  teamListAutoText: TEAM_LIST_AUTO_TEXT_DEFAULT,
+  teamListColumns: TEAM_LIST_COLUMNS_DEFAULT,
+  fonts: emptyFonts()
 };
 
 export function isTeamKey(team: unknown): team is TeamKey {
@@ -327,6 +359,11 @@ export function sanitizeState(state: unknown): GameState {
     rounds: sanitizeRounds(source.rounds),
     // เปิดไว้ถ้าไม่ได้บอกว่าปิด ไฟล์ state รุ่นเก่าที่ไม่มีคีย์นี้จึงได้ค่าเริ่มต้นเอง
     swapSidesEachRound: source.swapSidesEachRound !== false,
-    teamListPerSet: sanitizeTeamListPerSet(source.teamListPerSet)
+    teamListPerSet: sanitizeTeamListPerSet(source.teamListPerSet),
+    teamListStyle: sanitizeTeamListStyle(source.teamListStyle),
+    teamListScrollSpeed: sanitizeTeamListScrollSpeed(source.teamListScrollSpeed),
+    teamListAutoText: sanitizeTeamListAutoText(source.teamListAutoText),
+    teamListColumns: sanitizeTeamListColumns(source.teamListColumns),
+    fonts: sanitizeFonts(source.fonts)
   });
 }

@@ -11,7 +11,7 @@ body {
     width: 1920px;
     height: 1080px;
     background: transparent;
-    font-family: 'Kanit', 'Segoe UI', Arial, sans-serif;
+    font-family: var(--ov-font-body, 'Kanit', 'Segoe UI', Arial, sans-serif);
     overflow: hidden;
 }
 

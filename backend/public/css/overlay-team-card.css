@@ -74,7 +74,7 @@
 .tc-tile.blue { border-top-color: var(--ov-blue); }
 .tc-tile.red { border-top-color: var(--ov-red); }
 .tc-tile-label { font-size: 13px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--ov-silver); }
-.tc-tile-value { margin-top: 8px; font-size: 52px; font-weight: 800; line-height: 1; color: var(--ov-text); white-space: nowrap; }
+.tc-tile-value { font-family: var(--ov-font-number, 'Kanit', 'Segoe UI', Arial, sans-serif); margin-top: 8px; font-size: 52px; font-weight: 800; line-height: 1; color: var(--ov-text); white-space: nowrap; }
 .tc-tile-detail { margin-top: 8px; font-size: 17px; font-weight: 600; letter-spacing: 1px; color: var(--ov-accent); }
 .tc-tile-detail.none { color: rgba(255,255,255,0.35); }
 .tc-form { margin-top: 12px; display: flex; gap: 8px; }
@@ -104,7 +104,7 @@
 }
 .tc-card .mu-label + .tc-player { border-top: 0; }
 .tc-player-who { min-width: 0; }
-.tc-player-name { font-size: 24px; font-weight: 700; color: var(--ov-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-player-name { font-family: var(--ov-font-name, 'Kanit', 'Segoe UI', Arial, sans-serif); font-size: 24px; font-weight: 700; color: var(--ov-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tc-player-games { font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--ov-silver); }
 .tc-player-heroes { display: flex; gap: 8px; }
 .tc-player-heroes .mu-hero { width: 62px; }
