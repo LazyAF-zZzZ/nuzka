@@ -629,6 +629,29 @@ broadcast page has a scene the app offers no way to pick.
   mid-air. Each stylesheet hands its `body` to `--ov-font-body` and tags its headings, names and
   numbers; a test fails if a broadcast stylesheet never reads the body role.
 
+**Imported fonts (2026-09-29, 3.2.0-beta.34).** The user asked to import font files and use
+them in any text role. Design > Fonts has an "Imported fonts" library (Import font…, Delete)
+above the role boxes, and every role box lists Default, then imported fonts, then installed ones.
+- Files live in `<media>/fonts` with server-made names `f<10 chars>.<ext>` and a `fonts.json`
+  index (name, size, date, Thai), rebuilt from the files if lost (`store/font-files.ts`). The
+  type comes from the first bytes (`00010000`/`true` TTF, `OTTO` OTF, `wOFF`, `wOF2`); `ttcf`
+  collections are refused; 20 MB and 100 fonts at most. API: `GET /api/fonts`,
+  `POST /api/fonts?name=&thai=` (raw body), `DELETE /api/fonts/:id`, and `GET /user-fonts/:id`
+  serving the file by id with its font MIME type and `nosniff`.
+- **No second role system:** an imported font's family is `nzf-<id>`, which passes
+  `sanitizeFontFamily` unchanged, so it is stored in `state.fonts` like an installed family.
+  `overlay-fonts.js` sees the `nzf-` pattern and declares an `@font-face` pointing at
+  `/user-fonts/<id>` once per font; Kanit still follows it in the stack, so Thai falls back.
+  When the file has loaded it fires `rov-fonts`, and the team list, stats board, previous games,
+  standings and the watermark re-measure.
+- Deleting a font clears it from `all` and every page override (`dropFontFamily`) and emits.
+- The app reads the family and face name and whether U+0E01 exists from the file itself (WPF
+  `GlyphTypeface`, TTF/OTF only); WOFF/WOFF2 keep the file name and an unknown Thai flag.
+- On a single page, a blank role box says "Default" although the page follows All pages, which
+  looked broken once an imported font was set for all: each role now shows "All pages: <name>"
+  underneath when it inherits.
+- Imported fonts are not in backups yet (backups carry data and logos, not media like fonts).
+
 ### The Design screen is organised by page (2026-09-29)
 
 One "Design for" picker at the top drives the whole screen: the layout editor's scene, the

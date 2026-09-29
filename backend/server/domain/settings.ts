@@ -175,6 +175,29 @@ export function sanitizeFontFamily(value: unknown): string {
   return value.replace(/[^A-Za-z0-9 \-_]/g, '').replace(/\s+/g, ' ').trim().slice(0, 64);
 }
 
+// เอา family นี้ออกจากทุกบทบาท ทั้งทุกหน้าและเฉพาะหน้า ใช้ตอนลบฟอนต์ที่นำเข้า
+// คืน true ถ้ามีอะไรเปลี่ยน ผู้เรียกจะได้ไม่ส่ง state ซ้ำเมื่อไม่มีใครใช้ฟอนต์นั้นอยู่
+export function dropFontFamily(fonts: Fonts, family: string): boolean {
+  let changed = false;
+  FONT_ROLES.forEach((role) => {
+    if (fonts.all[role] === family) {
+      fonts.all[role] = '';
+      changed = true;
+    }
+  });
+  Object.keys(fonts.pages).forEach((scene) => {
+    const page = fonts.pages[scene]!;
+    FONT_ROLES.forEach((role) => {
+      if (page[role] === family) {
+        delete page[role];
+        changed = true;
+      }
+    });
+    if (Object.keys(page).length === 0) delete fonts.pages[scene];
+  });
+  return changed;
+}
+
 export function emptyFonts(): Fonts {
   const all = {} as FontChoices;
   FONT_ROLES.forEach((role) => { all[role] = ''; });

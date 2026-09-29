@@ -255,3 +255,6 @@ async function load() {
 
 load();
 if (refreshSeconds > 0) setInterval(load, refreshSeconds * 1000);
+
+// ฟอนต์ที่นำเข้าในแอพโหลดมาทีหลัง ตัวหนังสือเปลี่ยนขนาด ต้องย่อให้พอดีจอใหม่ (overlay-fonts.js)
+window.addEventListener('rov-fonts', () => fitToStage());

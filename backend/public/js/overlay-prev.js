@@ -327,3 +327,6 @@ socket.on('stateUpdate', (state) => {
     applyTheme(state.theme);
     render(state);
 });
+
+// ฟอนต์ที่นำเข้าในแอพโหลดมาทีหลัง ตัวหนังสือเปลี่ยนขนาด ต้องย่อให้พอดีจอใหม่ (overlay-fonts.js)
+window.addEventListener('rov-fonts', () => fitToStage());

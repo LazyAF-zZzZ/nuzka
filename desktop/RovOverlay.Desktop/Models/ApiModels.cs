@@ -145,3 +145,9 @@ public sealed record SupporterStatus(bool Active, string State, string? Name, st
 // GET /api/backup/auto (backend/server/services/auto-backup.ts). At is ms since 1970.
 public sealed record AutoBackup(string Name, long At, string Reason, long Bytes, int Teams, int Tournaments, int Matches, int Drafts);
 public sealed record AutoBackupList(string Folder, List<AutoBackup> Backups);
+
+// A font file imported into the app (backend/server/store/font-files.ts). Family is the
+// "nzf-<id>" name state.fonts stores for it; Thai is null when the app could not tell.
+public sealed record ImportedFont(string Id, string File, string Name, long Bytes, double Added, bool? Thai, string Family);
+public sealed record ImportedFontList(List<ImportedFont> Fonts);
+public sealed record ImportedFontReply(bool Ok, ImportedFont? Font);

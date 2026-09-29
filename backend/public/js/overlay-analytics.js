@@ -381,3 +381,6 @@ if (params.get('refresh') && refreshSeconds > 0) {
 }
 
 load();
+
+// ฟอนต์ที่นำเข้าในแอพโหลดมาทีหลัง ตัวหนังสือเปลี่ยนขนาด ต้องย่อให้พอดีจอใหม่ (overlay-fonts.js)
+window.addEventListener('rov-fonts', () => fitToStage());

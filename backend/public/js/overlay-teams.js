@@ -618,16 +618,17 @@ function showList(tournament, teams) {
 
 // ฟอนต์ Kanit โหลดทีหลังได้ ตัวหนังสือเปลี่ยนขนาด ต้องวัดใหม่
 // สไตล์ scroll ต้องคิดระยะเลื่อนใหม่ตามไปด้วย วาดใหม่ทั้งหน้าถูกกว่าไล่แก้ทีละค่า
-if (document.fonts) {
-    document.fonts.ready.then(() => {
-        if (listStyle === 'scroll') {
-            if (shown) showList(shown.tournament, shown.teams);
-            return;
-        }
-        sizeCards();
-        fitToStage();
-    });
+function remeasure() {
+    if (listStyle === 'scroll') {
+        if (shown) showList(shown.tournament, shown.teams);
+        return;
+    }
+    sizeCards();
+    fitToStage();
 }
+if (document.fonts) document.fonts.ready.then(remeasure);
+// ฟอนต์ที่นำเข้าในแอพโหลดทีหลังสุด (overlay-fonts.js ยิงเหตุการณ์นี้เมื่อไฟล์มาถึง)
+window.addEventListener('rov-fonts', remeasure);
 
 async function load() {
     await firstState;

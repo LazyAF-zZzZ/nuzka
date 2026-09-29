@@ -17,6 +17,7 @@ import { stateRoutes } from './http/api-state';
 import { appInfoRoutes } from './http/api-app-info';
 import { importRoutes } from './http/api-import';
 import { mediaRoutes } from './http/api-media';
+import { fontFileRoutes } from './http/api-font-files';
 import { tournamentRoutes } from './http/api-tournaments';
 import { teamRoutes } from './http/api-teams';
 import { hotkeyRoutes } from './http/api-hotkeys';
@@ -92,6 +93,7 @@ export function createApp(): Express {
 
   app.use(stateRoutes());
   app.use(mediaRoutes());
+  app.use(fontFileRoutes());
   app.use(tournamentRoutes());
   app.use(teamRoutes());
   app.use(hotkeyRoutes());

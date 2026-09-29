@@ -27,13 +27,38 @@
         return family ? '"' + family + '", ' + BASE : BASE;
     }
 
+    // ฟอนต์ที่นำเข้ามาเก็บในแอพ มีชื่อ family เป็น "nzf-<id>" (server/domain/font-files.ts)
+    // ไม่ได้ลงไว้ในเครื่อง หน้านี้จึงต้องประกาศ @font-face ให้เองก่อนใช้ ครั้งเดียวต่อฟอนต์
+    // id ผ่าน regex เดียวกับเซิร์ฟเวอร์ก่อนต่อเป็น URL
+    const IMPORTED = /^nzf-(f[a-z0-9]{10})$/;
+    const declared = new Set();
+    const faces = document.createElement('style');
+    document.head.appendChild(faces);
+
+    function declare(family) {
+        const match = IMPORTED.exec(family);
+        if (!match || declared.has(family)) return;
+        declared.add(family);
+        faces.appendChild(document.createTextNode(
+            '@font-face { font-family: "' + family + '"; src: url("/user-fonts/' + match[1] + '");'
+            + ' font-display: block; }\n'));
+        // หน้าที่วัดขนาดตัวหนังสือ (รายชื่อทีม ลายน้ำ) ต้องวัดใหม่เมื่อไฟล์โหลดเสร็จ
+        if (document.fonts && document.fonts.load) {
+            document.fonts.load('16px "' + family + '"')
+                .then(() => window.dispatchEvent(new Event('rov-fonts')))
+                .catch(() => { /* ไฟล์หายหรือเสีย: ตกไปที่ Kanit ตามสาย ไม่ต้องทำอะไร */ });
+        }
+    }
+
     function apply(fonts) {
         const all = (fonts && fonts.all) || {};
         const page = (fonts && fonts.pages && fonts.pages[scene]) || {};
         const root = document.documentElement;
         ROLES.forEach((role) => {
             // ค่าเฉพาะหน้าชนะค่ารวม ค่าว่างแปลว่า "ไม่ได้ตั้ง" จึงตกไปใช้ตัวถัดไป
-            root.style.setProperty('--ov-font-' + role, stack(page[role] || all[role] || ''));
+            const family = page[role] || all[role] || '';
+            declare(family);
+            root.style.setProperty('--ov-font-' + role, stack(family));
         });
     }
 

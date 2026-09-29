@@ -207,12 +207,27 @@ public sealed class FontChoice : ObservableObject
         HasThai = hasThai;
     }
 
+    // A font imported into the app. Its Family is the "nzf-<id>" name the overlay turns into
+    // an @font-face (overlay-fonts.js); people see the name read from inside the file instead.
+    public FontChoice(ImportedFont font)
+    {
+        Family = font.Family;
+        HasThai = font.Thai != false;
+        Imported = font;
+    }
+
     public string Family { get; }
     public bool HasThai { get; }
+    public ImportedFont? Imported { get; }
+
+    // The name alone, for "All pages: <name>" under a role that follows the shared choice.
+    public string DisplayName => Family.Length == 0 ? Loc.T("Fonts.Default") : Imported?.Name ?? Family;
 
     public string Label => Family.Length == 0
         ? Loc.T("Fonts.Default")
-        : HasThai ? Family : Family + "   " + Loc.T("Fonts.NoThai");
+        : Imported is { } f
+            ? f.Name + "   · " + Loc.T("Fonts.ImportedTag") + (HasThai ? "" : "   " + Loc.T("Fonts.NoThai"))
+            : HasThai ? Family : Family + "   " + Loc.T("Fonts.NoThai");
 
     public void RefreshText() => OnPropertyChanged(nameof(Label));
 }
@@ -252,7 +267,7 @@ public sealed class FontRoleRow : ObservableObject
 
     // รายการฟอนต์แขวนไว้ที่แถวเอง ไม่ให้ XAML ต้องไต่ขึ้นไปหา DataContext ของ UserControl
     // ผูกแบบนั้นพังเงียบๆ ตอนย้ายคอนโทรล แล้วจะเหลือ ComboBox ว่างเปล่าโดยไม่มีใครรู้
-    public IReadOnlyList<FontChoice> Options => _owner.SystemFonts;
+    public IReadOnlyList<FontChoice> Options => _owner.FontOptions;
 
     public FontChoice Choice
     {
@@ -273,6 +288,45 @@ public sealed class FontRoleRow : ObservableObject
     }
 
     public void RefreshText() => OnPropertyChanged(nameof(Label));
+
+    // The list was rebuilt under the box: say the choice again so the box shows it.
+    public void Reselect() => OnPropertyChanged(nameof(Choice));
+
+    // On a single page, a role left blank follows All pages. The box can only say "Default",
+    // so this says what the page really shows, e.g. "All pages: Impact". Empty otherwise.
+    private string _inherited = "";
+    public string Inherited => _inherited;
+    public bool HasInherited => _inherited.Length > 0;
+    public void SetInherited(string text)
+    {
+        if (text == _inherited) return;
+        _inherited = text;
+        OnPropertyChanged(nameof(Inherited));
+        OnPropertyChanged(nameof(HasInherited));
+    }
+}
+
+// One imported font in the Design screen's library, with its Delete button.
+public sealed class ImportedFontRow
+{
+    public ImportedFontRow(ImportedFont font, Func<ImportedFont, Task> delete)
+    {
+        Font = font;
+        DeleteCommand = new AsyncRelayCommand(() => delete(font));
+    }
+
+    public ImportedFont Font { get; }
+    public string Name => Font.Name;
+    public string Info
+    {
+        get
+        {
+            var type = Path.GetExtension(Font.File).TrimStart('.').ToUpperInvariant();
+            var size = Font.Bytes >= 1024 * 1024 ? $"{Font.Bytes / 1048576.0:0.0} MB" : $"{Math.Max(1, Font.Bytes / 1024)} KB";
+            return Font.Thai == false ? $"{type} · {size} · {Loc.T("Fonts.NoThai")}" : $"{type} · {size}";
+        }
+    }
+    public ICommand DeleteCommand { get; }
 }
 
 // ตัวเลือกจำนวนคอลัมน์ของหน้ารายชื่อทีม 0 = Auto ซึ่งมีคำแปล ที่เหลือแสดงเป็นตัวเลขตรงๆ
@@ -403,6 +457,11 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
         _columns = ColumnChoices[0];
         _fontScope = FontScopes[0];
         _designPage = DesignPages.FirstOrDefault(p => p.Key == services.Settings.DesignPage) ?? DesignPages[0];
+
+        foreach (var font in SystemFonts) FontOptions.Add(font);
+        ImportFontCommand = new AsyncRelayCommand(ImportFontAsync);
+        services.ConnectionChanged += up => { if (up) _ = SafeLoadImportedFontsAsync(); };
+        _ = SafeLoadImportedFontsAsync();
 
         FontRoles =
         [
@@ -676,6 +735,104 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
 
     public IReadOnlyList<FontRoleRow> FontRoles { get; }
 
+    // What every role box offers: Default, then the imported fonts, then the installed ones.
+    // Imported first because someone who imported a font almost always came to pick it.
+    public ObservableCollection<FontChoice> FontOptions { get; } = [];
+
+    // Font files imported into the app (backend: /api/fonts). Saved in Nuzka's media folder,
+    // so they need no installing on this PC and travel with the app's data, not with Windows.
+    public ObservableCollection<ImportedFontRow> ImportedFonts { get; } = [];
+    public bool HasImportedFonts => ImportedFonts.Count > 0;
+    public ICommand ImportFontCommand { get; }
+
+    private const long FontMaxBytes = 20 * 1024 * 1024;   // backend FONT_MAX_BYTES
+
+    private async Task SafeLoadImportedFontsAsync()
+    {
+        try { await LoadImportedFontsAsync(); }
+        catch { /* not connected yet: ConnectionChanged loads it when the server is there */ }
+    }
+
+    private async Task LoadImportedFontsAsync()
+    {
+        if (_s.Api is null) return;
+        var list = await _s.Api.GetAsync<ImportedFontList>("/api/fonts");
+
+        ImportedFonts.Clear();
+        foreach (var font in list.Fonts) ImportedFonts.Add(new ImportedFontRow(font, DeleteFontAsync));
+        OnPropertyChanged(nameof(HasImportedFonts));
+
+        // Rebuilt in place so every box keeps the same list object. Clearing it makes each box
+        // drop its selection (and send null, which the rows ignore); ApplyFonts then picks the
+        // right entry again, and Reselect makes a box whose choice did not change show it.
+        var was = _applying;
+        _applying = true;
+        try
+        {
+            FontOptions.Clear();
+            FontOptions.Add(SystemFonts[0]);
+            foreach (var font in list.Fonts) FontOptions.Add(new FontChoice(font));
+            foreach (var font in SystemFonts.Skip(1)) FontOptions.Add(font);
+        }
+        finally
+        {
+            _applying = was;
+        }
+        ApplyFonts();
+        foreach (var row in FontRoles) row.Reselect();
+    }
+
+    private async Task ImportFontAsync()
+    {
+        var path = Dialogs.PickOpen($"{Loc.T("Fonts.FileFilter")} (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2");
+        if (path is null || _s.Api is null) return;
+        if (new FileInfo(path).Length > FontMaxBytes)
+        {
+            Toasts.Error(Loc.T("Fonts.TooBig"));
+            return;
+        }
+
+        var (name, thai) = ReadFontInfo(path);
+        var bytes = await File.ReadAllBytesAsync(path);
+        var query = "/api/fonts?name=" + Uri.EscapeDataString(name) + (thai is { } t ? (t ? "&thai=1" : "&thai=0") : "");
+        await _s.Api.PostBytesAsync<ImportedFontReply>(query, bytes, "application/octet-stream");
+        Toasts.Info(Loc.F("Fonts.ImportedToast", name));
+        await LoadImportedFontsAsync();
+    }
+
+    // The name people know the font by, and whether it has Thai letters, read from the file
+    // itself. WPF opens TTF and OTF; WOFF and WOFF2 are web-only, so those keep their file
+    // name and an unknown Thai answer rather than a guess.
+    private static (string Name, bool? Thai) ReadFontInfo(string path)
+    {
+        var fallback = Path.GetFileNameWithoutExtension(path);
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        if (ext is not (".ttf" or ".otf")) return (fallback, null);
+        try
+        {
+            var glyphs = new GlyphTypeface(new Uri(path));
+            var en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+            var family = glyphs.FamilyNames.TryGetValue(en, out var f) ? f : glyphs.FamilyNames.Values.FirstOrDefault();
+            var face = glyphs.FaceNames.TryGetValue(en, out var s) ? s : glyphs.FaceNames.Values.FirstOrDefault();
+            var name = string.IsNullOrWhiteSpace(family) ? fallback
+                : string.IsNullOrWhiteSpace(face) || face is "Regular" or "Normal" ? family : family + " " + face;
+            return (name, glyphs.CharacterToGlyphMap.ContainsKey(0x0E01));   // ก
+        }
+        catch
+        {
+            return (fallback, null);
+        }
+    }
+
+    private async Task DeleteFontAsync(ImportedFont font)
+    {
+        if (_s.Api is null) return;
+        if (!Dialogs.Confirm(Loc.F("Fonts.DeleteTitle", font.Name), [Loc.T("Fonts.DeleteBody")], Loc.T("Fonts.Delete"), danger: true)) return;
+        await _s.Api.DeleteAsync<OkReply>("/api/fonts/" + Uri.EscapeDataString(font.Id));
+        Toasts.Info(Loc.T("Fonts.Deleted"));
+        await LoadImportedFontsAsync();
+    }
+
     private FontScope _fontScope = null!;
     public FontScope FontScope
     {
@@ -742,7 +899,11 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
                 var family = _fontScope.Key == "all"
                     ? J.Str(all?[row.Role]) ?? ""
                     : J.Str(page?[row.Role]) ?? "";
-                row.Apply(SystemFonts.FirstOrDefault(f => f.Family == family) ?? SystemFonts[0]);
+                row.Apply(FontOptions.FirstOrDefault(f => f.Family == family) ?? SystemFonts[0]);
+
+                var shared = J.Str(all?[row.Role]) ?? "";
+                row.SetInherited(_fontScope.Key == "all" || family.Length > 0 ? ""
+                    : Loc.F("Fonts.Inherited", (FontOptions.FirstOrDefault(f => f.Family == shared) ?? SystemFonts[0]).DisplayName));
             }
         }
         finally
@@ -961,9 +1122,10 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
         foreach (var row in AllColors) row.RefreshText();
         foreach (var row in AllNumbers) row.RefreshText();
         foreach (var choice in ColumnChoices) choice.RefreshText();
-        foreach (var font in SystemFonts) font.RefreshText();
+        foreach (var font in FontOptions) font.RefreshText();
         foreach (var scope in FontScopes) scope.RefreshText();
         foreach (var row in FontRoles) row.RefreshText();
+        ApplyFonts();   // the "All pages: ..." notes are in the old language
         foreach (var page in DesignPages) page.RefreshText();
         OnPropertyChanged(nameof(SharedWarning));
         foreach (var scene in LayoutScenes) scene.RefreshText();
