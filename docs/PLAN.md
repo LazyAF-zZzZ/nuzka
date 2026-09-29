@@ -511,6 +511,14 @@ docs/v2/            v2's plan, guide and notes, for reference
   with its count of moved parts; Reset works on the chosen one. The watermark re-picks its
   corner on a `rov-layout` event, since a move changes no content.
 
+- **Team list grid (beta.25, user's request):** the grid comes from the per-set setting, not
+  the cards in the set: up to 16 per set is 2 columns, then one column per 8 (24 = 3 x 8,
+  32 = 4 x 8, up to 6), at least 4 rows (8 = 2 x 4, 16 = 2 x 8). Rows are `1fr` of the height
+  left, and `sizeCards()` measures a card at `--k: 1` and scales everything in it by
+  `--k = rowHeight / natural` (0.5..2.4, stepped down while any card overflows), so the grid
+  ends exactly at the bottom margin. Sets now fill to the setting (40 at 16 = 16 + 16 + 8)
+  instead of splitting evenly, so every set has the same grid and card size. Roster shows
+  when there are 6 rows or fewer. `.dense` is gone. Re-measured after `document.fonts.ready`.
 - **Team list in looping sets (3.2.0-beta.19, user's request).** `/overlay-teams` shows at most
   32 teams at a time (`?perSet=4..64`), split evenly (40 = 20 + 20, so every set has the same
   card size), each held 12 s (`?seconds=3..120`) after its last card is in, then the cards

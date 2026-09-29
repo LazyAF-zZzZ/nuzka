@@ -34,8 +34,9 @@ let cycleTimer = null;
 // ทีมเยอะเกินหนึ่งจอ แบ่งเป็นชุดละไม่เกิน 32 แล้ววนสลับชุดไปเรื่อยๆ (ผู้ใช้ขอ 2026-09-28)
 //
 // เดิมใช้วิธีย่อทั้งตารางให้พอดีจอ 64 ทีมขึ้นไปตัวหนังสือเล็กจนอ่านบนสตรีมไม่ออก
-// แบ่งชุดแบบเฉลี่ย ไม่ใช่เต็ม 32 แล้วเศษ: 40 ทีมเป็น 20 + 20 ไม่ใช่ 32 + 8
-// การ์ดทุกชุดจึงขนาดเท่ากัน ไม่ใช่ชุดสุดท้ายโหรงเหรงแปดใบใหญ่เบ้อเริ่ม
+// ชุดเต็มตามค่าที่ตั้ง ชุดสุดท้ายรับเศษ: 40 ทีม ชุดละ 16 เป็น 16 + 16 + 8
+// ตารางทุกชุดมีช่องเท่ากันตามค่าที่ตั้ง (gridFor) การ์ดชุดสุดท้ายจึงขนาดเท่าชุดอื่น แค่มีช่องว่าง
+// (เดิมแบ่งเฉลี่ย 40 เป็น 20 + 20 เปลี่ยนเมื่อผู้ใช้ขอให้ 16 ต่อชุดเป็น 2 คอลัมน์ 8 แถวเสมอ)
 // ตอนเปิดตัวแก้ layout (?edit=1) ไม่วน ให้ค้างชุดแรก การ์ดจะได้ไม่เปลี่ยนใต้เมาส์
 // ?perSet= ใน URL ชนะค่าในแอพ ไม่ใส่ = ตามช่อง "ทีมต่อชุด" ในแอพ ซึ่งมาทาง stateUpdate
 // เปลี่ยนในแอพแล้วหน้านี้แบ่งชุดใหม่ทันที ไม่ต้อง Refresh ใน OBS
@@ -67,10 +68,8 @@ const cycling = params.get('edit') !== '1';
 
 function splitIntoSets(teams) {
     if (teams.length <= perSet) return [teams];
-    const count = Math.ceil(teams.length / perSet);
-    const size = Math.ceil(teams.length / count);
     const sets = [];
-    for (let i = 0; i < teams.length; i += size) sets.push(teams.slice(i, i + size));
+    for (let i = 0; i < teams.length; i += perSet) sets.push(teams.slice(i, i + perSet));
     return sets;
 }
 
@@ -144,13 +143,48 @@ function logoNode(team) {
     return img;
 }
 
-// จำนวนคอลัมน์ตามจำนวนทีม กว้างที่ใช้ได้คือ 1736px (1920 ลบขอบสองข้าง)
-function columnsFor(count) {
-    if (params.get('columns')) return window.RovOverlay.intParam(params, 'columns', 3, 1, 6);
-    if (count <= 8) return 2;
-    if (count <= 18) return 3;
-    if (count <= 32) return 4;
-    return 5;
+// ตารางของชุด คิดจากจำนวนช่องต่อชุด ไม่ใช่จำนวนการ์ดในชุดนี้ ทุกชุดจึงหน้าตาเดียวกัน
+//
+// ผู้ใช้ขอ: 8 ต่อชุด = 2 คอลัมน์ 4 แถว, 16 ต่อชุด = 2 คอลัมน์ 8 แถว
+// ที่เหลือไล่ต่อแบบเดียวกัน แถวไม่เกินแปด: 24 = 3 x 8, 32 = 4 x 8, 40 = 5 x 8, 48 = 6 x 8
+// อย่างน้อยสี่แถว ทีมน้อยๆ จะได้ไม่เป็นการ์ดยักษ์สูงเต็มจอ
+// กว้างที่ใช้ได้คือ 1736px (1920 ลบขอบสองข้าง)
+function gridFor(slots) {
+    const cols = params.get('columns')
+        ? window.RovOverlay.intParam(params, 'columns', 2, 1, 6)
+        : slots <= 16 ? 2 : Math.min(6, Math.ceil(slots / 8));
+    return { cols, rows: Math.max(4, Math.ceil(slots / cols)) };
+}
+
+// ขนาดการ์ดตอน --k = 1 วัดจากการ์ดจริง แล้วขยาย/ย่อทุกอย่างในการ์ดด้วย --k ให้เต็มช่องพอดี
+//
+// แถวยืดเต็มความสูงที่เหลือ (1fr) การ์ดจึงเต็มช่องเสมอ แต่ของข้างในต้องโตตามด้วย
+// ไม่งั้น 2 x 4 จะเป็นกล่องสูงเกือบสองร้อยพิกเซลที่มีโลโก้เล็กๆ ลอยอยู่กลาง
+// วัดครั้งเดียวต่อการวาด แล้วลดลงทีละนิดถ้ายังล้น (รายชื่อผู้เล่นที่ตัดบรรทัดใหม่เมื่อโตขึ้น)
+const K_MIN = 0.5;
+const K_MAX = 2.4;
+
+function sizeCards() {
+    const grid = document.getElementById('grid');
+    const cards = /** @type {HTMLElement[]} */ (Array.from(grid.children));
+    if (cards.length === 0) return;
+
+    grid.style.setProperty('--k', '1');
+    grid.classList.add('measuring');
+    const natural = Math.max(...cards.map((c) => c.offsetHeight));
+    grid.classList.remove('measuring');
+
+    const rows = Number(grid.style.getPropertyValue('--rows')) || 1;
+    const gap = parseFloat(getComputedStyle(grid).rowGap) || 0;
+    const rowH = (grid.clientHeight - gap * (rows - 1)) / rows;
+    if (!natural || rowH <= 0) return;
+
+    let k = Math.min(K_MAX, Math.max(K_MIN, rowH / natural));
+    for (let i = 0; i < 12; i++) {
+        grid.style.setProperty('--k', k.toFixed(3));
+        if (!cards.some((c) => c.scrollHeight > c.clientHeight + 1) || k <= K_MIN) break;
+        k = Math.max(K_MIN, k * 0.94);
+    }
 }
 
 function teamCard(team, index, showRoster) {
@@ -274,13 +308,18 @@ function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1
         + (setCount > 1 ? `  ·  ${setNo} / ${setCount}` : '');
     document.title = (tournament.name || 'Teams') + ' - ROV Team List';
 
-    grid.style.setProperty('--cols', String(columnsFor(teams.length)));
-    grid.classList.toggle('dense', teams.length > 12);
+    // ช่องต่อชุด = ค่าที่ตั้ง แต่ไม่เกินจำนวนทีมทั้งหมด (ทีมน้อยกว่าชุดเดียวก็ไม่ต้องเผื่อช่อง)
+    const slots = Math.min(perSet, Math.max(1, total));
+    const { cols, rows } = gridFor(slots);
+    grid.style.setProperty('--cols', String(cols));
+    grid.style.setProperty('--rows', String(rows));
 
-    const showRoster = params.get('roster') !== 'off' && teams.length <= 12;
+    // รายชื่อผู้เล่นมีที่พอเฉพาะตอนแถวสูง: ไม่เกินหกแถว
+    const showRoster = params.get('roster') !== 'off' && rows <= 6;
     teams.forEach((team, index) => grid.appendChild(teamCard(team, index, showRoster)));
 
     window.RovOverlay.note(teams.length === 0 ? 'No teams have been added to this tournament yet.' : '');
+    sizeCards();
     fitToStage();
     settleSoon(teams.length, step);
 }
@@ -317,6 +356,9 @@ function showSets(tournament, teams) {
 function entranceMs(count) {
     return staggerFor(count) * Math.max(0, count - 1) + ENTER_MS;
 }
+
+// ฟอนต์ Kanit โหลดทีหลังได้ ตัวหนังสือเปลี่ยนขนาด ต้องวัดใหม่
+if (document.fonts) document.fonts.ready.then(() => { sizeCards(); fitToStage(); });
 
 async function load() {
     await firstState;
