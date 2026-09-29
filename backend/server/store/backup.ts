@@ -20,7 +20,9 @@ import type { DatabaseSync } from 'node:sqlite';
 import type {
   BackupFile, BackupData, BackupImage, BackupTeam, BackupTournament, BackupMatch, BackupGame
 } from '../domain/backup';
-import { BACKUP_FORMAT, BACKUP_VERSION } from '../domain/backup';
+import { BACKUP_FORMAT, BACKUP_VERSION, MAX_FONT_BYTES_IN_FILE } from '../domain/backup';
+import { fontExtOf } from '../domain/font-files';
+import { fontsForBackup, restoreFont } from './font-files';
 import type { ImageExt, SkinSlot } from '../domain/media';
 import {
   SKIN_DIR, LOGO_DIR, SKIN_SLOTS, isSkinSlot, isTeamLogoId,
@@ -41,6 +43,7 @@ export interface RestoreReport {
   gamesAdded: number;
   logosWritten: number;
   skinsWritten: number;
+  fontsWritten: number;
   mode: RestoreMode;
 }
 
@@ -268,7 +271,10 @@ export function createBackupStore(db: DatabaseSync): BackupStore {
       if (image) skins[slot] = image;
     });
 
-    return { teams, tournaments, matches, games, logos, skins, state: null };
+    // ฟอนต์ที่นำเข้า: ไปกับไฟล์สำรองด้วย ย้ายเครื่องหรือกู้หลังข้อมูลหายแล้วหน้าตาไม่เปลี่ยน
+    const fonts = fontsForBackup(MAX_FONT_BYTES_IN_FILE);
+
+    return { teams, tournaments, matches, games, logos, skins, fonts: fonts.fonts, fontsLeftOut: fonts.leftOut, state: null };
   }
 
   function writeImages(data: BackupData): { logos: number; skins: number } {
@@ -297,6 +303,16 @@ export function createBackupStore(db: DatabaseSync): BackupStore {
     });
 
     return { logos: logosWritten, skins: skinsWritten };
+  }
+
+  function writeFonts(data: BackupData): number {
+    let written = 0;
+    (data.fonts || []).forEach((font) => {
+      const body = Buffer.from(font.bytes, 'base64');
+      const ext = fontExtOf(body);   // readFont ตรวจแล้ว ตรวจอีกทีก่อนเขียนไม่เสียอะไร
+      if (ext && restoreFont(font.id, font.name, font.thai, ext, body)) written += 1;
+    });
+    return written;
   }
 
   const store: BackupStore = {
@@ -333,7 +349,7 @@ export function createBackupStore(db: DatabaseSync): BackupStore {
         teamsAdded: 0, teamsSkipped: 0,
         tournamentsAdded: 0, tournamentsSkipped: 0,
         matchesAdded: 0, gamesAdded: 0,
-        logosWritten: 0, skinsWritten: 0,
+        logosWritten: 0, skinsWritten: 0, fontsWritten: 0,
         mode
       };
 
@@ -421,6 +437,7 @@ export function createBackupStore(db: DatabaseSync): BackupStore {
       const written = writeImages(data);
       report.logosWritten = written.logos;
       report.skinsWritten = written.skins;
+      report.fontsWritten = writeFonts(data);
       return report;
     }
   };

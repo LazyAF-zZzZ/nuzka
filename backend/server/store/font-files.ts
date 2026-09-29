@@ -80,6 +80,42 @@ export function addFont(name: unknown, ext: FontExt, body: Buffer, thai: boolean
   return { font };
 }
 
+// ฟอนต์ทั้งหมดสำหรับไฟล์สำรอง เรียงตามลำดับที่นำเข้า หยุดใส่เมื่อรวมกันเกิน maxTotal
+// ที่ไม่ได้ใส่ถูกนับไว้ให้ผู้เรียกบอกต่อ ไม่หายไปเงียบๆ
+export function fontsForBackup(maxTotal: number): { fonts: { id: string; name: string; thai: boolean | null; bytes: string }[]; leftOut: number } {
+  const fonts: { id: string; name: string; thai: boolean | null; bytes: string }[] = [];
+  let total = 0;
+  let leftOut = 0;
+  listFonts().forEach((font) => {
+    let body: Buffer;
+    try {
+      body = fs.readFileSync(path.join(FONT_DIR, font.file));
+    } catch {
+      return;   // หายไประหว่างทาง: ไม่มีอะไรให้สำรอง
+    }
+    if (total + body.length > maxTotal) {
+      leftOut += 1;
+      return;
+    }
+    total += body.length;
+    fonts.push({ id: font.id, name: font.name, thai: font.thai, bytes: body.toString('base64') });
+  });
+  return { fonts, leftOut };
+}
+
+// กู้ฟอนต์หนึ่งตัวจากไฟล์สำรอง ใช้ id เดิม ชื่อ family บนหน้าจอ (nzf-<id>) จึงยังชี้ถูกตัว
+// ไม่เขียนทับของที่มีอยู่ (กฎเดียวกับการกู้ข้อมูลอื่น) คืน true ถ้าเขียนลงไปจริง
+export function restoreFont(id: string, name: string, thai: boolean | null, ext: FontExt, body: Buffer, now = Date.now()): boolean {
+  const fonts = listFonts();
+  if (fonts.some((f) => f.id === id) || fonts.length >= FONT_MAX_COUNT) return false;
+  const file = `${id}.${ext}`;
+  if (!isFontFile(file)) return false;
+  fs.mkdirSync(FONT_DIR, { recursive: true });
+  fs.writeFileSync(path.join(FONT_DIR, file), body);
+  writeIndex([...fonts, { id, file, name: sanitizeFontName(name), bytes: body.length, added: now, thai }]);
+  return true;
+}
+
 // คืนรายการที่ลบไป null = ไม่มีฟอนต์นี้
 export function removeFont(id: unknown): FontEntry | null {
   const fonts = listFonts();

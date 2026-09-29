@@ -20,6 +20,7 @@ import {
   SKIN_MAGIC, SKIN_TYPES, isSafeMediaId, isTeamLogoId, isSkinSlot, LOGO_MAX_BYTES
 } from './media';
 import { MAX_TEAMS } from './tournament';
+import { FONT_MAX_BYTES, FONT_MAX_COUNT, fontExtOf, isFontId, sanitizeFontName } from './font-files';
 
 export const BACKUP_FORMAT = 'rov-overlay-export';
 
@@ -123,6 +124,20 @@ export interface BackupGame {
   players?: { side: string; idx: number; name: string }[];
 }
 
+// ฟอนต์ที่นำเข้า (domain/font-files.ts) ไม่บังคับ: ไฟล์สำรองก่อน 3.2.0 ไม่มี และยังกู้ได้ตามปกติ
+// ไม่มีช่องนามสกุล: ชนิดไฟล์ตัดสินจากไบต์ต้นไฟล์ตอนอ่าน เหมือนตอนอัปโหลด
+export interface BackupFont {
+  id: string;
+  name: string;
+  thai: boolean | null;
+  bytes: string;      // base64
+}
+
+// ฟอนต์ทั้งหมดในไฟล์สำรองหนึ่งไฟล์รวมกันไม่เกินนี้ (ก่อน base64)
+// base64 พองขึ้นหนึ่งในสาม 24 MB จึงกินราว 32 MB เหลือที่ให้ข้อมูลที่เหลือใต้ MAX_FILE_BYTES
+// ถ้าไม่มีเพดานนี้ ไฟล์สำรองที่มีฟอนต์ใหญ่ๆ จะกลายเป็นไฟล์ที่ตัวเองกู้คืนไม่ได้
+export const MAX_FONT_BYTES_IN_FILE = 24 * 1024 * 1024;
+
 export interface BackupData {
   teams: BackupTeam[];
   tournaments: BackupTournament[];
@@ -130,6 +145,9 @@ export interface BackupData {
   games: BackupGame[];
   logos: Record<string, BackupImage>;
   skins: Record<string, BackupImage>;
+  fonts?: BackupFont[];
+  // ฟอนต์ที่ไม่ได้ใส่ในไฟล์นี้เพราะเกิน MAX_FONT_BYTES_IN_FILE บอกไว้ให้หน้ากู้คืนแจ้งผู้ใช้
+  fontsLeftOut?: number;
   state: unknown;
 }
 
@@ -200,6 +218,35 @@ export function readImage(value: unknown): BackupImage | null {
   if (!SKIN_MAGIC[ext](buffer)) return null;
 
   return { ext, bytes: source.bytes };
+}
+
+// ฟอนต์หนึ่งตัวจากไฟล์สำรอง: กฎเดียวกับตอนอัปโหลด
+// id ต้องเป็นแบบที่เซิร์ฟเวอร์สร้าง (มันจะกลายเป็นชื่อไฟล์) และไบต์ต้นไฟล์ต้องเป็นฟอนต์จริง
+export function readFont(value: unknown): BackupFont | null {
+  const source = asRecord(value);
+  if (!isFontId(source.id)) return null;
+  if (typeof source.bytes !== 'string' || source.bytes.length === 0) return null;
+  if (source.bytes.length > Math.ceil(FONT_MAX_BYTES * 4 / 3) + 4) return null;
+  let buffer: Buffer;
+  try {
+    buffer = Buffer.from(source.bytes, 'base64');
+  } catch {
+    return null;
+  }
+  if (buffer.length === 0 || buffer.length > FONT_MAX_BYTES || !fontExtOf(buffer)) return null;
+  return {
+    id: source.id,
+    name: sanitizeFontName(source.name),
+    thai: typeof source.thai === 'boolean' ? source.thai : null,
+    bytes: source.bytes
+  };
+}
+
+function readFonts(value: unknown): BackupFont[] {
+  const seen = new Set<string>();
+  return asArray(value, FONT_MAX_COUNT)
+    .map(readFont)
+    .filter((f): f is BackupFont => f !== null && !seen.has(f.id) && !!seen.add(f.id));
 }
 
 function readImageMap(
@@ -405,6 +452,8 @@ export function readBackup(raw: unknown): ReadResult {
         logos: readImageMap(data.logos, (key) => isTeamLogoId(key)),
         // คีย์ของภาพพื้นหลังเป็นชื่อช่องที่กำหนดไว้ตายตัว ไม่ใช่ข้อความอิสระ
         skins: readImageMap(data.skins, (key) => isSkinSlot(key)),
+        fonts: readFonts(data.fonts),
+        fontsLeftOut: clampNumber(data.fontsLeftOut ?? 0, 0, 1000),
         state: data.state ?? null
       }
     }
@@ -420,6 +469,8 @@ export interface BackupSummary {
   drafts: number;
   logos: number;
   skins: number;
+  fonts: number;
+  fontsLeftOut: number;
   exportedAt: string;
   app: string;
 }
@@ -433,6 +484,8 @@ export function summarise(file: BackupFile): BackupSummary {
     drafts: file.data.games.filter((g) => g.slots.length > 0).length,
     logos: Object.keys(file.data.logos).length,
     skins: Object.keys(file.data.skins).length,
+    fonts: (file.data.fonts || []).length,
+    fontsLeftOut: file.data.fontsLeftOut || 0,
     exportedAt: file.exportedAt,
     app: file.app
   };

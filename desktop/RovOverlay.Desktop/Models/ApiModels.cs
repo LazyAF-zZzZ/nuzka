@@ -117,7 +117,7 @@ public sealed record PlayoffReply(bool Ok, int Promoted);
 
 // ---- Backup ---------------------------------------------------------------
 
-public sealed record BackupSummary(int Teams, int Tournaments, int Matches, int Drafts, int Logos, string? ExportedAt);
+public sealed record BackupSummary(int Teams, int Tournaments, int Matches, int Drafts, int Logos, string? ExportedAt, int Fonts = 0, int FontsLeftOut = 0);
 public sealed record AlreadyHere(int Teams, int Tournaments);
 public sealed record BackupPreview(BackupSummary Summary, AlreadyHere AlreadyHere);
 public sealed record RestoreReport(
@@ -129,7 +129,8 @@ public sealed record RestoreReport(
     int GamesAdded,
     int LogosWritten,
     int SkinsWritten,
-    string? Mode);
+    string? Mode,
+    int FontsWritten = 0);
 
 // ---- Importing a v2 installation ------------------------------------------
 

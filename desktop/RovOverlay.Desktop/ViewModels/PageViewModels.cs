@@ -80,7 +80,7 @@ public sealed class SettingsViewModel : ObservableObject
         // a little after that, and whenever the connection comes back.
         _services.DataChanged += c =>
         {
-            if (c.Topic is "teams" or "tournaments" or "roster" or "matches" or "games") _backupsLater.Run(() => _ = SafeLoadAutoBackupsAsync());
+            if (c.Topic is "teams" or "tournaments" or "roster" or "matches" or "games" or "fonts") _backupsLater.Run(() => _ = SafeLoadAutoBackupsAsync());
         };
         _services.ConnectionChanged += up => { if (up) _ = SafeLoadAutoBackupsAsync(); };
         _ = SafeLoadAutoBackupsAsync();
@@ -225,6 +225,8 @@ public sealed class SettingsViewModel : ObservableObject
             Loc.F("Backup.WillAdd", s.Teams, s.Tournaments),
             Loc.F("Backup.Contents", s.Matches, s.Drafts, s.Logos, made)
         };
+        if (s.Fonts > 0) body.Add(Loc.F("Backup.Fonts", s.Fonts));
+        if (s.FontsLeftOut > 0) body.Add(Loc.F("Backup.FontsLeftOut", s.FontsLeftOut));
         if (preview.AlreadyHere.Teams > 0 || preview.AlreadyHere.Tournaments > 0)
             body.Add(Loc.F("Backup.AlreadyHere", preview.AlreadyHere.Teams, preview.AlreadyHere.Tournaments));
         body.Add(Loc.T("Backup.MergeRule"));

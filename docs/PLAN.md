@@ -650,7 +650,15 @@ above the role boxes, and every role box lists Default, then imported fonts, the
 - On a single page, a blank role box says "Default" although the page follows All pages, which
   looked broken once an imported font was set for all: each role now shows "All pages: <name>"
   underneath when it inherits.
-- Imported fonts are not in backups yet (backups carry data and logos, not media like fonts).
+- **In backups (beta.35):** `data.fonts` = `[{id, name, thai, bytes}]` (optional, so older files still
+  read; no version bump) plus `data.fontsLeftOut`. `readFont` applies the upload rules (server-made
+  id, font magic bytes, 20 MB); a restore writes each under its **same id**, so a role still set to
+  `nzf-<id>` finds it again, and never overwrites a font already there. Fonts in one backup are
+  capped at 24 MB raw (`MAX_FONT_BYTES_IN_FILE`, ~32 MB as base64) so the file stays under the
+  64 MB a restore accepts; the rest are counted in `fontsLeftOut` and the restore dialog says so.
+  Import and delete call `notifyData({ topic: 'fonts' })`, so the automatic backup follows a
+  minute later; restores emit it too so the Design library refreshes. Checked end to end: import,
+  automatic backup (276 KB with a 202 KB font), delete, restore that backup, font back and served.
 
 ### The Design screen is organised by page (2026-09-29)
 

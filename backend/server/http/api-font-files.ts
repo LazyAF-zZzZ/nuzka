@@ -12,6 +12,7 @@ import { dropFontFamily } from '../domain/settings';
 import { listFonts, addFont, removeFont, findFont, FONT_DIR } from '../store/font-files';
 import { getState, emitState } from '../store/live-state';
 import { requireControl } from './auth';
+import { notifyData } from '../services/sync';
 
 const noSniff = (_req: Request, res: Response, next: NextFunction): void => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -42,6 +43,8 @@ export function fontFileRoutes(): Router {
       res.status(409).json({ error: result.error });
       return;
     }
+    // ฟอนต์ไปกับไฟล์สำรองด้วย บอกให้สำรองข้อมูลอัตโนมัติรู้ว่ามีของใหม่
+    notifyData({ topic: 'fonts' });
     res.json({ ok: true, font: { ...result.font, family: importedFamily(result.font.id) } });
   });
 
@@ -54,6 +57,7 @@ export function fontFileRoutes(): Router {
       return;
     }
     if (dropFontFamily(getState().fonts, importedFamily(font.id))) emitState();
+    notifyData({ topic: 'fonts' });
     res.json({ ok: true });
   });
 

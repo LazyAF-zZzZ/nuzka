@@ -170,7 +170,9 @@ public sealed partial class Loc
         ["Profile.Foot"] = "Editing the roster here changes the team from now on. Matches already played keep the players they were played with, so past results and pick/ban statistics stay correct.",
 
         ["Settings.Backup"] = "BACKUP",
-        ["Backup.Hint"] = "Everything on this machine (teams, logos, brackets and every recorded draft) saved as one file you can keep somewhere else or move to another PC. v2 backups restore here too.",
+        ["Backup.Hint"] = "Everything on this machine (teams, logos, brackets, every recorded draft and imported fonts) saved as one file you can keep somewhere else or move to another PC. v2 backups restore here too.",
+        ["Backup.Fonts"] = "It also holds {0} imported fonts. Fonts already on this machine are kept.",
+        ["Backup.FontsLeftOut"] = "{0} imported fonts were too large to fit in this backup and are not in it.",
         ["Backup.Save"] = "Save a backup",
         ["Backup.RestoreButton"] = "Restore…",
         ["Backup.Saved"] = "Backup saved: {0}",
@@ -359,7 +361,9 @@ public sealed partial class Loc
         ["Profile.Foot"] = "แก้รายชื่อผู้เล่นที่นี่มีผลนับจากนี้ แมตช์ที่แข่งไปแล้วยังเก็บผู้เล่นตอนที่แข่งไว้ ผลย้อนหลังและสถิติพิค/แบนจึงยังถูกต้อง",
 
         ["Settings.Backup"] = "สำรองข้อมูล",
-        ["Backup.Hint"] = "ทุกอย่างในเครื่องนี้ (ทีม โลโก้ สาย และดราฟต์ทุกชุด) เก็บเป็นไฟล์เดียว เอาไปเก็บที่อื่นหรือย้ายไปเครื่องอื่นได้ ไฟล์สำรองจากเวอร์ชัน 2 ก็กู้คืนที่นี่ได้",
+        ["Backup.Hint"] = "ทุกอย่างในเครื่องนี้ (ทีม โลโก้ สาย ดราฟต์ทุกชุด และฟอนต์ที่นำเข้า) เก็บเป็นไฟล์เดียว เอาไปเก็บที่อื่นหรือย้ายไปเครื่องอื่นได้ ไฟล์สำรองจากเวอร์ชัน 2 ก็กู้คืนที่นี่ได้",
+        ["Backup.Fonts"] = "มีฟอนต์ที่นำเข้า {0} ตัวด้วย ฟอนต์ที่มีอยู่ในเครื่องแล้วจะไม่ถูกแตะ",
+        ["Backup.FontsLeftOut"] = "ฟอนต์ที่นำเข้า {0} ตัวใหญ่เกินกว่าจะใส่ในไฟล์สำรองนี้ จึงไม่ได้อยู่ในไฟล์",
         ["Backup.Save"] = "บันทึกไฟล์สำรอง",
         ["Backup.RestoreButton"] = "กู้คืน…",
         ["Backup.Saved"] = "บันทึกไฟล์สำรองแล้ว: {0}",

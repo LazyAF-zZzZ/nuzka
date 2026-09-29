@@ -186,6 +186,7 @@ export function restoreBackup(name: string): { report: RestoreReport } | { error
   const report = getStores().backup.restore(read.file, 'merge');
   notifyData({ topic: 'teams' });
   notifyData({ topic: 'tournaments' });
+  notifyData({ topic: 'fonts' });
   checkpoint();
   return { report };
 }

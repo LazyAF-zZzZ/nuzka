@@ -120,3 +120,63 @@ test('the overlay font script declares imported fonts from the same id pattern t
   assert.ok(js.includes('/^nzf-(f[a-z0-9]{10})$/'), 'same pattern as domain/font-files.ts');
   assert.ok(js.includes('/user-fonts/'), 'loads the file from the route that serves it');
 });
+
+// --- imported fonts in backups ------------------------------------------------
+
+const backup = require('../server/domain/backup') as typeof import('../server/domain/backup');
+const fontStore = require('../server/store/font-files') as typeof import('../server/store/font-files');
+
+test('a font read from a backup file must have a server-made id and real font bytes', () => {
+  const good = { id: 'fabc123def4', name: 'Brand\u0000 Font', thai: true, bytes: fake('wOF2').toString('base64') };
+  assert.deepStrictEqual(backup.readFont(good), { ...good, name: 'Brand Font' });
+  assert.strictEqual(backup.readFont({ ...good, id: '../../x' }), null, 'the id becomes a file name');
+  assert.strictEqual(backup.readFont({ ...good, id: 'blue-team' }), null);
+  assert.strictEqual(backup.readFont({ ...good, bytes: Buffer.from('<script>alert(1)</script>xxxxxx').toString('base64') }), null);
+  assert.strictEqual(backup.readFont({ ...good, thai: 'yes' })!.thai, null);
+});
+
+test('a backup made before fonts existed still reads, with no fonts', () => {
+  const read = backup.readBackup({
+    format: backup.BACKUP_FORMAT, version: 1, kind: 'full', app: 'x', exportedAt: 'y',
+    data: { teams: [], tournaments: [], matches: [], games: [], logos: {}, skins: {} }
+  });
+  assert.ok(read.file);
+  assert.deepStrictEqual(read.file!.data.fonts, []);
+  assert.strictEqual(backup.summarise(read.file!).fonts, 0);
+});
+
+test('fonts over the per-backup total are left out and counted, not dropped silently', () => {
+  const a = fontStore.addFont('A', 'ttf', Buffer.concat([fake([0, 1, 0, 0]), Buffer.alloc(1000)]), null);
+  const b = fontStore.addFont('B', 'ttf', Buffer.concat([fake([0, 1, 0, 0]), Buffer.alloc(1000)]), null);
+  const packed = fontStore.fontsForBackup(1500);
+  assert.strictEqual(packed.fonts.length, 1);
+  assert.strictEqual(packed.leftOut, 1);
+  fontStore.removeFont(a.font!.id);
+  fontStore.removeFont(b.font!.id);
+});
+
+test('API: a backup carries imported fonts, and restoring brings them back under the same name', async () => {
+  const put = await fetch(`${base}/api/fonts?name=Kept&thai=0`, { method: 'POST', body: fake('OTTO') });
+  const { font } = await put.json() as { font: { id: string; family: string } };
+
+  const saved = await (await fetch(`${base}/api/backup`)).json() as { data: { fonts: { id: string }[]; fontsLeftOut: number } };
+  assert.deepStrictEqual(saved.data.fonts.map((f) => f.id), [font.id]);
+  assert.strictEqual(saved.data.fontsLeftOut, 0);
+
+  const preview = await (await fetch(`${base}/api/backup/preview`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(saved)
+  })).json() as { summary: { fonts: number } };
+  assert.strictEqual(preview.summary.fonts, 1);
+
+  // Lost, then restored: same id, so any role still pointing at nzf-<id> finds it again.
+  await fetch(`${base}/api/fonts/${font.id}`, { method: 'DELETE' });
+  const restore = async () => (await (await fetch(`${base}/api/backup/restore`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ file: saved, mode: 'merge' })
+  })).json() as { report: { fontsWritten: number } }).report;
+  assert.strictEqual((await restore()).fontsWritten, 1);
+  const list = await (await fetch(`${base}/api/fonts`)).json() as { fonts: { id: string; name: string; thai: boolean }[] };
+  assert.deepStrictEqual(list.fonts.map((f) => [f.id, f.name, f.thai]), [[font.id, 'Kept', false]]);
+  assert.strictEqual((await fetch(`${base}/user-fonts/${font.id}`)).status, 200);
+
+  assert.strictEqual((await restore()).fontsWritten, 0, 'a font already here is kept, not overwritten');
+});

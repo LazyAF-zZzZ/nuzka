@@ -127,6 +127,7 @@ export function backupRoutes(): Router {
 
     notifyData({ topic: 'teams' });
     notifyData({ topic: 'tournaments' });
+    notifyData({ topic: 'fonts' });   // ฟอนต์ที่กู้มาต้องขึ้นในรายการของหน้าดีไซน์
     res.json({ ok: true, report });
   });
 

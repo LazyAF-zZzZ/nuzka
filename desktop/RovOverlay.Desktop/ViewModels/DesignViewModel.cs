@@ -461,6 +461,8 @@ public sealed class DesignViewModel : ObservableObject, IClosablePage
         foreach (var font in SystemFonts) FontOptions.Add(font);
         ImportFontCommand = new AsyncRelayCommand(ImportFontAsync);
         services.ConnectionChanged += up => { if (up) _ = SafeLoadImportedFontsAsync(); };
+        // A restore can bring fonts back, and another window can import or delete one.
+        services.DataChanged += c => { if (c.Topic == "fonts") _ = SafeLoadImportedFontsAsync(); };
         _ = SafeLoadImportedFontsAsync();
 
         FontRoles =
