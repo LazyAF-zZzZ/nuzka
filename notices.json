@@ -10,7 +10,7 @@
       "th": "มีกราฟิกใหม่ Team card สำหรับขึ้นจอก่อนเริ่มคู่: ผลงานของทีม ผลตอนเล่นแต่ละฝั่ง ฮีโร่ที่หยิบบ่อยพร้อมอัตราชนะ ฮีโร่ที่โดนแบนใส่ และฮีโร่ของผู้เล่นแต่ละคน ก๊อป URL ได้ที่รายการ OBS browser sources แก้ไข: Head to head กับ Team picks & bans เคยขึ้นสีฝั่งกลับกับ overlay หลักในเกมที่สลับฝั่ง และตารางคะแนน Standings อ่านง่ายขึ้นมากเมื่อทีมเยอะ อัปเดตนี้ไม่ติดตั้งเอง: เมื่อโหลดเสร็จจะมีหน้าต่างถาม หรือกดเลขเวอร์ชันที่แถบด้านบน แล้วกด อัปเดตเลย ตอนที่ไม่ได้ออกอากาศ",
       "en": "A new Team card graphic for the break before a match: the team's record, how they do on each side, most picked heroes with win rates, heroes banned against them, and each player's favourite heroes. Copy its URL from the OBS browser sources list. Fixed: Head to head and Team picks & bans showed the side colours backwards in swapped games, and Standings is far easier to read with a lot of teams. This update does not install by itself: once it has downloaded a window asks, or press the version number in the title bar, then Update now, when you are not on air."
     },
-    "url": "https://github.com/LazyAF-zZzZ/rov_overlay_v3/releases/tag/v3.1.1",
+    "url": "https://github.com/LazyAF-zZzZ/nuzka/releases/tag/v3.1.1",
     "minVersion": "3.0.9",
     "maxVersion": "3.1.0",
     "expires": "2026-10-16T00:00:00Z"
@@ -26,7 +26,7 @@
       "th": "มีกราฟิกใหม่ Team card ขึ้นจอก่อนเริ่มคู่ คีย์ลัดใช้ได้ทุกที่แม้อยู่ใน OBS หรือในเกม และจบเกมได้ด้วย Ctrl + Alt + 1 / 2 หน้าของแต่ละทีมมีแท็บสถิติ และสองทีมสลับฝั่งกันเองทุกเกม แอปจะโหลดอัปเดตให้เองแล้วติดตั้งตอนคุณปิดโปรแกรม หลังจากนี้ อัปเดตครั้งต่อไปจะไม่ติดตั้งเองอีก ต้องกด อัปเดตเลย ก่อน",
       "en": "A new Team card graphic for the break before a match. Hotkeys now work everywhere, even in OBS or the game, and end a game with Ctrl + Alt + 1 / 2. Every team page has a Statistics tab, and the teams swap sides every game. The app downloads this update on its own and puts it in when you close it. From then on, updates no longer install by themselves: you press Update now."
     },
-    "url": "https://github.com/LazyAF-zZzZ/rov_overlay_v3/releases/tag/v3.1.1",
+    "url": "https://github.com/LazyAF-zZzZ/nuzka/releases/tag/v3.1.1",
     "maxVersion": "3.0.8",
     "expires": "2026-10-16T00:00:00Z"
   }

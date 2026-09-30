@@ -391,7 +391,7 @@ async function load() {
   liveMatchId = liveData.live?.matchId || null;
 
   document.getElementById('headName').textContent = tournament.name;
-  document.title = `${tournament.name} - match session - ROV Overlay Tool`;
+  document.title = `${tournament.name} - match session - Nuzka`;
   /** @type {HTMLAnchorElement} */ (document.getElementById('backLink')).href = withToken(`/tournament/${encodeURIComponent(tournamentId)}`);
 
   apply(matchData.matches || []);

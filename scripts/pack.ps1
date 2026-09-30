@@ -20,7 +20,7 @@ param(
     [Parameter(Mandatory = $true)][string]$Version,
     [ValidateSet('stable', 'beta')][string]$Channel = 'stable',
     [switch]$Publish,
-    [string]$RepoUrl = 'https://github.com/LazyAF-zZzZ/rov_overlay_v3'
+    [string]$RepoUrl = 'https://github.com/LazyAF-zZzZ/nuzka'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -150,6 +150,23 @@ Write-Host '  packing…'
     --outputDir $releases @notesArgs
 if ($LASTEXITCODE -ne 0) { throw 'vpk pack failed' }
 
+# Velopack names the installer after the pack id (RovOverlayTool3-<channel>-Setup.exe). The pack id
+# cannot change without cutting every installed copy off from updates, so the download people see
+# is a copy under the app's name. The original stays too: older links point at it.
+$friendly = @{
+    "RovOverlayTool3-$vpkChannel-Setup.exe" = "Nuzka-$vpkChannel-Setup.exe"
+    "RovOverlayTool3-$vpkChannel-Portable.zip" = "Nuzka-$vpkChannel-Portable.zip"
+}
+$friendlyFiles = @()
+foreach ($name in $friendly.Keys) {
+    $from = Join-Path $releases $name
+    if (Test-Path $from) {
+        $to = Join-Path $releases $friendly[$name]
+        Copy-Item $from $to -Force
+        $friendlyFiles += $to
+    }
+}
+
 Write-Host "  done: $releases" -ForegroundColor Green
 
 # --- 6. Publish -------------------------------------------------------------------
@@ -165,6 +182,11 @@ if ($Publish) {
         --publish true `
         --token $env:GITHUB_TOKEN
     if ($LASTEXITCODE -ne 0) { throw 'vpk upload failed' }
+    # vpk uploads only the files it made; add the Nuzka-named copies to the same release.
+    if ($friendlyFiles.Count -gt 0) {
+        & gh release upload "v$Version" @friendlyFiles --repo ($RepoUrl -replace '^https://github.com/', '') --clobber
+        if ($LASTEXITCODE -ne 0) { throw 'uploading the Nuzka-named installer failed' }
+    }
     Write-Host '  published.' -ForegroundColor Green
 }
 else {

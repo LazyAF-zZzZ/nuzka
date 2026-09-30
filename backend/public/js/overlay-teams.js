@@ -467,7 +467,7 @@ function render(tournament, teams, total = teams.length, setNo = 1, setCount = 1
     const counted = total === 1 ? '1 team' : total + ' teams';
     document.getElementById('subtitle').textContent = (params.get('subtitle') || counted)
         + (setCount > 1 ? `  ·  ${setNo} / ${setCount}` : '');
-    document.title = (tournament.name || 'Teams') + ' - ROV Team List';
+    document.title = (tournament.name || 'Teams') + ' - Nuzka Team List';
 
     // ช่องต่อชุด = ค่าที่ตั้ง แต่ไม่เกินจำนวนทีมทั้งหมด (ทีมน้อยกว่าชุดเดียวก็ไม่ต้องเผื่อช่อง)
     const slots = Math.min(perSet, Math.max(1, total));
@@ -519,7 +519,7 @@ function renderScroll(tournament, teams) {
     document.getElementById('title').textContent = params.get('title') || tournament.name || '';
     const counted = total === 1 ? '1 team' : total + ' teams';
     document.getElementById('subtitle').textContent = params.get('subtitle') || counted;
-    document.title = (tournament.name || 'Teams') + ' - ROV Team List';
+    document.title = (tournament.name || 'Teams') + ' - Nuzka Team List';
 
     const slots = Math.min(perSet, Math.max(1, total));
     const { cols, rows } = gridFor(slots);

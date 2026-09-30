@@ -21,7 +21,7 @@ namespace RovOverlay.Desktop.Services;
 // Settings screen says so plainly instead of pretending to check.
 public sealed class UpdateService : ObservableObject, IDisposable
 {
-    public const string RepoUrl = "https://github.com/LazyAF-zZzZ/rov_overlay_v3";
+    public const string RepoUrl = "https://github.com/LazyAF-zZzZ/nuzka";
 
     // A broadcast day is long. Six hours is often enough to catch a patch, rare enough
     // to be invisible.

@@ -18,7 +18,7 @@ namespace RovOverlay.Desktop.Services;
 public sealed class NoticeService : ObservableObject, IDisposable
 {
     public const string FeedUrl =
-        "https://raw.githubusercontent.com/LazyAF-zZzZ/rov_overlay_v3/main/notices.json";
+        "https://raw.githubusercontent.com/LazyAF-zZzZ/nuzka/main/notices.json";
 
     private static readonly TimeSpan Every = TimeSpan.FromHours(6);
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };

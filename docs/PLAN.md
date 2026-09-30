@@ -700,6 +700,28 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
+### Name and repo (2026-09-30)
+
+Every name people read is **Nuzka**: page titles (the OBS source list shows them), the guide, the
+README and app messages. What still says ROV Overlay Tool does so on purpose: the "(formerly ROV
+Overlay Tool)" line in the README and licence, and every mention of **v2**, which is a real older app
+with its own folder (`%APPDATA%ROV Overlay Tool`) and port that the importer and the port-busy message
+talk about. "ROV Tournament" (default tournament name) is the game, not the app.
+
+**Unchanged on purpose** (user's choice): the exe `RovOverlayTool.exe`, the Velopack pack id
+`RovOverlayTool3` (changing it cuts every installed copy off from updates) and the data folder
+`%APPDATA%RovOverlayTool3`. Velopack names the installer after the pack id, so `pack.ps1` also writes
+**`Nuzka-<channel>-Setup.exe`** and `-Portable.zip` copies, and `-Publish` attaches them to the release with
+`gh release upload` after `vpk upload`; the original names stay for old links. The README points at
+`Nuzka-win-Setup.exe`.
+
+**Repo renamed** `rov_overlay_v3` -> **`nuzka`** (github.com/LazyAF-zZzZ/nuzka). The app's update source,
+notices feed, revoked-keys list, `pack.ps1` and the README use the new name. Installed copies still
+ask the old one: checked after the rename, the web and API addresses answer 301 to the new repo and
+the old raw notices URL still serves, so nothing already installed is cut off. **Never create a new
+repo called rov_overlay_v3**: that would break those redirects. The local folder is still
+`rov_overlay_v3` (tests in import-v2 rely on that basename).
+
 ## 9. Traps already paid for
 
 - **A layout group cannot clip its own contents** (2026-09-29). `#grid` on the team list carries

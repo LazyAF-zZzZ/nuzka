@@ -1,4 +1,4 @@
-# ROV Overlay Tool — User Guide / คู่มือการใช้งาน
+# Nuzka — User Guide / คู่มือการใช้งาน
 
 This same guide is inside the app: open it from **GUIDE** in the top bar, or go to
 `http://127.0.0.1:3000/guide` — that copy has a language switch and works offline.

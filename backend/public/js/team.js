@@ -45,7 +45,7 @@ function outcomeBadge(match) {
 // RENDER -------------------------------------------------------------
 
 function renderHead(t, record) {
-  document.title = `${t.name} - ROV Overlay Tool`;
+  document.title = `${t.name} - Nuzka`;
 
   const head = document.getElementById('teamHead');
   head.textContent = '';

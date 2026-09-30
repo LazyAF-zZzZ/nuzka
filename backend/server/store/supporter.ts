@@ -18,7 +18,7 @@ import { loadJson, writeJson } from '../lib/json';
 import { checkKey, expiresAt, normaliseKey, KeyCheck, KeyProblem } from '../domain/supporter';
 
 export const REVOKED_LIST_URL =
-  'https://raw.githubusercontent.com/LazyAF-zZzZ/rov_overlay_v3/main/revoked-keys.json';
+  'https://raw.githubusercontent.com/LazyAF-zZzZ/nuzka/main/revoked-keys.json';
 
 const DAY = 24 * 60 * 60 * 1000;
 

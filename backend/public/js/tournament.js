@@ -48,7 +48,7 @@ function fillSelect(select, items, value) {
 
 function renderHead(t) {
   document.getElementById('headName').textContent = t.name;
-  document.title = `${t.name} - ROV Overlay Tool`;
+  document.title = `${t.name} - Nuzka`;
 
   const wrap = document.getElementById('headBadges');
   wrap.textContent = '';
