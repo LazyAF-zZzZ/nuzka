@@ -802,6 +802,8 @@ and right, to the nearest spot where no drawn content (the same `drawnBoxes()` t
 it, staying inside the banner; if none is clear it takes the least covered. It re-places on rov-layout,
 rov-fonts, resize, a size switch and a tournament-name change. Shipped by rebuilding **3.2.2 in place** (user's
 request, same release and notes): installs already on 3.2.2 keep the earlier build, new downloads get this one.
+Then published as **3.2.3** (user's request, notes just say minor fixes, no notice) so installs already on 3.2.2
+get it too; the user asked for "3.2.2.1", which Velopack cannot take (SemVer: 3.2.2-1 sorts below 3.2.2, 3.2.2+1 equal).
 **Trap:** `drawnBoxes()` sized "panels" against the window; in the layout editor the stage is drawn at ~0.2x, so
 the whole banner counted as content and the mark always moved. It now uses the stage (body) area, skips the
 mark's own containers, and the 6 px clearance is in banner pixels.
