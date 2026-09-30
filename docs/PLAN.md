@@ -700,7 +700,7 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
-### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.5; beta.2 to beta.4 were built but never published)
+### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.6; beta.2 to beta.5 were built but never published)
 
 User's request: "move all design into edit layout and move the edit layout button to OBS sources, next
 to each page title". The app's Design screen, its view model and its menu entry are deleted.
@@ -731,7 +731,8 @@ to each page title". The app's Design screen, its view model and its menu entry 
   badge (`.team-tag`, `data-layout="blue-tag"`/`red-tag`, movable) on the bottom edge of each logo box, hidden when
   off or when the team has no tag. The user asked for it separate: a first version that replaced the name was
   rejected. Tag boxes and the switch are in both the editor Text section and the desktop Control (tag beside the
-  team name, switch beside "Swap sides each game"); `updateTeamTag`/`updateDraftShowTag`, an empty tag IS sent.
+  team name, switch beside "Swap sides each game"); `updateTeamTag`/`updateDraftShowTag`, an empty tag IS sent. With a tag showing, a no-logo name is bottom-aligned (`data-tagged`)
+  so the name-to-tag gap is the same on both sides; centred, a two-line name ended lower than a one-line one.
 - Global editor rules (`#layout-editor label` stacks vertically, `input` is full width) are meant for
   the Layout tab's X/Y boxes; Style tick boxes override both.
 - Not done: the Design.*, Fonts.*, Layout.* and TeamList.* strings in Loc.M5.cs are now unused.

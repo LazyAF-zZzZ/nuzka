@@ -1614,3 +1614,11 @@ body[data-size="1440"] .overlay-container {
 }
 .team-logo-score.red .team-tag { border-color: rgb(var(--ov-red-rgb)); }
 .team-tag[hidden] { display: none !important; }
+
+/* มีแท็ก (overlay.js ตั้ง data-tagged): ชื่อชิดล่าง เว้นที่ให้แท็กพอดี ระยะชื่อถึงแท็กเท่ากันทุกฝั่ง
+   ไม่งั้นชื่อสองบรรทัดจบต่ำกว่าชื่อบรรทัดเดียว แล้วระยะถึงแท็กไม่เท่ากัน */
+.team-logo-score[data-nologo][data-tagged] .team-info {
+    justify-content: flex-end;
+    padding-bottom: 24px;
+    box-sizing: border-box;
+}

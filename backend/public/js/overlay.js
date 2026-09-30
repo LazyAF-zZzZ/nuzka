@@ -264,6 +264,13 @@ function updateOverlay(state) {
         const tag = state.draftShowTag && team.tag ? team.tag : '';
         if (tagEl.textContent !== tag) tagEl.textContent = tag;
         tagEl.hidden = !tag;
+        // มีแท็ก: ชื่อชิดล่างเหนือแท็กพอดี ระยะชื่อถึงแท็กจึงเท่ากันทั้งสองฝั่ง ไม่ว่าชื่อจะกี่บรรทัด
+        // (ผู้ใช้ขอ 2026-09-30) พื้นที่ของชื่อเปลี่ยน จึงต้องย่อชื่อให้พอดีใหม่
+        const holder = tagEl.parentElement;
+        if (holder && holder.hasAttribute('data-tagged') !== Boolean(tag)) {
+            holder.toggleAttribute('data-tagged', Boolean(tag));
+            if (holder.hasAttribute('data-nologo') && window.RovFitText) window.RovFitText(holder.querySelector('.team-name'), 0.5);
+        }
     });
     
     // Update center team names

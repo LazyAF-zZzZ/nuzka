@@ -393,3 +393,4 @@ body[data-size="1440"] .ban-slot {
 }
 
 .team-tag { font-size: 24px; padding: 1px 13px; bottom: -13px; border-width: 3px; }
+.team-logo-score[data-nologo][data-tagged] .team-info { padding-bottom: 32px; }
