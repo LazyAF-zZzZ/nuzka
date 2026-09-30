@@ -203,7 +203,8 @@
         note: 'ข้อความแจ้ง (ตอนไม่มีข้อมูล)', grid: 'การ์ดทีมทั้งหมด', board: 'ตารางทั้งหมด', summary: 'ตัวเลขสรุป',
         groups: 'ตารางทุกกลุ่ม', scope: 'ขอบเขตข้อมูล', columns: 'คอลัมน์ทั้งหมด', games: 'ทุกเกม',
         logo: 'โลโก้', 'side-label': 'ป้ายฝั่ง', name: 'ชื่อทีม', tiles: 'ช่องตัวเลขทั้งหมด',
-        'heroes-column': 'คอลัมน์ฮีโร่', 'players-column': 'คอลัมน์ผู้เล่น'
+        'heroes-column': 'คอลัมน์ฮีโร่', 'players-column': 'คอลัมน์ผู้เล่น',
+        'game-tag': 'ป้ายเกมที่เท่าไหร่', meetings: 'ซีรีส์ที่เคยเจอกัน'
     } : {
         banner: 'Whole banner', center: 'Centre block', tournament: 'Tournament name', score: 'Score row',
         'score-numbers': 'Score numbers', timer: 'Timer', 'match-title': 'Match title',
@@ -211,7 +212,8 @@
         note: 'Message (when there is no data)', grid: 'All team cards', board: 'Whole table', summary: 'Summary figures',
         groups: 'All groups', scope: 'Data range', columns: 'Both columns', games: 'All games',
         logo: 'Logo', 'side-label': 'Side label', name: 'Team name', tiles: 'All number tiles',
-        'heroes-column': 'Heroes column', 'players-column': 'Players column'
+        'heroes-column': 'Heroes column', 'players-column': 'Players column',
+        'game-tag': 'Game number tag', meetings: 'Previous meetings'
     };
 
     const ITEMS = th
@@ -229,12 +231,12 @@
         const what = th ? {
             bans: `แบนฝั่ง${side}`, ban: `แบน${side}${n}`, 'ban-label': `ป้าย BAN ฝั่ง${side}`,
             picks: `พิคฝั่ง${side}`, pick: `พิค${side}${n}`, team: `ทีม${side}`, half: `ครึ่งฝั่ง${side}`,
-            header: `หัวฝั่ง${side} (ชื่อ + แบน)`, column: `คอลัมน์ฝั่ง${side}`,
+            header: `หัวฝั่ง${side} (ชื่อ + แบน)`, column: `คอลัมน์ฝั่ง${side}`, score: `คะแนนซีรีส์ฝั่ง${side}`,
             logo: `โลโก้ทีม${side}`, name: `ชื่อทีม${side}`
         } : {
             bans: `${side} bans`, ban: `${side} ban${n}`, 'ban-label': `${side} "BAN" label`,
             picks: `${side} picks`, pick: `${side} pick${n}`, team: `${side} team`, half: `${side} half`,
-            header: `${side} header (name + bans)`, column: `${side} column`,
+            header: `${side} header (name + bans)`, column: `${side} column`, score: `${side} series score`,
             logo: `${side} logo`, name: `${side} team name`
         };
         return what[m[2]] || key;

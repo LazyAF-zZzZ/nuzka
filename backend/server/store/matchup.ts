@@ -15,6 +15,10 @@ import type { DatabaseSync } from 'node:sqlite';
 export interface MatchupHero {
   hero: string;
   count: number;
+  // เกมที่หยิบตัวนี้แล้วชนะ / เกมที่มีผลแล้ว ใช้ขึ้นอัตราชนะใต้ช่องพิค (รีวิว 2026-09-30)
+  // แถวแบนก็นับได้แต่ไม่มีความหมาย กราฟิกจึงใช้เฉพาะแถวพิค
+  wins: number;
+  decided: number;
 }
 
 export interface MatchupSide {
@@ -72,7 +76,9 @@ export function createMatchupStore(db: DatabaseSync): MatchupStore {
     // เทียบด้วย blue_team_id / red_team_id ของสำเนาแช่แข็ง ไม่ใช่ของแมตช์
     // เพราะฝั่งบนจอสลับได้ และ game_slots.side เก็บตามสำเนา ไม่ใช่ตามจอ
     heroes: db.prepare(
-      `SELECT s.hero AS hero, COUNT(*) AS n
+      `SELECT s.hero AS hero, COUNT(*) AS n,
+              SUM(CASE WHEN g.winner = s.side THEN 1 ELSE 0 END) AS w,
+              SUM(CASE WHEN g.winner IS NOT NULL THEN 1 ELSE 0 END) AS d
          FROM game_slots s
          JOIN games g ON g.id = s.game_id
         WHERE g.draft_locked = 1
@@ -113,7 +119,9 @@ export function createMatchupStore(db: DatabaseSync): MatchupStore {
     const rows = q.heroes.all(
       kind, teamId, otherId, teamId, otherId, teamId, teamId, TOP_HEROES
     ) as unknown as Row[];
-    return rows.map((r) => ({ hero: String(r.hero), count: Number(r.n) }));
+    return rows.map((r) => ({
+      hero: String(r.hero), count: Number(r.n), wins: Number(r.w || 0), decided: Number(r.d || 0)
+    }));
   }
 
   return {

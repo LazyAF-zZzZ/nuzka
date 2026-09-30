@@ -83,6 +83,10 @@ test('finishing a game records the point and the winner, keeps the draft, and pu
   // เกมที่ 2 สลับฝั่ง: ทีม A ที่เพิ่งได้แต้มย้ายไปฝั่งแดง และแต้มของมันต้องไปด้วย
   assert.strictEqual(now.teamRed.logo.src, first.teamAId, 'team A moved to red for game 2');
   assert.strictEqual(now.teamRed.score, 1, 'and its series point went with it');
+  // game 1 is a previous round now, with its winner, on the side that game was played on
+  const previous = must(now.rounds.find((r) => r.round === 1));
+  const aWasBlueInGame1 = previous.blue.name === must(games.get(firstGameId)).blueName;
+  assert.strictEqual(previous.winner, aWasBlueInGame1 ? 'blue' : 'red');
 });
 
 test('a game whose result was already typed in is not counted a second time', () => {
@@ -156,6 +160,9 @@ test('a quick match adds the point and files the draft as a previous round', () 
   assert.strictEqual(now.teamBlue.score, 1, 'and BRAVO carries the point it just won');
   assert.strictEqual(now.round, 2);
   assert.strictEqual(now.rounds.length, 1, 'the draft was filed as round 1');
+  // BRAVO was on red in round 1 and won it: the previous-games graphic marks it
+  assert.strictEqual(must(now.rounds[0]).red.name, 'BRAVO');
+  assert.strictEqual(must(now.rounds[0]).winner, 'red');
   assert.ok(!now.teamRed.bans[0], 'and the board is clean');
   assert.strictEqual(out.result.live.matchId, null);
 });

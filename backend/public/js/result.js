@@ -98,14 +98,35 @@ function renderResultBans(teamColor, bans) {
     });
 }
 
-function updateResult(state) {
-    // Blue team name
-    const blueNameEl = document.getElementById('blueNameResult');
-    if (blueNameEl) blueNameEl.textContent = state.teamBlue.name;
+// "Saigon Phantom VS PSG Esports : GAME 5 [BO5]" -> "GAME 5 · BO5" (เหมือน overlay.js)
+// ชื่อแมตช์ที่พิมพ์เองไม่ตรงรูปแบบ ใช้เลขรอบแทน
+function gameTag(state) {
+    const match = /\bGAME\s*(\d+)\s*\[\s*(BO\d+)\s*\]\s*$/i.exec((state.matchInfo && state.matchInfo.title) || '');
+    return match ? `GAME ${match[1]} · ${match[2].toUpperCase()}` : `GAME ${state.round || 1}`;
+}
 
-    // Red team name
+function updateResult(state) {
+    // ชื่อทีมยาวเคยถูกตัดเป็น "SAIGON PHANT..." ตอนนี้ย่อให้พอดีสองบรรทัดแทน
+    const blueNameEl = document.getElementById('blueNameResult');
+    if (blueNameEl && blueNameEl.textContent !== state.teamBlue.name) {
+        blueNameEl.textContent = state.teamBlue.name;
+        if (window.RovFitText) window.RovFitText(blueNameEl, 0.6);
+    }
+
     const redNameEl = document.getElementById('redNameResult');
-    if (redNameEl) redNameEl.textContent = state.teamRed.name;
+    if (redNameEl && redNameEl.textContent !== state.teamRed.name) {
+        redNameEl.textContent = state.teamRed.name;
+        if (window.RovFitText) window.RovFitText(redNameEl, 0.6);
+    }
+
+    // คะแนนซีรีส์ของแต่ละทีม กับเกมที่เท่าไหร่ หน้านี้ขึ้นหลังดราฟต์ล็อก ก่อนเกมเริ่ม
+    // จึงบอกสถานะซีรีส์ ไม่ใช่ผู้ชนะของเกมนี้ (ยังไม่มีใครชนะ)
+    const blueSeries = document.getElementById('blueSeriesResult');
+    if (blueSeries) blueSeries.textContent = String(state.teamBlue.score ?? 0);
+    const redSeries = document.getElementById('redSeriesResult');
+    if (redSeries) redSeries.textContent = String(state.teamRed.score ?? 0);
+    const tag = document.getElementById('gameTagResult');
+    if (tag) tag.textContent = gameTag(state);
 
     renderResultPicks('blue', state.teamBlue.picks);
     renderResultPicks('red', state.teamRed.picks);
@@ -128,3 +149,12 @@ function updateResult(state) {
 socket.on('disconnect', () => {
     console.log('Result overlay disconnected');
 });
+
+// ฟอนต์ (Kanit หรือที่นำเข้า) โหลดทีหลัง ความกว้างตัวหนังสือเปลี่ยน ต้องย่อชื่อใหม่
+function refitNames() {
+    ['blueNameResult', 'redNameResult'].forEach((id) => {
+        if (window.RovFitText) window.RovFitText(document.getElementById(id), 0.6);
+    });
+}
+if (document.fonts) document.fonts.ready.then(refitNames);
+window.addEventListener('rov-fonts', refitNames);

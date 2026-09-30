@@ -141,8 +141,9 @@ body[data-size="1440"] .an-stage {
 
 .an-face {
     flex: 0 0 auto;
-    width: 64px;
-    height: 64px;
+    /* 64 -> 76, และ 46 -> 60 ตอนแน่น: ภาพเล็กข้างแถบยาวว่างๆ อ่านยาก (รีวิว 2026-09-30) */
+    width: 76px;
+    height: 76px;
     border-radius: 10px;
     object-fit: cover;
     background: rgba(255, 255, 255, 0.05);
@@ -236,7 +237,7 @@ body[data-size="1440"] .an-stage {
 
 /* แถวแน่นขึ้นเมื่อขอมาเกินสิบ ไม่งั้นล้นออกนอกจอเงียบๆ */
 .an-board.dense .an-row { padding: 6px 16px 6px 12px; gap: 14px; border-radius: 9px; }
-.an-board.dense .an-face { width: 46px; height: 46px; border-radius: 8px; }
+.an-board.dense .an-face { width: 60px; height: 60px; border-radius: 9px; }
 .an-board.dense .an-rank { width: 40px; font-size: 22px; }
 .an-board.dense .an-name { font-size: 20px; }
 .an-board.dense .an-meter { height: 7px; margin-top: 5px; }

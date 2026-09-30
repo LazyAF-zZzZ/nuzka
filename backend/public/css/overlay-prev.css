@@ -183,6 +183,19 @@ body[data-size="1440"] .pv-stage {
 .pv-side.blue .pv-dot { background: var(--ov-blue); }
 .pv-side.red .pv-dot { background: var(--ov-red); }
 
+/* ป้าย WIN ข้างชื่อทีมที่ชนะเกมนั้น (รีวิว 2026-09-30) */
+.pv-win {
+    flex: 0 0 auto;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #1a1204;
+    background: var(--ov-accent, #f5b942);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
 .pv-name {
     font-size: 25px;
     font-weight: 700;

@@ -319,9 +319,10 @@ function render(tournament, summary, heroes) {
     // จำนวนเกมต้องอยู่บนจอเสมอ เปอร์เซ็นต์ที่ไม่บอกว่าหารด้วยอะไรอ่านผิดได้ทุกทาง
     const games = summary ? summary.games : 0;
     const meta = games === 1 ? '1 game' : games + ' games';
+    // presence คือคำที่คนดูไม่คุ้น บอกไว้ในบรรทัดเดียวกันว่าหมายถึงอะไร (รีวิว 2026-09-30)
     document.getElementById('meta').textContent = mode === 'win' && summary
         ? meta + ' · ' + summary.decidedGames + ' with a winner'
-        : meta;
+        : mode === 'presence' ? meta + ' · presence = picked or banned' : meta;
 
     board.style.setProperty('--cols', String(columnsFor(heroes.length)));
     // เกินแปดแถวเริ่มแน่น ลดขนาดแถวก่อน แล้วค่อยให้ fitToStage() ย่อทั้งกระดานถ้ายังไม่พอ
@@ -384,3 +385,7 @@ load();
 
 // ฟอนต์ที่นำเข้าในแอพโหลดมาทีหลัง ตัวหนังสือเปลี่ยนขนาด ต้องย่อให้พอดีจอใหม่ (overlay-fonts.js)
 window.addEventListener('rov-fonts', () => fitToStage());
+
+// วัดใหม่เมื่อฟอนต์ (Kanit) โหลดเสร็จ ตอนวาดครั้งแรกอาจยังเป็นฟอนต์สำรองที่เตี้ยกว่า
+// แล้วพอ Kanit มาถึง ตารางก็ล้นขอบล่างจอ (ตารางคะแนน 32 ทีม รีวิว 2026-09-30)
+if (document.fonts) document.fonts.ready.then(() => fitToStage());

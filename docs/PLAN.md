@@ -700,6 +700,41 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
+### Overlay review (2026-09-30, 3.2.2-beta.1)
+
+All nine overlays were rendered at 1920x1080 from a copy of the user's backup (headless Edge; the agent
+preview pane cannot screenshot while minimised) and reviewed. The user took every item but one
+(darker hero portraits turned out to be a scaled-preview artefact). What changed:
+- **Draft:** a team with no logo shows its name in the 138px logo box (`data-nologo`, fitted with
+  `RovFitText`); the timer digits hide once all ten picks are in and the clock is stopped (the row
+  keeps its space so nothing moves); the match title "A VS B : GAME 5 [BO5]" shows as "GAME 5 · BO5";
+  the tournament name is full opacity and weight 600.
+- **Result:** series score beside each team and a "GAME 5 · BO5" tag on the centre line. Not a WIN
+  mark: this screen is shown after the draft locks and before the game, when nobody has won yet.
+  Long names wrap to two lines and shrink to fit instead of "SAIGON PHANT...".
+- **Previous picks and bans:** WIN beside the team that won each game. `RoundRecord.winner`
+  (relative to that row's own blue/red): tournament games take it from `games.winner` in
+  `gameToRound`, flipped when the row is laid out swapped; quick matches set it in
+  `finishQuickGame` on the row `stepRound` just filed. Unknown stays null and shows nothing.
+- **Head to head:** win rate under each most-picked hero (`MatchupHero.wins/decided`, counted
+  where `games.winner = game_slots.side`), and the previous meetings the API already returned but
+  never showed (up to three). **Team picks & bans** shows the win rates its API already had. Hero
+  tiles 92 -> 128px on both; the team card's seven-tile rows use 104px.
+- **Team list:** the tag chip only beside a real logo (the placeholder already shows the tag).
+- **Stats board:** portraits 64 -> 76px (46 -> 60 dense); the meta line says
+  "presence = picked or banned".
+- **Standings:** re-measures after `document.fonts.ready` (the first fit ran with the fallback font
+  and 32 teams overran the bottom edge); the tie "=" is drawn in Segoe UI because heavy Kanit at
+  that size merged it into a block. Stats board and previous games re-measure on fonts too.
+- **Updates reach OBS without a cache refresh:** html/css/js are served `Cache-Control: no-cache`
+  and `overlay-size.js` compares `/api/app-info` version on every socket (re)connect with the one
+  seen at load; a different version reloads the page once (never in `?edit=1`). Checked by
+  restarting a test server as another version: the open overlay reloaded itself.
+- `window.RovFitText(el, min)` (overlay-size.js) shrinks text to its box. **Trap:** Kanit's
+  ascenders overhang a tight line-height by a few px, so a plain `scrollHeight > clientHeight`
+  check shrank every name to the minimum; it allows ~0.3em vertically. Words are not broken
+  mid-word (`overflow-wrap: normal`) so a long word shrinks rather than splitting "PHANT/OM".
+
 ### 3.2.1 released (2026-09-30)
 
 New hero **Evita** (130 heroes). A hero exists only if `public/images/heroes/<name>.png` exists, so

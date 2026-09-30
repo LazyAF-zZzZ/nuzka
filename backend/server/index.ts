@@ -84,7 +84,14 @@ export function createApp(): Express {
   // จะปล่อยผ่านไป 404 เฉยๆ ไม่ได้ทำให้เซิร์ฟเวอร์พัง
   app.use('/sounds', express.static(USER_SOUND_DIR));
 
-  app.use(express.static(PUBLIC_DIR));
+  // หน้า สไตล์ และสคริปต์ต้องถามหาไฟล์ใหม่ทุกครั้ง (no-cache = ใช้ได้ถ้า ETag ยังตรง)
+  // OBS เปิด browser source ค้างไว้ข้ามการอัปเดตแอพ และเคยต้องให้ผู้ใช้กด refresh cache เอง
+  // ภาพไม่ต้อง ภาพฮีโร่ไม่เปลี่ยน และภาพที่ผู้ใช้อัปโหลดมี ?v= ของมันเองอยู่แล้ว
+  app.use(express.static(PUBLIC_DIR, {
+    setHeaders(res, file) {
+      if (/\.(html|css|js)$/i.test(file)) res.setHeader('Cache-Control', 'no-cache');
+    }
+  }));
 
   app.use(pageRoutes());
   app.use(appInfoRoutes());

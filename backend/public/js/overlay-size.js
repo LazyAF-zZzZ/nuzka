@@ -3,6 +3,23 @@
 // หน้าไหนที่ถูกล็อกขนาดไว้แล้ว (เช่น /overlay-1440 ที่ยังมีคนใส่ไว้ใน OBS)
 // ให้ใส่ data-lock-size ไว้ที่ <body> หน้านั้นจะไม่เปลี่ยนตาม
 (function () {
+    // ย่อตัวหนังสือให้พอดีกล่อง แทนการตัดท้ายเป็น ... (ใช้กับชื่อทีมยาวๆ บนกราฟิก)
+    // ลดทีละนิดจนไม่ล้นทั้งกว้างและสูง ไม่ต่ำกว่า min ของขนาดเดิม เกินนั้นให้ CSS ตัดเอง
+    window.RovFitText = (el, min = 0.55) => {
+        if (!el) return;
+        el.style.fontSize = '';
+        const base = parseFloat(getComputedStyle(el).fontSize) || 16;
+        let size = base;
+        // แนวตั้งเผื่อไว้ราวหนึ่งในสามของขนาดตัวอักษร: หัวและหางของ Kanit ยื่นพ้นบรรทัดที่ชิดๆ
+        // เสมอ ถ้านับตรงๆ ข้อความที่พอดีอยู่แล้วจะถูกย่อจนเหลือขนาดต่ำสุดทุกครั้ง (เจอบนหน้าดราฟต์)
+        const over = () => el.scrollWidth > el.clientWidth + 1
+            || el.scrollHeight > el.clientHeight + Math.ceil(size * 0.3);
+        for (let i = 0; i < 24 && over() && size > base * min; i++) {
+            size = Math.max(base * min, size * 0.94);
+            el.style.fontSize = size + 'px';
+        }
+    };
+
     const body = document.body;
     const locked = body.dataset.lockSize;
 
@@ -282,6 +299,29 @@
             watermark.hidden = Boolean(status && status.active);
             if (!watermark.hidden) placeSoon(50);
         });
+    }
+
+    // โหลดหน้าใหม่เองเมื่อแอพถูกอัปเดต (ผู้ใช้ขอ 2026-09-30)
+    //
+    // OBS เปิด browser source ค้างไว้ข้ามการอัปเดต หน้าเดิมจึงวิ่งด้วย JS/CSS รุ่นเก่า
+    // จนกว่าจะมีคนกด refresh cache เอง ซึ่งบันทึกประจำรุ่นต้องบอกทุกครั้ง
+    // อัปเดตแปลว่าแอพปิดแล้วเปิดใหม่ socket จึงต่อใหม่เสมอ ตอนต่อใหม่เทียบเลขรุ่นกับตอนเปิดหน้า
+    // ไม่ตรง = รุ่นใหม่ โหลดหน้าใหม่ครั้งเดียว (ไฟล์ส่งมาพร้อม no-cache จึงได้ของใหม่แน่)
+    // ตัวแก้ layout (?edit=1) ไม่โหลดเอง จะได้ไม่หายไปกลางที่ลากอยู่
+    if (typeof socket !== 'undefined' && !/[?&]edit=1/.test(location.search)) {
+        /** @type {string | null} */
+        let seenVersion = null;
+        const checkVersion = () => fetch('/api/app-info', { cache: 'no-store' })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((info) => {
+                const version = info && info.version;
+                if (!version) return;
+                if (seenVersion === null) { seenVersion = version; return; }
+                if (version !== seenVersion) location.reload();
+            })
+            .catch(() => { /* เซิร์ฟเวอร์ยังไม่ขึ้น ตอนต่อได้จะถามใหม่เอง */ });
+        socket.on('connect', checkVersion);
+        checkVersion();
     }
 
     applySize(locked || '1080');

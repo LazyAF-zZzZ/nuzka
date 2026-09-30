@@ -94,7 +94,7 @@ function slotNode(hero) {
     return slot;
 }
 
-function sideNode(side, which) {
+function sideNode(side, which, won) {
     const wrap = document.createElement('div');
     wrap.className = `pv-side ${which}`;
 
@@ -106,6 +106,13 @@ function sideNode(side, which) {
     name.className = 'pv-name';
     name.textContent = side.name || (which === 'blue' ? 'BLUE' : 'RED');
     team.append(dot, name);
+    // ทีมที่ชนะเกมนั้น (state.rounds[].winner มาจากผลที่บันทึกไว้) ไม่รู้ผลก็ไม่ขึ้นอะไร
+    if (won) {
+        const badge = document.createElement('div');
+        badge.className = 'pv-win';
+        badge.textContent = 'WIN';
+        team.appendChild(badge);
+    }
 
     const groups = document.createElement('div');
     groups.className = 'pv-groups';
@@ -149,7 +156,8 @@ function roundNode(record, index) {
     const split = document.createElement('div');
     split.className = 'pv-split';
 
-    row.append(no, sideNode(record.blue || {}, 'blue'), split, sideNode(record.red || {}, 'red'));
+    row.append(no, sideNode(record.blue || {}, 'blue', record.winner === 'blue'), split,
+        sideNode(record.red || {}, 'red', record.winner === 'red'));
 
     // ทางลัดตอนอนิเมชันได้เล่นจริง ตัวจับเวลาข้างล่างเป็นตัวการันตี ไม่ใช่ตัวนี้
     row.addEventListener('animationend', () => row.classList.add('settled'), { once: true });
@@ -330,3 +338,7 @@ socket.on('stateUpdate', (state) => {
 
 // ฟอนต์ที่นำเข้าในแอพโหลดมาทีหลัง ตัวหนังสือเปลี่ยนขนาด ต้องย่อให้พอดีจอใหม่ (overlay-fonts.js)
 window.addEventListener('rov-fonts', () => fitToStage());
+
+// วัดใหม่เมื่อฟอนต์ (Kanit) โหลดเสร็จ ตอนวาดครั้งแรกอาจยังเป็นฟอนต์สำรองที่เตี้ยกว่า
+// แล้วพอ Kanit มาถึง ตารางก็ล้นขอบล่างจอ (ตารางคะแนน 32 ทีม รีวิว 2026-09-30)
+if (document.fonts) document.fonts.ready.then(() => fitToStage());

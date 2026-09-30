@@ -94,7 +94,11 @@ function gameToRound(game: Game, state: GameState): RoundRecord {
     if (slot.idx >= 0 && slot.idx < list.length) list[slot.idx] = slot.hero;
   });
 
-  return { round: game.gameNo, blue, red };
+  // ผู้ชนะที่บันทึกไว้เทียบกับฝั่งในฐาน แถวนี้อาจวางสลับฝั่งกับฐาน จึงต้องพลิกตามกัน
+  const winner = game.winner === null ? null
+    : (game.winner === 'blue') !== swapped ? 'blue' : 'red';
+
+  return { round: game.gameNo, blue, red, winner };
 }
 
 // รอบก่อนหน้าทั้งหมดของแมตช์นี้ อ่านจากฐาน

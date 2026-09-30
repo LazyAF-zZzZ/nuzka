@@ -106,6 +106,10 @@
 .tc-player-who { min-width: 0; }
 .tc-player-name { font-family: var(--ov-font-name, 'Kanit', 'Segoe UI', Arial, sans-serif); font-size: 24px; font-weight: 700; color: var(--ov-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tc-player-games { font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--ov-silver); }
+/* แถวฮีโร่ของทีมมีเจ็ดช่อง 128px ของหน้า head to head ล้นการ์ด ใช้ 104px (รีวิว 2026-09-30) */
+.tc-card > .mu-heroes .mu-hero { width: 104px; }
+.tc-card > .mu-heroes .mu-art { width: 104px; height: 104px; }
+
 .tc-player-heroes { display: flex; gap: 8px; }
 .tc-player-heroes .mu-hero { width: 62px; }
 .tc-player-heroes .mu-art { width: 62px; height: 62px; border-radius: 8px; }

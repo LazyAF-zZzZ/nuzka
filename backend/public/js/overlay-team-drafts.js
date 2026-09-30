@@ -69,7 +69,18 @@ function heroRow(list, banned) {
             const badge = document.createElement('div');
             badge.className = 'mu-count';
             badge.textContent = `x${count}`;
-            cell.appendChild(badge);
+            // ในกรอบรูป ไม่ใช่ในช่อง: ใต้รูปมีอัตราชนะ (เหตุผลเดียวกับหน้า head to head)
+            art.appendChild(badge);
+        }
+
+        // อัตราชนะใต้ช่องพิค ข้อมูลมีมากับ API อยู่แล้ว (รีวิว 2026-09-30) แถวแบนไม่มีผลแพ้ชนะของตัวมันเอง
+        if (!banned) {
+            const rate = document.createElement('div');
+            const decided = Number(stat.decided) || 0;
+            const wins = Number(stat.wins) || 0;
+            rate.className = decided === 0 ? 'mu-rate none' : wins * 2 < decided ? 'mu-rate low' : 'mu-rate';
+            rate.textContent = decided === 0 ? '—' : `${Math.round((wins / decided) * 100)}%`;
+            cell.appendChild(rate);
         }
 
         box.appendChild(cell);
@@ -88,7 +99,7 @@ function sideCard(side, which) {
 
     const pickLabel = document.createElement('div');
     pickLabel.className = 'mu-label';
-    pickLabel.textContent = 'Most picked';
+    pickLabel.textContent = 'Most picked · win rate';
 
     const banLabel = document.createElement('div');
     banLabel.className = 'mu-label';

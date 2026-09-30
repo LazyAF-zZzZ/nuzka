@@ -353,7 +353,10 @@ function teamCard(team, index, showRoster) {
     name.textContent = team.name;
     id.appendChild(name);
 
-    if (team.tag) {
+    // ป้ายตัวย่อเฉพาะตอนมีโลโก้จริง ทีมที่ไม่มีโลโก้ กล่องโลโก้ขึ้นตัวย่อเดียวกันอยู่แล้ว
+    // สองอย่างติดกันคือ "KRK" ซ้ำสองครั้ง (รีวิว 2026-09-30)
+    const hasLogo = Boolean(team.logo && team.logo.v && team.logo.ext);
+    if (team.tag && hasLogo) {
         const tag = document.createElement('span');
         tag.className = 'tl-tag';
         tag.textContent = team.tag;

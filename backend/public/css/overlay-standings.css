@@ -104,7 +104,10 @@ table.st-table { width: 100%; border-collapse: collapse; }
     content: '=';
     margin-left: 4px;
     color: var(--ov-silver);
-    font-size: calc(var(--st-font) * 0.75);
+    /* Kanit หนาที่ขนาดนี้ทำให้สองขีดของ = ติดกันเป็นก้อนสี่เหลี่ยม (รีวิว 2026-09-30) */
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-weight: 400;
+    font-size: calc(var(--st-font) * 0.9);
 }
 
 .st-note { flex: 0 0 auto; font-size: 17px; font-weight: 500; letter-spacing: 2px; color: rgba(255,255,255,0.4); }

@@ -212,6 +212,11 @@ test('a side swap between games does not swap the two teams statistics', () => {
   // และฮีโร่ยังถูกนับให้ทีมที่หยิบจริง ไม่ใช่ให้ฝั่งของจอ
   const fwPicked = result.a.topPicks.find((h) => h.hero === HEROES[0]);
   assert.strictEqual(must(fwPicked).count, 2, 'FW took it in both games');
+  // and both of those games were wins, whichever side FW was on (win rate under the tile)
+  assert.strictEqual(must(fwPicked).wins, 2);
+  assert.strictEqual(must(fwPicked).decided, 2);
+  const eaPicked = must(result.b.topPicks.find((h) => h.hero === HEROES[5]));
+  assert.deepStrictEqual([eaPicked.wins, eaPicked.decided], [0, 2], 'EA lost both games it picked this in');
   assert.ok(!result.b.topPicks.some((h) => h.hero === HEROES[0]), 'and it is not credited to EA');
   s.db.close();
 });

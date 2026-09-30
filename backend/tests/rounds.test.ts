@@ -413,3 +413,12 @@ test('switching sides also flips the earlier rounds, and the names follow', () =
   assert.strictEqual(after.red.picks[0], HERO_A);
   assert.strictEqual(after.blue.name, 'EA');
 });
+
+
+test('a round keeps who won it, and anything else reads as not known', () => {
+  const { sanitizeRound } = require('../server/domain/rounds') as typeof import('../server/domain/rounds');
+  assert.strictEqual(sanitizeRound({ round: 2, winner: 'red' }, 0).winner, 'red');
+  assert.strictEqual(sanitizeRound({ round: 2, winner: 'blue' }, 0).winner, 'blue');
+  assert.strictEqual(sanitizeRound({ round: 2, winner: 'draw' }, 0).winner, null);
+  assert.strictEqual(sanitizeRound({ round: 2 }, 0).winner, null);
+});

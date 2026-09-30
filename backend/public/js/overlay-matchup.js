@@ -49,11 +49,22 @@ function heroRow(list, banned) {
         cell.appendChild(art);
 
         // แสดงเลขเฉพาะตอนที่หยิบซ้ำ เลข 1 ทุกช่องคือหมึกที่ไม่ได้บอกอะไร
+        // อยู่ในกรอบรูป ไม่ใช่ในช่อง: ใต้รูปมีอัตราชนะ ป้ายที่ยึดขอบช่องจะไปตกข้างตัวเลขนั้น
         if (entry.count > 1) {
             const count = document.createElement('div');
             count.className = 'mu-count';
             count.textContent = `x${entry.count}`;
-            cell.appendChild(count);
+            art.appendChild(count);
+        }
+
+        // อัตราชนะในคู่นี้ ใต้ช่องพิคเท่านั้น (แบนไม่มีผลแพ้ชนะของตัวมันเอง)
+        if (!banned) {
+            const rate = document.createElement('div');
+            const decided = Number(entry.decided) || 0;
+            const wins = Number(entry.wins) || 0;
+            rate.className = decided === 0 ? 'mu-rate none' : wins * 2 < decided ? 'mu-rate low' : 'mu-rate';
+            rate.textContent = decided === 0 ? '—' : `${Math.round((wins / decided) * 100)}%`;
+            cell.appendChild(rate);
         }
 
         box.appendChild(cell);
@@ -72,7 +83,7 @@ function sideCard(side, which) {
 
     const pickLabel = document.createElement('div');
     pickLabel.className = 'mu-label';
-    pickLabel.textContent = 'Most picked in this matchup';
+    pickLabel.textContent = 'Most picked in this matchup · win rate';
 
     const banLabel = document.createElement('div');
     banLabel.className = 'mu-label';
@@ -84,6 +95,55 @@ function sideCard(side, which) {
         banLabel, heroRow(side.topBans || [], true)
     );
     return card;
+}
+
+// ซีรีส์ที่เคยเจอกัน ล่าสุดก่อน สูงสุดสามแถว (API ส่งมาอยู่แล้วแต่ไม่เคยขึ้นจอ รีวิว 2026-09-30)
+function roundLabel(meeting) {
+    const bracket = meeting.bracket && meeting.bracket !== 'main'
+        ? meeting.bracket.charAt(0).toUpperCase() + meeting.bracket.slice(1) + ' '
+        : '';
+    return `${bracket}Round ${meeting.round}`;
+}
+
+function renderMeetings(matchup) {
+    const box = document.getElementById('meetings');
+    if (!box) return;
+    box.textContent = '';
+    const list = (matchup.meetings || []).slice(0, 3);
+    box.hidden = list.length === 0;
+    if (list.length === 0) return;
+
+    const label = document.createElement('div');
+    label.className = 'mu-label';
+    label.textContent = 'Previous meetings';
+    box.appendChild(label);
+
+    list.forEach((m) => {
+        const row = document.createElement('div');
+        row.className = 'mu-meeting';
+
+        const where = document.createElement('div');
+        where.className = 'mu-meeting-where';
+        where.textContent = `${m.tournamentName} · ${roundLabel(m)}`;
+
+        const score = document.createElement('div');
+        score.className = 'mu-meeting-score';
+        const a = document.createElement('span');
+        a.className = m.winnerId === matchup.a.teamId ? 'blue won' : 'blue';
+        a.textContent = String(m.scoreA);
+        const b = document.createElement('span');
+        b.className = m.winnerId === matchup.b.teamId ? 'red won' : 'red';
+        b.textContent = String(m.scoreB);
+        score.append(a, document.createTextNode(' – '), b);
+
+        const who = document.createElement('div');
+        who.className = 'mu-meeting-winner';
+        who.textContent = m.winnerId === null ? 'In progress'
+            : m.winnerId === matchup.a.teamId ? `${matchup.a.name} won` : `${matchup.b.name} won`;
+
+        row.append(where, score, who);
+        box.appendChild(row);
+    });
 }
 
 function settleSoon() {
@@ -137,6 +197,7 @@ function render(matchup) {
     const cols = document.getElementById('cols');
     cols.textContent = '';
     cols.append(sideCard(matchup.a, 'blue'), sideCard(matchup.b, 'red'));
+    renderMeetings(matchup);
 
     settleSoon();
 }

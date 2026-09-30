@@ -30,6 +30,7 @@ p{max-width:34rem;margin:.5rem 1.5rem}b{color:#e3c07b}small{color:#8b8f98}
 function sendPage(res: Response, file: string): void {
   const full = path.join(PUBLIC_DIR, file);
   if (fs.existsSync(full)) {
+    res.setHeader('Cache-Control', 'no-cache');   // เหตุผลเดียวกับ static ใน index.ts
     res.sendFile(full);
     return;
   }

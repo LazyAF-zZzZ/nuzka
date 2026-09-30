@@ -258,3 +258,7 @@ if (refreshSeconds > 0) setInterval(load, refreshSeconds * 1000);
 
 // ฟอนต์ที่นำเข้าในแอพโหลดมาทีหลัง ตัวหนังสือเปลี่ยนขนาด ต้องย่อให้พอดีจอใหม่ (overlay-fonts.js)
 window.addEventListener('rov-fonts', () => fitToStage());
+
+// วัดใหม่เมื่อฟอนต์ (Kanit) โหลดเสร็จ ตอนวาดครั้งแรกอาจยังเป็นฟอนต์สำรองที่เตี้ยกว่า
+// แล้วพอ Kanit มาถึง ตารางก็ล้นขอบล่างจอ (ตารางคะแนน 32 ทีม รีวิว 2026-09-30)
+if (document.fonts) document.fonts.ready.then(() => fitToStage());

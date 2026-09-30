@@ -29,6 +29,10 @@ export interface RoundRecord {
   round: number;
   blue: RoundSide;
   red: RoundSide;
+  // ผู้ชนะของเกมนั้น เทียบกับฝั่งของแถวนี้เอง (blue = ทีมที่อยู่ใน .blue ของแถว)
+  // null = ไม่รู้ เช่นเกมที่ยังไม่ได้บันทึกผล หรือเดินรอบด้วยปุ่ม > เฉยๆ
+  // กราฟิก "พิค/แบนเกมก่อน" ใช้ขึ้น WIN ให้ทีมที่ชนะ (ผู้ใช้ขอ 2026-09-30)
+  winner?: 'blue' | 'red' | null;
 }
 
 export const FIRST_ROUND = 1;
@@ -62,7 +66,8 @@ export function sanitizeRound(value: unknown, index: number): RoundRecord {
   return {
     round: sanitizeRoundNumber(source.round ?? index + 1),
     blue: sanitizeSide(source.blue, 'BLUE'),
-    red: sanitizeSide(source.red, 'RED')
+    red: sanitizeSide(source.red, 'RED'),
+    winner: source.winner === 'blue' || source.winner === 'red' ? source.winner : null
   };
 }
 

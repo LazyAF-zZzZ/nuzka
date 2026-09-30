@@ -520,10 +520,19 @@ function finishQuickGame(key: 'teamBlue' | 'teamRed'): FinishGameOutcome {
     return { error: 'Round is already at the limit', code: 'round-limit' };
   }
   const teamName = state[key].name;
+  const finished = state.round;
   state[key].score = clampNumber(state[key].score + 1, 0, MAX_SCORE);
   emitState();
   const stepped = stepRound(1);
   if (stepped.error !== undefined) return { error: stepped.error, code: 'round-limit' };
+
+  // stepRound เก็บกระดานเกมนี้เข้ากองก่อนสลับฝั่ง .blue ของแถวนั้นจึงเป็นทีมน้ำเงินตอนเล่นจริง
+  // ใส่ผู้ชนะให้แถวนั้น กราฟิกเกมก่อนหน้าจะได้บอกได้ว่าใครชนะ (กระดานว่างไม่ถูกเก็บ ก็ไม่มีแถวให้ใส่)
+  const filed = getState().rounds.find((r) => r.round === finished);
+  if (filed) {
+    filed.winner = key === 'teamBlue' ? 'blue' : 'red';
+    emitState();
+  }
   return {
     result: {
       live: emptyLive(), round: getState().round, seriesOver: false,

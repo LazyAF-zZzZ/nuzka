@@ -1263,10 +1263,12 @@ body.panels-off .team-center-card {
     right: 0;
     bottom: 369.5px;
     font-size: var(--ov-type-tournament);
-    font-weight: 500;
+    /* 600 และทึบเต็ม: ที่ 500 จาง 85% มันหายไปในพื้นแบนเนอร์ (รีวิว 2026-09-30) */
+    font-weight: 600;
     letter-spacing: 0.12em;
     margin-bottom: 0;
-    opacity: 0.85;
+    opacity: 1;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 /* Negative on purpose, and it is the box edges that overlap, not anything
@@ -1526,6 +1528,38 @@ body[data-size="1440"] .overlay-container {
 
 .team-logo[hidden] {
     display: none !important;
+}
+
+/* ทีมที่ไม่มีโลโก้: ชื่อทีมขึ้นแทนในกล่องเดียวกัน (overlay.js markNoLogo)
+ * ตัวหนังสือถูกย่อให้พอดีกล่องด้วย RovFitText ชื่อยาวจึงตัดขึ้นบรรทัดใหม่แทนการหาย */
+.team-logo-score[data-nologo] .team-info {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+.team-logo-score[data-nologo] .team-name {
+    display: block;
+    width: 100%;
+    max-height: 100%;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.08;
+    text-transform: uppercase;
+    text-align: center;
+    white-space: normal !important;
+    overflow: hidden;
+    /* ไม่หักกลางคำ: คำที่กว้างเกินกล่องให้ย่อทั้งชื่อลงแทน (RovFitText วัดความกว้างที่ล้น) */
+    overflow-wrap: normal;
+    text-overflow: clip;
+    color: var(--ov-text);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+}
+
+/* ดราฟต์จบแล้ว ซ่อนตัวเลขนาฬิกาแต่เก็บที่ไว้ (overlay.js) */
+.timer.draft-done {
+    visibility: hidden;
 }
 
 /* ===== Position icon (banner background of a pick slot) ===== */

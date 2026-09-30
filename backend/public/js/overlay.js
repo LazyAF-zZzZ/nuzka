@@ -136,6 +136,15 @@ function applyOverlayVisible(visible) {
 // Only touches src when the version actually changes. Reassigning src on
 // every state update - and these arrive once a second while the draft
 // timer runs - makes the image blink on air in OBS.
+// ทีมที่ไม่มีโลโก้: เอาชื่อทีมขึ้นแทนในกล่องเดียวกัน (ผู้ใช้ขอ 2026-09-30)
+// ไม่งั้นกล่อง 138px ตรงนั้นว่างเปล่า และกลางจอไม่มีอะไรบอกเลยว่าฝั่งไหนคือทีมไหน
+function markNoLogo(el, missing) {
+    const holder = el && el.parentElement;
+    if (!holder) return;
+    holder.toggleAttribute('data-nologo', missing);
+    if (missing && window.RovFitText) window.RovFitText(holder.querySelector('.team-name'), 0.5);
+}
+
 function renderTeamLogo(el, team, logo) {
     if (!el) return;
     const version = logo?.v || 0;
@@ -145,6 +154,7 @@ function renderTeamLogo(el, team, logo) {
         el.hidden = true;
         el.removeAttribute('src');
         el.dataset.version = '';
+        markNoLogo(el, true);
         return;
     }
 
@@ -166,9 +176,19 @@ function renderTeamLogo(el, team, logo) {
     el.onerror = () => {
         el.hidden = true;
         el.dataset.version = '';
+        markNoLogo(el, true);
     };
     el.src = `images/team-logos/${file}.${ext}?v=${version}`;
     el.hidden = false;
+    markNoLogo(el, false);
+}
+
+// "Saigon Phantom VS PSG Esports : GAME 5 [BO5]" -> "GAME 5 · BO5"
+// ชื่อทีมอยู่ที่โลโก้หรือชื่อในกล่องโลโก้แล้ว ชื่อแมตช์เต็มๆ ยาวจนตกสองบรรทัดในกล่องแคบ
+// ชื่อที่ผู้ใช้พิมพ์เองในแมตช์เดี่ยวไม่ตรงรูปแบบนี้ ก็ขึ้นตามที่พิมพ์ไว้
+function shortMatchTitle(title) {
+    const match = /\bGAME\s*(\d+)\s*\[\s*(BO\d+)\s*\]\s*$/i.exec(title || '');
+    return match ? `GAME ${match[1]} · ${match[2].toUpperCase()}` : (title || '');
 }
 
 // วินาทีล่าสุดที่เล่นเสียงติ๊กไปแล้ว
@@ -268,6 +288,10 @@ function updateOverlay(state) {
     // Update timer + draft label
     const timerEl = document.getElementById('timer');
     const draftLabelEl = document.getElementById('draftLabel');
+    // ดราฟต์จบแล้ว (พิคครบสิบ นาฬิกาหยุด) ตัวเลข 00:00 ค้างอยู่ก็ไม่ได้บอกอะไรคนดู
+    // ซ่อนแค่ตัวเลข ช่องยังอยู่ ของที่เหลือในกล่องกลางจึงไม่ขยับ
+    const picksDone = [state.teamBlue, state.teamRed].every((t) => t.picks.every(Boolean));
+    if (timerEl) timerEl.classList.toggle('draft-done', picksDone && !state.draftRunning);
     if (timerEl) {
         if (state.draftLabel === 'coming soon') {
             timerEl.textContent = '';
@@ -297,7 +321,7 @@ function updateOverlay(state) {
     // Update match info
     if (state.matchInfo) {
         document.getElementById('tournamentName').textContent = state.matchInfo.tournament || 'ROV Premier League';
-        document.getElementById('matchTitle').textContent = state.matchInfo.title || '';
+        document.getElementById('matchTitle').textContent = shortMatchTitle(state.matchInfo.title);
     }
     
     // Update player names
