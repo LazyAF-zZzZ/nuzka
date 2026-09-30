@@ -700,7 +700,7 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
-### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.6; beta.2 to beta.5 were built but never published)
+### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.7; beta.2 to beta.6 were built but never published)
 
 User's request: "move all design into edit layout and move the edit layout button to OBS sources, next
 to each page title". The app's Design screen, its view model and its menu entry are deleted.
@@ -733,6 +733,12 @@ to each page title". The app's Design screen, its view model and its menu entry 
   rejected. Tag boxes and the switch are in both the editor Text section and the desktop Control (tag beside the
   team name, switch beside "Swap sides each game"); `updateTeamTag`/`updateDraftShowTag`, an empty tag IS sent. With a tag showing, a no-logo name is bottom-aligned (`data-tagged`)
   so the name-to-tag gap is the same on both sides; centred, a two-line name ended lower than a one-line one.
+- **Smart guides** (user's request, "like OBS or Photoshop"): while dragging, a part snaps (7 screen px) its
+  left/centre/right and top/middle/bottom to the same lines of the stage and of every other visible part, except
+  its own children and the groups around it (a group can grow with its child, so the two would chase each other).
+  Targets are collected once at pointerdown. A pink line runs part-to-part, or the full stage for a stage line.
+  Ctrl while dragging turns snapping off; the "Snap to guides" box is remembered in localStorage (per viewer). The
+  old snap back home within 6 px still applies when no guide is close.
 - Global editor rules (`#layout-editor label` stacks vertically, `input` is full width) are meant for
   the Layout tab's X/Y boxes; Style tick boxes override both.
 - Not done: the Design.*, Fonts.*, Layout.* and TeamList.* strings in Loc.M5.cs are now unused.

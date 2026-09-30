@@ -172,7 +172,8 @@
             standings: 'ตารางคะแนน', matchup: 'เจอกันมาก่อน', 'team-drafts': 'พิค/แบนของทีม',
             'team-card': 'การ์ดทีม', prev: 'พิค/แบนเกมก่อน'
         },
-        help: 'ลากเพื่อย้าย คลิกเลือกชิ้นเล็กสุดที่อยู่ใต้เมาส์ กด "เลือกทั้งกลุ่ม" หรือ Alt+คลิก เพื่อเลือกกลุ่มที่ครอบอยู่ ปุ่มลูกศรขยับทีละ 1 px (Shift = 10 px) ลากกลับใกล้ที่เดิมจะดูดเข้าที่เดิมเอง',
+        help: 'ลากเพื่อย้าย คลิกเลือกชิ้นเล็กสุดที่อยู่ใต้เมาส์ กด "เลือกทั้งกลุ่ม" หรือ Alt+คลิก เพื่อเลือกกลุ่มที่ครอบอยู่ ปุ่มลูกศรขยับทีละ 1 px (Shift = 10 px) ลากกลับใกล้ที่เดิมจะดูดเข้าที่เดิมเอง ระหว่างลาก ชิ้นส่วนจะดูดเข้าขอบและกึ่งกลางของจอและของชิ้นอื่น พร้อมเส้นนำสีชมพู กด Ctrl ค้างไว้เพื่อลากอิสระ',
+        snap: 'ดูดเข้าเส้นนำ',
         none: 'ยังไม่ได้เลือก คลิกชิ้นส่วนบน overlay หรือในรายการด้านล่าง',
         size: 'ขนาด %', parent: 'เลือกทั้งกลุ่ม', hide: 'ซ่อน', show: 'แสดง', reset: 'คืนที่เดิม',
         parts: 'ชิ้นส่วน', resetAll: 'คืนค่าเดิมทั้งหน้า', undo: 'ย้อนกลับ (Ctrl+Z)',
@@ -186,7 +187,8 @@
             standings: 'Standings', matchup: 'Head to head', 'team-drafts': 'Team picks & bans',
             'team-card': 'Team card', prev: 'Previous picks & bans'
         },
-        help: 'Drag to move. A click picks the smallest part under the mouse; "Select group" or Alt+click picks the group around it. Arrow keys move 1 px (Shift: 10 px). Dragging back near the original spot snaps into it.',
+        help: 'Drag to move. A click picks the smallest part under the mouse; "Select group" or Alt+click picks the group around it. Arrow keys move 1 px (Shift: 10 px). Dragging back near the original spot snaps into it. While dragging, parts snap to the edges and centres of the screen and of other parts, with pink guide lines; hold Ctrl to drag freely.',
+        snap: 'Snap to guides',
         none: 'Nothing selected. Click a part on the overlay or in the list below.',
         size: 'Size %', parent: 'Select group', hide: 'Hide', show: 'Show', reset: 'Reset',
         parts: 'Parts', resetAll: 'Reset whole overlay', undo: 'Undo (Ctrl+Z)',
@@ -254,6 +256,11 @@
         html.layout-editing body.overlay-hidden .pick-section { transform: none !important; }
         html.layout-editing [data-layout].layout-dragging { transition: none !important; }
         .le-box { position: fixed; pointer-events: none; z-index: 2147483000; border-radius: 3px; }
+        .le-guide { position: fixed; pointer-events: none; z-index: 2147483001; background: #ff3fd0; display: none; }
+        .le-guide.v { width: 1px; }
+        .le-guide.h { height: 1px; }
+        #layout-editor label.le-snap { flex-direction: row; align-items: center; gap: 6px; margin-top: 10px; cursor: pointer; }
+        #layout-editor label.le-snap input { width: auto; margin: 0; }
         .le-hover { outline: 1px dashed #ffffffaa; }
         .le-sel { outline: 2px solid #3da5ff; box-shadow: 0 0 0 4px #3da5ff33; }
         .le-sel > span { position: absolute; left: -2px; bottom: 100%; margin-bottom: 4px; white-space: nowrap;
@@ -347,6 +354,7 @@
                 <label>Y <input type="number" data-f="y" step="1"></label>
                 <label><span data-sizelabel></span><input type="number" data-f="s" step="5" min="20" max="400"></label>
             </div>
+            <label class="le-snap"><input type="checkbox" data-snap> <span data-snaplabel></span></label>
             <div class="le-row">
                 <button data-a="parent"></button>
                 <button data-a="hide"></button>
@@ -361,7 +369,10 @@
         </div>
         </div>
         <div class="le-pane" data-pane="style" hidden><div class="le-style" data-style></div></div>`;
-    document.documentElement.append(hoverBox, selBox, panel);
+    // เส้นนำตอนลาก แบบ Photoshop/OBS (ผู้ใช้ขอ 2026-09-30): แนวตั้งหนึ่งเส้น แนวนอนหนึ่งเส้น
+    const guideV = Object.assign(document.createElement('div'), { className: 'le-guide v' });
+    const guideH = Object.assign(document.createElement('div'), { className: 'le-guide h' });
+    document.documentElement.append(hoverBox, selBox, guideV, guideH, panel);
 
     const $ = (sel) => panel.querySelector(sel);
     $('h1').textContent = `${T.title} · ${T.scene[scene] || scene}`;
@@ -372,6 +383,13 @@
     $('[data-a="reset"]').textContent = T.reset;
     $('[data-a="undo"]').textContent = T.undo;
     $('[data-a="resetAll"]').textContent = T.resetAll;
+    $('[data-snaplabel]').textContent = T.snap;
+    // เปิดไว้เป็นค่าเริ่มต้น จำค่าไว้ในเบราว์เซอร์นี้ (เป็นความสะดวกของคนแก้ ไม่ใช่ข้อมูลของงาน)
+    const snapBox = /** @type {HTMLInputElement} */ ($('[data-snap]'));
+    try { snapBox.checked = localStorage.getItem('nuzkaLayoutSnap') !== 'off'; } catch { snapBox.checked = true; }
+    snapBox.addEventListener('change', () => {
+        try { localStorage.setItem('nuzkaLayoutSnap', snapBox.checked ? 'on' : 'off'); } catch { /* ไม่มีที่เก็บก็ใช้ได้ต่อ */ }
+    });
 
     let selected = null;       // key
     let hovered = null;        // element
@@ -529,15 +547,89 @@
         if (ev.shiftKey) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
         let x = Math.round(drag.from.x + dx);
         let y = Math.round(drag.from.y + dy);
-        if (Math.abs(x) <= 6) x = 0;   // back home snaps into place
-        if (Math.abs(y) <= 6) y = 0;
+        const snapped = snapBox.checked && !ev.ctrlKey
+            ? snapTo(x, y, ev.shiftKey && dx === 0, ev.shiftKey && dy === 0)
+            : { x: null, y: null };
+        if (snapped.x) x = snapped.x.value;
+        else if (Math.abs(x) <= 6) x = 0;   // back home snaps into place
+        if (snapped.y) y = snapped.y.value;
+        else if (Math.abs(y) <= 6) y = 0;
         drag.entry = { ...drag.from, x, y };
+        showGuides(snapped);
         applyPart(drag.el, drag.entry);
         releaseClipped();
         const now = performance.now();
         if (now - drag.sentAt > 80) { drag.sentAt = now; send(drag.key, drag.entry); }
         refreshPanelSoon();
     }, true);
+
+    // --- smart guides
+    //
+    // เป้าหมายเก็บไว้ครั้งเดียวตอนเริ่มลาก ชิ้นอื่นไม่ขยับระหว่างนั้น: ขอบซ้าย/กลาง/ขวา และบน/กลาง/ล่าง
+    // ของจอและของทุกชิ้นที่มองเห็น ยกเว้นตัวที่ลาก ลูกของมัน และกลุ่มที่ครอบมันอยู่ (ขอบของกลุ่มอาจเลื่อนตาม
+    // ตัวที่ลาก ดูดเข้าหามันจึงวิ่งไล่กันเอง)
+    // ระยะดูดคิดเป็นพิกเซลบนจอ ไม่ใช่บน overlay: ย่อหน้าต่างเล็กแค่ไหนก็ดูดที่ระยะมือเท่าเดิม
+    const SNAP_PX = 7;
+    function collectTargets(el) {
+        const xs = [];
+        const ys = [];
+        const add = (r, stage) => {
+            xs.push({ at: r.left, r, stage }, { at: (r.left + r.right) / 2, r, stage }, { at: r.right, r, stage });
+            ys.push({ at: r.top, r, stage }, { at: (r.top + r.bottom) / 2, r, stage }, { at: r.bottom, r, stage });
+        };
+        const stage = body.getBoundingClientRect();
+        add(stage, true);
+        parts().forEach((other) => {
+            if (other === el || el.contains(other) || other.contains(el) || other.hasAttribute('data-layout-hidden')) return;
+            const r = other.getBoundingClientRect();
+            if (r.width < 2 || r.height < 2) return;
+            add(r, false);
+        });
+        return { xs, ys, stage };
+    }
+
+    // x, y คือค่าที่จะตั้ง (พิกเซลของ overlay) คืนค่าที่ดูดแล้วพร้อมเป้าที่ตรงกัน หรือ null ถ้าไม่มีอะไรใกล้พอ
+    function snapTo(x, y, lockX, lockY) {
+        const r0 = drag.rect0;
+        const k = drag.scale;
+        const left = r0.left + (x - drag.from.x) * k;
+        const top = r0.top + (y - drag.from.y) * k;
+        const mine = (start, size) => [start, start + size / 2, start + size];
+        const best = (edges, targets) => {
+            let found = null;
+            edges.forEach((edge) => targets.forEach((t) => {
+                const d = t.at - edge;
+                if (Math.abs(d) <= SNAP_PX && (!found || Math.abs(d) < Math.abs(found.d))) found = { d, t };
+            }));
+            return found;
+        };
+        const bx = lockX ? null : best(mine(left, r0.width), drag.targets.xs);
+        const by = lockY ? null : best(mine(top, r0.height), drag.targets.ys);
+        return {
+            x: bx && { value: Math.round(x + bx.d / k), line: bx.t.at, t: bx.t },
+            y: by && { value: Math.round(y + by.d / k), line: by.t.at, t: by.t }
+        };
+    }
+
+    // เส้นจากชิ้นที่ลากไปถึงชิ้นที่ตรงกัน แบบ Photoshop ถ้าตรงกับจอ ลากเต็มความสูง/กว้างของจอ แบบ OBS
+    function showGuides(snapped) {
+        const place = (guide, hit, vertical) => {
+            if (!hit || !drag) { guide.style.display = 'none'; return; }
+            const r = drag.el.getBoundingClientRect();
+            const stage = drag.targets.stage;
+            const t = hit.t.r;
+            const from = hit.t.stage ? (vertical ? stage.top : stage.left)
+                : Math.min(vertical ? r.top : r.left, vertical ? t.top : t.left);
+            const to = hit.t.stage ? (vertical ? stage.bottom : stage.right)
+                : Math.max(vertical ? r.bottom : r.right, vertical ? t.bottom : t.right);
+            Object.assign(guide.style, vertical
+                ? { display: 'block', left: Math.round(hit.line) + 'px', top: from + 'px', height: (to - from) + 'px', width: '' }
+                : { display: 'block', top: Math.round(hit.line) + 'px', left: from + 'px', width: (to - from) + 'px', height: '' });
+        };
+        place(guideV, snapped.x, true);
+        place(guideH, snapped.y, false);
+    }
+    const hideGuides = () => { guideV.style.display = 'none'; guideH.style.display = 'none'; };
 
     /** @type {ReturnType<typeof setTimeout> | 0} */
     let panelTimer = 0;
@@ -561,7 +653,8 @@
         select(key);
         drag = {
             key, el, from: entryOf(key), entry: entryOf(key),
-            startX: ev.clientX, startY: ev.clientY, scale: screenScale(el), sentAt: 0
+            startX: ev.clientX, startY: ev.clientY, scale: screenScale(el), sentAt: 0,
+            rect0: el.getBoundingClientRect(), targets: collectTargets(el)
         };
         dragKey = key;
         el.classList.add('layout-dragging');
@@ -573,6 +666,7 @@
         const { key, el, from, entry } = drag;
         drag = null;
         dragKey = null;
+        hideGuides();
         el.classList.remove('layout-dragging');
         if (entry.x !== from.x || entry.y !== from.y) {
             undoStack.push({ key, entry: from });
