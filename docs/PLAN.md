@@ -700,6 +700,15 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
+### 3.2.1 released (2026-09-30)
+
+New hero **Evita** (130 heroes). A hero exists only if `public/images/heroes/<name>.png` exists, so
+placeholder cards went in first and the user replaced them with the real 240x390 portrait and 100x100
+icon before release; `data/heroes.json` (the fallback list `check-heroes.js` reads) got one line.
+Published with `pack.ps1 -Publish`, which now also drops the old-named Setup/Portable copies; the
+release keeps the Nuzka installers, both .nupkg files, releases.win.json and RELEASES. Delta from
+3.2.0 is 1 MB.
+
 ### 3.2.0 released (2026-09-30)
 
 Published as **Nuzka 3.2.0** (tag v3.2.0, Latest) at github.com/LazyAF-zZzZ/nuzka, built once and uploaded as
