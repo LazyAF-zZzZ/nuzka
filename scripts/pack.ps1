@@ -186,6 +186,12 @@ if ($Publish) {
     if ($friendlyFiles.Count -gt 0) {
         & gh release upload "v$Version" @friendlyFiles --repo ($RepoUrl -replace '^https://github.com/', '') --clobber
         if ($LASTEXITCODE -ne 0) { throw 'uploading the Nuzka-named installer failed' }
+        # The old-named Setup.exe / Portable.zip are the same bytes under the pack id's name; the user asked
+        # for them off the release page (2026-09-30). The .nupkg files and releases.<channel>.json must stay:
+        # installed copies download the update by those exact names.
+        foreach ($name in $friendly.Keys) {
+            & gh release delete-asset "v$Version" $name --repo ($RepoUrl -replace '^https://github.com/', '') -y | Out-Null
+        }
     }
     Write-Host '  published.' -ForegroundColor Green
 }
