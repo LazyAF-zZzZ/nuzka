@@ -55,8 +55,136 @@
         resultTop1080: 'result-top-1080',
         resultTop1440: 'result-top-1440',
         resultBottom1080: 'result-bottom-1080',
-        resultBottom1440: 'result-bottom-1440'
+        resultBottom1440: 'result-bottom-1440',
+        // ต้องตรงกับ SKIN_SLOTS ใน server/domain/media.ts
+        textureDraft: 'texture-draft',
+        textureResult: 'texture-result',
+        textureTeams: 'texture-teams',
+        textureStandings: 'texture-standings',
+        textureAnalytics: 'texture-analytics',
+        textureMatchup: 'texture-matchup',
+        textureTeamDrafts: 'texture-team-drafts',
+        textureTeamCard: 'texture-team-card',
+        texturePrev: 'texture-prev'
     };
+
+    // --- พื้นผิว (texture) ทับพื้นเดิม ------------------------------------
+    // ผู้ใช้ขอ 2026-09-30: นำเข้าภาพมาปูทับพื้นเดิมของแบนเนอร์ดราฟต์และหน้าอื่นๆ
+    // ภาพอยู่ในช่อง skin ชื่อ texture<Scene> ค่าวิธีปูอยู่ที่ state.textures[scene]
+    //
+    // ปูเป็นลูกชิ้นหนึ่ง (.nz-texture) ในแต่ละพื้นที่เป้าหมาย z-index: -1 ภายใต้ isolation: isolate
+    // จึงอยู่เหนือพื้นของกล่องเอง แต่ใต้ตัวหนังสือและภาพทุกอย่างในกล่อง และโหมดผสมผสมกับพื้นกล่องเท่านั้น
+    // การ์ด แถว และกลุ่มของบางหน้าถูกสร้างใหม่ตลอดเวลา จึงคอยดูด้วย MutationObserver แล้วเติมให้
+    const TEXTURE_TARGETS = {
+        draft: '.pick-section',
+        result: '.team-section',
+        teams: '.tl-card',
+        standings: '.st-group',
+        analytics: '.an-row',
+        matchup: '.mu-score, .mu-side, .mu-meetings',
+        'team-drafts': '.mu-score, .mu-side, .mu-meetings',
+        'team-card': '.tc-logo, .tc-tile, .mu-side',
+        prev: '.pv-round'
+    };
+    const textureScene = body.dataset.layoutScene || '';
+    const textureSelector = TEXTURE_TARGETS[textureScene] || '';
+    const textureSlot = 'texture' + textureScene.replace(/(^|-)([a-z])/g, (_m, _d, c) => c.toUpperCase());
+    let textureOn = false;
+    if (textureSelector) {
+        const css = document.createElement('style');
+        css.textContent = `
+            .nz-textured { isolation: isolate; }
+            .nz-texture { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+                background-image: var(--nz-tex-url); background-repeat: var(--nz-tex-repeat, repeat);
+                background-size: var(--nz-tex-size, auto); background-position: center;
+                opacity: var(--nz-tex-opacity, 0.35); mix-blend-mode: var(--nz-tex-blend, normal); }
+            .has-skin > .nz-texture { display: none; }`;
+        document.head.appendChild(css);
+    }
+
+    function placeTextures() {
+        if (!textureSelector) return;
+        document.querySelectorAll(textureSelector).forEach((node) => {
+            const el = /** @type {HTMLElement} */ (node);
+            const layer = Array.from(el.children).find((c) => c.classList.contains('nz-texture'));
+            if (!textureOn) {
+                if (layer) layer.remove();
+                el.classList.remove('nz-textured');
+                return;
+            }
+            if (layer) return;
+            // กล่องต้องเป็นจุดอ้างอิงของ position: absolute ถ้ายังไม่ใช่ ตั้ง relative ให้
+            // แต่ถ้ามีลูกที่วางแบบ absolute อ้างกล่องที่อยู่นอกกว่าอยู่แล้ว ตั้ง relative จะพาลูกพวกนั้นย้ายที่ จึงข้าม
+            if (getComputedStyle(el).position === 'static') {
+                // ลูกที่อ้างกล่องที่อยู่ข้างในอยู่แล้ว (เช่นตัวเลขมุมช่องฮีโร่) ไม่กระทบ นับเฉพาะที่อ้างออกไปข้างนอก
+                const anchored = Array.from(el.querySelectorAll('*')).some((c) => {
+                    const p = getComputedStyle(c).position;
+                    if (p === 'fixed') return true;
+                    if (p !== 'absolute') return false;
+                    const holder = /** @type {HTMLElement} */ (c).offsetParent;
+                    return !holder || !el.contains(holder);
+                });
+                if (anchored) return;
+                el.style.position = 'relative';
+            }
+            el.classList.add('nz-textured');
+            const div = document.createElement('div');
+            div.className = 'nz-texture';
+            el.appendChild(div);
+        });
+    }
+
+    /** @type {number} */
+    let textureFrame = 0;
+    const placeTexturesSoon = () => {
+        if (textureFrame) return;
+        textureFrame = requestAnimationFrame(() => { textureFrame = 0; placeTextures(); });
+    };
+    if (textureSelector) {
+        new MutationObserver((records) => {
+            // การเพิ่มชั้นพื้นผิวเองก็เป็น mutation ข้ามไปถ้ามีแค่นั้น ไม่งั้นวนไม่รู้จบ
+            const real = records.some((r) => Array.from(r.addedNodes).some((n) => !(n instanceof HTMLElement && n.classList.contains('nz-texture'))));
+            if (real && textureOn) placeTexturesSoon();
+        }).observe(body, { childList: true, subtree: true });
+    }
+
+    /** @type {Record<string, { w: number, h: number }>} */
+    const textureSizes = {};
+    function applyTexture(state) {
+        if (!textureSelector) return;
+        const version = (state && state.skin && state.skin.slots && state.skin.slots[textureSlot]) || 0;
+        const set = (state && state.textures && state.textures[textureScene]) || {};
+        const opacity = typeof set.opacity === 'number' ? set.opacity : 0.35;
+        if (!version || opacity <= 0) {
+            textureOn = false;
+            placeTextures();
+            return;
+        }
+        findSkinUrl(textureSlot, version).then((url) => {
+            if (!url) { textureOn = false; placeTextures(); return; }
+            const measure = textureSizes[url]
+                ? Promise.resolve(textureSizes[url])
+                : new Promise((res) => {
+                    const img = new Image();
+                    img.onload = () => res(textureSizes[url] = { w: img.naturalWidth, h: img.naturalHeight });
+                    img.onerror = () => res({ w: 0, h: 0 });
+                    img.src = url;
+                });
+            measure.then((/** @type {{ w: number, h: number }} */ size) => {
+                const style = body.style;
+                // 1440p วางทุกอย่างใหญ่ขึ้น 4/3 พื้นผิวก็ต้องใหญ่ตาม ไม่งั้นลายดูถี่กว่าบน 1080p
+                const k = ((typeof set.scale === 'number' ? set.scale : 100) / 100) * (body.dataset.size === '1440' ? 4 / 3 : 1);
+                const fill = set.fit === 'fill';
+                style.setProperty('--nz-tex-url', `url("${url}")`);
+                style.setProperty('--nz-tex-repeat', fill ? 'no-repeat' : 'repeat');
+                style.setProperty('--nz-tex-size', fill ? 'cover' : size.w ? `${Math.round(size.w * k)}px ${Math.round(size.h * k)}px` : 'auto');
+                style.setProperty('--nz-tex-opacity', String(opacity));
+                style.setProperty('--nz-tex-blend', set.blend || 'normal');
+                textureOn = true;
+                placeTextures();
+            });
+        });
+    }
     const skinTargets = (body.dataset.skinSlots || '').split(',')
         .map((pair) => pair.split(':').map((s) => s.trim()))
         .filter(([base, sel]) => base && sel);
@@ -111,7 +239,7 @@
     }
 
     // เปลี่ยนขนาดแล้วต้องสลับไฟล์ภาพตามด้วย
-    window.reapplySkin = () => applySkin(window.__lastSkin);
+    window.reapplySkin = () => { applySkin(window.__lastSkin); applyTexture(window.__lastTextureState); };
 
     // --- Watermark (docs/PLAN.md §10) ------------------------------
     // Every broadcast graphic loads this file, so this is the one place the watermark
@@ -331,6 +459,8 @@
             socket.on('stateUpdate', (s) => {
                 window.__lastSkin = s && s.skin;
                 applySkin(window.__lastSkin);
+                window.__lastTextureState = s;
+                applyTexture(s);
             });
         }
         return;
@@ -343,6 +473,8 @@
             applySize(state && state.overlaySize);
             window.__lastSkin = state && state.skin;
             applySkin(window.__lastSkin);
+            window.__lastTextureState = state;
+            applyTexture(state);
         });
     }
 })();

@@ -122,8 +122,25 @@ export const SKIN_SLOTS = {
   resultTop1080: 'result-top-1080',
   resultTop1440: 'result-top-1440',
   resultBottom1080: 'result-bottom-1080',
-  resultBottom1440: 'result-bottom-1440'
+  resultBottom1440: 'result-bottom-1440',
+  // พื้นผิว (texture) ทับพื้นเดิมของแต่ละหน้า ผู้ใช้ขอ 2026-09-30 หน้าละหนึ่งภาพ ใช้ทั้ง 1080 และ 1440
+  // อยู่ในตารางเดียวกับ skin จึงได้การอัปโหลด การเสิร์ฟ /images/skins และการสำรองข้อมูลไปด้วยเลย
+  // ต่างจาก skin ตรงที่ไม่ได้แทนพื้นเดิม แต่ปูทับบางๆ ค่าความจาง/ขนาด/โหมดผสมอยู่ใน state.textures
+  textureDraft: 'texture-draft',
+  textureResult: 'texture-result',
+  textureTeams: 'texture-teams',
+  textureStandings: 'texture-standings',
+  textureAnalytics: 'texture-analytics',
+  textureMatchup: 'texture-matchup',
+  textureTeamDrafts: 'texture-team-drafts',
+  textureTeamCard: 'texture-team-card',
+  texturePrev: 'texture-prev'
 } as const;
+
+// ช่องพื้นผิว อัปโหลดแล้วต้องไม่ไปเปิด skin.enabled (สวิตช์นั้นคือ "ใช้ภาพพื้นหลังแทนพื้นเดิม")
+export function isTextureSlot(slot: string): boolean {
+  return slot.startsWith('texture');
+}
 
 // โลโก้ทีม แยกจาก skin เพราะผูกกับทีม ไม่ได้ผูกกับขนาดจอ
 // ชื่อไฟล์มาจากตารางนี้เท่านั้น ไม่เอาค่าจากผู้ใช้มาต่อ path

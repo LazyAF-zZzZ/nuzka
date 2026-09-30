@@ -270,11 +270,11 @@ If you hear nothing, open **http://127.0.0.1:3000/sfx-test** — it tells you wh
 
 **EN**
 
-Open **OBS sources** in the app and press **Edit** next to the page you want. The overlay opens in your browser with an editor beside it: **Layout** moves, resizes and hides parts, and **Style** holds that page's colours, fonts (including importing your own), text sizes, background images and page settings. OBS follows every change at once.
+Open **OBS sources** in the app and press **Edit** next to the page you want. The overlay opens in your browser with an editor beside it: **Layout** moves, resizes and hides parts, and **Style** holds that page's colours, fonts (including importing your own), text sizes, background images, textures and page settings. OBS follows every change at once.
 
 **TH**
 
-เปิด **OBS sources** ในแอพ แล้วกด **แก้ไข** ข้างหน้าที่ต้องการ หน้า overlay จะเปิดในเบราว์เซอร์พร้อมตัวแก้ แท็บ **ตำแหน่ง** ย้าย ย่อ และซ่อนชิ้นส่วน แท็บ **สไตล์** มีสี ฟอนต์ (นำเข้าฟอนต์เองได้) ขนาดตัวหนังสือ ภาพพื้นหลัง และค่าของหน้านั้น OBS เปลี่ยนตามทันทีทุกครั้ง
+เปิด **OBS sources** ในแอพ แล้วกด **แก้ไข** ข้างหน้าที่ต้องการ หน้า overlay จะเปิดในเบราว์เซอร์พร้อมตัวแก้ แท็บ **ตำแหน่ง** ย้าย ย่อ และซ่อนชิ้นส่วน แท็บ **สไตล์** มีสี ฟอนต์ (นำเข้าฟอนต์เองได้) ขนาดตัวหนังสือ ภาพพื้นหลัง พื้นผิว (texture) และค่าของหน้านั้น OBS เปลี่ยนตามทันทีทุกครั้ง
 
 ---
 

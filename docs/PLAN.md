@@ -700,7 +700,7 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
-### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.8; beta.2 to beta.7 were built but never published)
+### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.9; beta.2 to beta.8 were built but never published)
 
 User's request: "move all design into edit layout and move the edit layout button to OBS sources, next
 to each page title". The app's Design screen, its view model and its menu entry are deleted.
@@ -745,6 +745,15 @@ to each page title". The app's Design screen, its view model and its menu entry 
   is solved back into the exact `s` that lands it on the line. `s` is now stored to 0.001 (was 0.01): at 1% steps
   a snapped edge of a wide part missed its line by several pixels. **Trap:** `drag` must be declared before the
   self-starting `frame()` loop that reads it (TDZ).
+- **Page textures** (user's request): an imported picture laid over each page's own background, under its content.
+  One image per page in SKIN_SLOTS (`texture<Scene>`, file `texture-<scene>`), so upload, serving and backups come
+  free; uploading one must NOT set `skin.enabled` (`isTextureSlot`). `state.textures[scene]` = opacity 0..1, scale
+  10..400 % of the image's natural size (x4/3 on 1440p), fit tile|fill, blend (normal/overlay/soft-light/screen/
+  multiply); carried over; `updateTexture`. overlay-size.js adds a `.nz-texture` child (absolute, z-index -1, target
+  gets `isolation: isolate`) to each target in TEXTURE_TARGETS (draft .pick-section, result .team-section, team list
+  .tl-card, standings .st-group, stats .an-row, H2H/team drafts .mu-score/.mu-side/.mu-meetings, team card .tc-logo/
+  .tc-tile/.mu-side, prev .pv-round), re-added by a MutationObserver for cards built later. A static target is made
+  relative unless one of its absolute descendants is anchored outside it. Hidden where a background image is on.
 - Global editor rules (`#layout-editor label` stacks vertically, `input` is full width) are meant for
   the Layout tab's X/Y boxes; Style tick boxes override both.
 - Not done: the Design.*, Fonts.*, Layout.* and TeamList.* strings in Loc.M5.cs are now unused.

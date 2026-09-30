@@ -57,6 +57,9 @@
             speed: 'Scroll speed (px/s)', columns: 'Columns', auto: 'Auto', cardColour: 'Card colour',
             cardBg: 'Card background', radius: 'Corner radius', autoText: 'Dark text on a light card',
             failed: 'Could not save: ',
+            texture: 'Texture', textureHint: 'A picture laid over this page\'s own background (the banner, cards or panels), under the text. Background images above replace the background instead; where one is on, the texture hides.',
+            texOpacity: 'Strength (%)', texScale: 'Size (%)', texFit: 'Layout', texTile: 'Repeat (tile)', texFill: 'Stretch to fill',
+            texBlend: 'Blend', blendNormal: 'Normal', blendOverlay: 'Overlay', blendSoft: 'Soft light', blendScreen: 'Screen (lighten)', blendMultiply: 'Multiply (darken)',
             textSec: 'Text', textHint: 'The same boxes as in Control. Changing either one changes both.',
             tournament: 'Tournament name', title: 'Match title', blueName: 'Blue team name', redName: 'Red team name',
             blueTag: 'Blue team tag', redTag: 'Red team tag', showTag: 'Show team tags',
@@ -83,6 +86,9 @@
             speed: 'ความเร็วเลื่อน (px/วินาที)', columns: 'จำนวนคอลัมน์', auto: 'อัตโนมัติ', cardColour: 'สีการ์ด',
             cardBg: 'สีพื้นการ์ด', radius: 'ความมนของมุม', autoText: 'ตัวหนังสือเข้มบนการ์ดสีอ่อน',
             failed: 'บันทึกไม่ได้: ',
+            texture: 'พื้นผิว (texture)', textureHint: 'ภาพที่ปูทับพื้นเดิมของหน้านี้ (แบนเนอร์ การ์ด หรือกรอบ) อยู่ใต้ตัวหนังสือ ส่วนภาพพื้นหลังด้านบนคือแทนพื้นเดิมไปเลย ช่องที่ใช้ภาพพื้นหลังอยู่จะไม่ขึ้นพื้นผิว',
+            texOpacity: 'ความเข้ม (%)', texScale: 'ขนาด (%)', texFit: 'การวาง', texTile: 'ปูซ้ำ', texFill: 'ยืดเต็มกรอบ',
+            texBlend: 'โหมดผสม', blendNormal: 'ปกติ', blendOverlay: 'Overlay', blendSoft: 'Soft light', blendScreen: 'Screen (สว่างขึ้น)', blendMultiply: 'Multiply (เข้มขึ้น)',
             textSec: 'ข้อความ', textHint: 'ช่องเดียวกับในหน้า Control แก้ที่ไหนก็เปลี่ยนทั้งสองที่',
             tournament: 'ชื่อทัวร์นาเมนต์', title: 'ชื่อแมตช์', blueName: 'ชื่อทีมน้ำเงิน', redName: 'ชื่อทีมแดง',
             blueTag: 'แท็กทีมน้ำเงิน', redTag: 'แท็กทีมแดง', showTag: 'แสดงแท็กทีม',
@@ -430,6 +436,61 @@
                     clear.toggleAttribute('disabled', !has);
                 });
             }));
+        }
+
+        // ---- texture (ผู้ใช้ขอ 2026-09-30) ทุกหน้ามี ภาพอยู่ในช่อง skin ชื่อ texture<Scene>
+        // ค่าวิธีปูไปที่ updateTexture ของหน้านี้เท่านั้น overlay-size.js เป็นคนปูจริง
+        {
+            const slot = 'texture' + ctx.scene.replace(/(^|-)([a-z])/g, (_m, _d, c) => c.toUpperCase());
+            const sec = section(T.texture, T.textureHint);
+            const tex = () => (state && state.textures && state.textures[ctx.scene]) || {};
+            const sendTex = (patch) => emit('updateTexture', { scene: ctx.scene, ...patch });
+
+            const r = el('div', 'st-image');
+            const status = el('span', 'st-hint');
+            const info = el('div', 'st-imageinfo');
+            info.append(el('b', '', T.texture), status);
+            const input = /** @type {HTMLInputElement} */ (el('input'));
+            input.type = 'file';
+            input.accept = 'image/png,image/jpeg,image/webp';
+            input.hidden = true;
+            input.addEventListener('change', async () => {
+                const picked = input.files && input.files[0];
+                input.value = '';
+                if (!picked) return;
+                const res = await fetch('/api/skin/' + slot, {
+                    method: 'POST', headers: { 'content-type': picked.type || 'application/octet-stream' }, body: picked
+                });
+                if (!res.ok) window.alert(T.failed + ((await res.json().catch(() => ({}))).error || res.statusText));
+            });
+            const up = el('button', 'st-btn small', T.upload);
+            up.addEventListener('click', () => input.click());
+            const clear = el('button', 'st-btn small danger', T.clear);
+            clear.addEventListener('click', () => fetch('/api/skin/' + slot, { method: 'DELETE' }));
+            const buttons = el('div', 'st-buttons');
+            buttons.append(up, clear, input);
+            r.append(info, buttons);
+            sec.appendChild(r);
+            updaters.push(() => {
+                const has = Boolean(state && state.skin && state.skin.slots && state.skin.slots[slot]);
+                status.textContent = has ? T.hasImage : T.noImage;
+                clear.toggleAttribute('disabled', !has);
+            });
+
+            slider(sec, T.texOpacity, 0, 100, () => Math.round((typeof tex().opacity === 'number' ? tex().opacity : 0.35) * 100),
+                (n) => sendTex({ opacity: n / 100 }));
+            slider(sec, T.texScale, 10, 400, () => (typeof tex().scale === 'number' ? tex().scale : 100),
+                (n) => sendTex({ scale: n }));
+            const select = (label, options, read, key) => {
+                const sel = el('select', 'st-input');
+                options.forEach(([v, t]) => { const o = el('option', '', t); o.value = v; sel.appendChild(o); });
+                sel.addEventListener('change', () => sendTex({ [key]: sel.value }));
+                row(sec, label, sel);
+                updaters.push(() => { if (idle(sel)) sel.value = read(); });
+            };
+            select(T.texFit, [['tile', T.texTile], ['fill', T.texFill]], () => tex().fit || 'tile', 'fit');
+            select(T.texBlend, [['normal', T.blendNormal], ['overlay', T.blendOverlay], ['soft-light', T.blendSoft],
+                ['screen', T.blendScreen], ['multiply', T.blendMultiply]], () => tex().blend || 'normal', 'blend');
         }
 
         // ---- team list

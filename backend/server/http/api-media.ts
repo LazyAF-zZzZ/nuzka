@@ -12,6 +12,7 @@ import {
   SKIN_MAX_BYTES,
   LOGO_MAX_BYTES,
   isSkinSlot,
+  isTextureSlot,
   isLogoSlot,
   LOGO_SLOTS,
   skinFilePath,
@@ -59,7 +60,8 @@ export function mediaRoutes(): Router {
 
     const state = getState();
     state.skin.slots[slot] = Date.now();
-    state.skin.enabled = true;
+    // พื้นผิวไม่เกี่ยวกับสวิตช์ภาพพื้นหลัง อัปโหลดพื้นผิวแล้วภาพพื้นหลังที่ปิดไว้ต้องไม่โผล่ขึ้นมา
+    if (!isTextureSlot(slot)) state.skin.enabled = true;
     emitState();
     res.json({ ok: true, slot, ext: checked.ext, bytes: checked.body.length, skin: state.skin });
   });

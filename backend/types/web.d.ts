@@ -165,6 +165,7 @@ interface Window {
   applyOverlaySize(size: string): void;
   reapplySkin(): void;
   __lastSkin: any;
+  __lastTextureState: any;
 }
 
 // สมบัติที่โค้ดแปะไว้บน DOM node เอง

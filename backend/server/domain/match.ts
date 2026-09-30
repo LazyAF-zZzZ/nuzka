@@ -27,6 +27,7 @@ import {
   sanitizeTeamListPerSet,
   sanitizeTeamListAutoText,
   sanitizeDraftShowTag,
+  sanitizeTextures,
   emptyFonts,
   sanitizeFonts,
   sanitizeTeamListColumns,
@@ -134,6 +135,8 @@ export interface GameState {
   fonts: Fonts;
   // overlay ดราฟต์แสดงแท็กทีมเป็นชิ้นแยกจากชื่อ ดู sanitizeDraftShowTag
   draftShowTag: boolean;
+  // พื้นผิวทับพื้นเดิมของแต่ละหน้า ดู sanitizeTextures (ตัวภาพอยู่ใน skin.slots.texture*)
+  textures: ReturnType<typeof sanitizeTextures>;
 }
 
 export interface SlotOwner {
@@ -206,7 +209,8 @@ export const defaultState: GameState = {
   teamListAutoText: TEAM_LIST_AUTO_TEXT_DEFAULT,
   teamListColumns: TEAM_LIST_COLUMNS_DEFAULT,
   fonts: emptyFonts(),
-  draftShowTag: false
+  draftShowTag: false,
+  textures: {}
 };
 
 export function isTeamKey(team: unknown): team is TeamKey {
@@ -374,6 +378,7 @@ export function sanitizeState(state: unknown): GameState {
     teamListAutoText: sanitizeTeamListAutoText(source.teamListAutoText),
     teamListColumns: sanitizeTeamListColumns(source.teamListColumns),
     fonts: sanitizeFonts(source.fonts),
-    draftShowTag: sanitizeDraftShowTag(source.draftShowTag)
+    draftShowTag: sanitizeDraftShowTag(source.draftShowTag),
+    textures: sanitizeTextures(source.textures)
   });
 }

@@ -233,6 +233,46 @@ export function sanitizeDraftShowTag(value: unknown): boolean {
   return value === true;
 }
 
+// พื้นผิวของแต่ละหน้า (ตัวภาพอยู่ใน SKIN_SLOTS ชื่อ texture<Scene>) ค่าที่นี่คือวิธีปูทับ
+// ความจาง 0..1, ขนาดเป็นร้อยละของขนาดจริงของภาพ, ปูซ้ำหรือยืดเต็ม, และโหมดผสมกับพื้นเดิม
+export const TEXTURE_SCENES = [
+  'draft', 'result', 'teams', 'standings', 'analytics', 'matchup', 'team-drafts', 'team-card', 'prev'
+] as const;
+export type TextureScene = typeof TEXTURE_SCENES[number];
+export const TEXTURE_BLENDS = ['normal', 'overlay', 'soft-light', 'screen', 'multiply'] as const;
+export type TextureBlend = typeof TEXTURE_BLENDS[number];
+export interface TextureSettings {
+  opacity: number;
+  scale: number;
+  fit: 'tile' | 'fill';
+  blend: TextureBlend;
+}
+export const TEXTURE_DEFAULT: TextureSettings = { opacity: 0.35, scale: 100, fit: 'tile', blend: 'normal' };
+
+export function sanitizeTextureSettings(value: unknown): TextureSettings {
+  const source = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>;
+  const opacity = Number(source.opacity);
+  const scale = Number(source.scale);
+  return {
+    opacity: source.opacity !== undefined && source.opacity !== null && Number.isFinite(opacity)
+      ? Math.round(Math.min(1, Math.max(0, opacity)) * 100) / 100 : TEXTURE_DEFAULT.opacity,
+    scale: source.scale !== undefined && source.scale !== null && Number.isFinite(scale)
+      ? Math.round(Math.min(400, Math.max(10, scale))) : TEXTURE_DEFAULT.scale,
+    fit: source.fit === 'fill' ? 'fill' : 'tile',
+    blend: (TEXTURE_BLENDS as readonly unknown[]).includes(source.blend) ? source.blend as TextureBlend : TEXTURE_DEFAULT.blend
+  };
+}
+
+// เก็บเฉพาะหน้าที่เคยตั้งค่า หน้าที่ไม่มีคีย์ใช้ TEXTURE_DEFAULT
+export function sanitizeTextures(value: unknown): Partial<Record<TextureScene, TextureSettings>> {
+  const source = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>;
+  const out: Partial<Record<TextureScene, TextureSettings>> = {};
+  TEXTURE_SCENES.forEach((scene) => {
+    if (source[scene] && typeof source[scene] === 'object') out[scene] = sanitizeTextureSettings(source[scene]);
+  });
+  return out;
+}
+
 export const TEAM_LIST_AUTO_TEXT_DEFAULT = true;
 
 export function sanitizeTeamListAutoText(value: unknown): boolean {
@@ -339,7 +379,7 @@ export function sanitizeSfx(value: unknown): SfxLevels {
 export const CARRIED_OVER_KEYS = [
   'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound', 'layout', 'teamListPerSet',
   'teamListStyle', 'teamListScrollSpeed', 'teamListAutoText', 'teamListColumns', 'fonts',
-  'draftShowTag'
+  'draftShowTag', 'textures'
 ] as const;
 
 export type CarriedOverKey = typeof CARRIED_OVER_KEYS[number];

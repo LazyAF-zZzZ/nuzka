@@ -252,3 +252,24 @@ test('team tag on the draft: off unless asked, kept across matches, and each sid
   // state.json จากรุ่นก่อนไม่มีแท็ก ต้องได้ค่าว่าง ไม่ใช่ undefined
   assert.strictEqual(sanitizeState({ teamRed: { name: 'Old' } }).teamRed.tag, '');
 });
+
+test('page textures: defaults, clamping, unknown pages dropped, kept across matches', async () => {
+  const settings = await import('../server/domain/settings');
+  const media = await import('../server/domain/media');
+  assert.deepEqual(settings.sanitizeTextureSettings(undefined), { opacity: 0.35, scale: 100, fit: 'tile', blend: 'normal' });
+  assert.deepEqual(settings.sanitizeTextureSettings({ opacity: 3, scale: 9999, fit: 'fill', blend: 'weird' }),
+    { opacity: 1, scale: 400, fit: 'fill', blend: 'normal' });
+  assert.deepEqual(settings.sanitizeTextureSettings({ opacity: 0, scale: 1, blend: 'overlay' }),
+    { opacity: 0, scale: 10, fit: 'tile', blend: 'overlay' });
+  const textures = settings.sanitizeTextures({ draft: { opacity: 0.5 }, nowhere: { opacity: 1 } });
+  assert.deepEqual(Object.keys(textures), ['draft']);
+  const state = sanitizeState({ textures: { prev: { blend: 'screen' } } });
+  assert.strictEqual(carryOverSettings(sanitizeState({}), state).textures.prev?.blend, 'screen');
+  // every page that can take a texture has its own image slot, and it never switches background images on
+  settings.TEXTURE_SCENES.forEach((scene) => {
+    const slot = 'texture' + scene.replace(/(^|-)([a-z])/g, (_m, _d, c: string) => c.toUpperCase());
+    assert.ok(slot in media.SKIN_SLOTS, `${slot} is a known slot`);
+    assert.ok(media.isTextureSlot(slot));
+  });
+  assert.ok(!media.isTextureSlot('overlayBottom1080'));
+});

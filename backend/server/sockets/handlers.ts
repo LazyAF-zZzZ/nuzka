@@ -36,6 +36,8 @@ import {
   sanitizeTeamListPerSet,
   sanitizeTeamListAutoText,
   sanitizeDraftShowTag,
+  sanitizeTextureSettings,
+  TEXTURE_SCENES,
   sanitizeTeamListColumns,
   sanitizeFontFamily,
   FONT_ROLES,
@@ -130,6 +132,16 @@ export function registerHandlers(socket: Socket): void {
   controlEvent(socket, 'updateTeamTag', ({ team, tag }) => {
     if (!isTeamKey(team)) return;
     getState()[team].tag = sanitizeText(tag, TAG_MAX);
+    emitState();
+  });
+
+  // ค่าพื้นผิวของหน้าเดียว ส่งมาเป็นก้อนบางส่วนได้ เช่น { scene: 'draft', opacity: 0.5 }
+  controlEvent(socket, 'updateTexture', (data) => {
+    const scene = TEXTURE_SCENES.find((candidate) => candidate === data.scene);
+    if (!scene) return;
+    const state = getState();
+    const { scene: _scene, ...patch } = data;
+    state.textures = { ...state.textures, [scene]: sanitizeTextureSettings({ ...state.textures[scene], ...patch }) };
     emitState();
   });
 
