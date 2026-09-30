@@ -381,9 +381,40 @@
     }
 
     // Covering content is always worse than sitting on a panel, so it weighs far more.
+    // ในแบนเนอร์ดราฟต์: ที่ประจำคือซ้ายของช่องแบนฝั่งแดง แต่ผู้ใช้ย่อขยาย/ย้ายชิ้นส่วนได้ (ตัวแก้ layout)
+    // ขยายช่องแบนแล้วทับลายน้ำ (เจอ 2026-09-30) จึงเลื่อนไปตามแถบบนของแบนเนอร์ หาที่ว่างที่ใกล้ที่ประจำที่สุด
+    // สลับซ้าย/ขวาทีละ 12px ไม่มีที่ว่างเลยก็เอาที่ทับน้อยที่สุด ตำแหน่งเป็นพิกเซลของแบนเนอร์ (1440 ขยายตามเอง)
+    const BANNER_RIGHT = 336;
+    function placeInBanner() {
+        const drawn = drawnBoxes().content;
+        const box = slot.getBoundingClientRect();
+        const candidates = [BANNER_RIGHT];
+        for (let d = 12; d <= 1900; d += 12) {
+            candidates.push(BANNER_RIGHT + d);
+            if (BANNER_RIGHT - d >= 8) candidates.push(BANNER_RIGHT - d);
+        }
+        let best = BANNER_RIGHT;
+        let bestScore = Infinity;
+        for (const right of candidates) {
+            watermark.style.right = right + 'px';
+            const r = watermark.getBoundingClientRect();
+            if (r.left < box.left + 4 || r.right > box.right - 4) continue;   // ต้องอยู่ในแบนเนอร์ทั้งตัว
+            const score = overlap(drawn, 6);
+            if (score < bestScore) { best = right; bestScore = score; }
+            if (score === 0) break;
+        }
+        watermark.style.right = best + 'px';
+    }
+
     function placeWatermark() {
-        if (slot) return;
         // A hidden mark has no size to measure; lay it out invisibly for the check.
+        if (slot) {
+            const hid = watermark.hidden;
+            if (hid) { watermark.hidden = false; watermark.style.visibility = 'hidden'; }
+            placeInBanner();
+            if (hid) { watermark.hidden = true; watermark.style.visibility = ''; }
+            return;
+        }
         const wasHidden = watermark.hidden;
         if (wasHidden) { watermark.hidden = false; watermark.style.visibility = 'hidden'; }
         const drawn = drawnBoxes();
@@ -420,6 +451,18 @@
         window.addEventListener('load', () => placeSoon(300));
         placeSoon(300);
         setTimeout(placeWatermark, 2500);   // after entrance animations have settled
+    } else {
+        // ในแบนเนอร์: ย้ายเมื่อชิ้นส่วนถูกย้าย/ย่อขยาย ฟอนต์เปลี่ยน ขนาดจอสลับ หรือชื่อทัวร์นาเมนต์เปลี่ยนความยาว
+        // ภาพแบน/พิคที่เข้ามาไม่เปลี่ยนกรอบของช่อง จึงไม่ต้องดูทุกการเปลี่ยนแปลงแบบหน้าเต็มจอ
+        window.addEventListener('rov-layout', () => placeSoon(150));
+        window.addEventListener('rov-fonts', () => placeSoon(150));
+        window.addEventListener('resize', () => placeSoon(200));
+        window.addEventListener('load', () => placeSoon(300));
+        new MutationObserver(() => placeSoon(200)).observe(body, { attributes: true, attributeFilter: ['data-size'] });
+        const title = document.getElementById('tournamentName');
+        if (title) new MutationObserver(() => placeSoon(300)).observe(title, { childList: true, characterData: true, subtree: true });
+        placeSoon(300);
+        setTimeout(placeWatermark, 2500);
     }
 
     if (typeof socket !== 'undefined') {

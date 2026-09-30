@@ -793,6 +793,15 @@ preview pane cannot screenshot while minimised) and reviewed. The user took ever
   check shrank every name to the minimum; it allows ~0.3em vertically. Words are not broken
   mid-word (`overflow-wrap: normal`) so a long word shrinks rather than splitting "PHANT/OM".
 
+### Watermark in the draft banner avoids moved parts (after 3.2.2)
+
+The banner watermark had a fixed spot (right: 336px, left of the red bans); enlarging the red bans in the
+layout editor ran them into it (user's screenshot, 2026-09-30). `placeInBanner()` in overlay-size.js now keeps
+that spot when it is clear and otherwise slides along the banner's top strip in 12 px steps, alternating left
+and right, to the nearest spot where no drawn content (the same `drawnBoxes()` the corner picker uses) is under
+it, staying inside the banner; if none is clear it takes the least covered. It re-places on rov-layout,
+rov-fonts, resize, a size switch and a tournament-name change. Not yet released.
+
 ### 3.2.2 released (2026-09-30)
 
 Everything from the 3.2.2 betas (beta.1 to beta.9, none published): the Design screen moved into each page's
