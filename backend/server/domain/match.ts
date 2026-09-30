@@ -132,7 +132,7 @@ export interface GameState {
   teamListColumns: number;
   // ฟอนต์ของกราฟิกออกอากาศ แยกตามบทบาทข้อความและตามหน้า ดู sanitizeFonts
   fonts: Fonts;
-  // overlay ดราฟต์แสดงแท็กทีมแทนชื่อเต็ม ดู sanitizeDraftShowTag
+  // overlay ดราฟต์แสดงแท็กทีมเป็นชิ้นแยกจากชื่อ ดู sanitizeDraftShowTag
   draftShowTag: boolean;
 }
 

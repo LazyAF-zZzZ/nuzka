@@ -102,10 +102,22 @@
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Border>
 
-                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Control.TeamName}"/>
-                            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" MaxLength="24"/>
-                        </StackPanel>
+                        <Grid Grid.Column="1" Margin="10,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="72"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Control.TeamName}"/>
+                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" MaxLength="24"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Control.TeamTag}"/>
+                                <TextBox Text="{Binding Tag, UpdateSourceTrigger=PropertyChanged}" MaxLength="6"
+                                         ToolTip="{svc:T Control.TeamTagTip}"/>
+                            </StackPanel>
+                        </Grid>
                         <StackPanel Grid.Column="3">
                             <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Control.FromRegistry}"/>
                             <ComboBox ItemsSource="{Binding Owner.Teams}" SelectedItem="{Binding LoadTeam}"
@@ -439,6 +451,8 @@
                                     <Rectangle Width="1" Margin="2,5,10,5" Fill="{StaticResource BorderBrush}"/>
                                     <CheckBox Content="{svc:T Flow.SwapSides}" IsChecked="{Binding SwapSidesEachRound, Mode=TwoWay}"
                                               ToolTip="{svc:T Flow.SwapSidesTip}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <CheckBox Content="{svc:T Control.ShowTags}" IsChecked="{Binding ShowTeamTags, Mode=TwoWay}"
+                                              ToolTip="{svc:T Control.ShowTagsTip}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 </StackPanel>
                             </Border>
 

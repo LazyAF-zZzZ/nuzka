@@ -27,6 +27,8 @@ public sealed class ControlState
     public int RoundsOnBoard { get; private init; }
     // Teams swap sides every game. On unless the state says otherwise.
     public bool SwapSides { get; private init; } = true;
+    // The draft overlay shows each team's tag as a badge on its logo. Off unless the state says on.
+    public bool ShowTags { get; private init; }
     public IReadOnlyDictionary<string, double> Sfx { get; private init; } = new Dictionary<string, double>();
     public IReadOnlyDictionary<string, HotkeyBinding> Hotkeys { get; private init; } = new Dictionary<string, HotkeyBinding>();
 
@@ -54,6 +56,7 @@ public sealed class ControlState
             Round = round,
             RoundsOnBoard = rounds?.Count(r => J.Int(r?["round"], 0) is var n && n > 0 && n < round) ?? 0,
             SwapSides = J.Bool(node["swapSidesEachRound"]) != false,
+            ShowTags = J.Bool(node["draftShowTag"]) == true,
             Sfx = ReadLevels(node["sfx"]),
             Hotkeys = ReadHotkeys(node["hotkeys"])
         };
@@ -82,6 +85,7 @@ public sealed class ControlState
 public sealed class SideState
 {
     public string Name { get; private init; } = "";
+    public string Tag { get; private init; } = "";
     public int Score { get; private init; }
     public long LogoVersion { get; private init; }
     public string LogoExt { get; private init; } = "";
@@ -96,6 +100,7 @@ public sealed class SideState
     public static SideState From(JsonNode? node, string fallbackName) => new()
     {
         Name = J.Str(node?["name"]) is { Length: > 0 } name ? name : fallbackName,
+        Tag = J.Str(node?["tag"]) ?? "",
         Score = J.Int(node?["score"]),
         LogoVersion = node?["logo"]?["v"] is JsonValue v && v.TryGetValue<long>(out var version) ? version : 0,
         LogoExt = J.Str(node?["logo"]?["ext"]) ?? "",

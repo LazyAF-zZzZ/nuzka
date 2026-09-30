@@ -1589,3 +1589,28 @@ body[data-size="1440"] .overlay-container {
 .pick-slot.filled .position-icon {
     opacity: 0;
 }
+
+/* แท็กทีม เป็นชิ้นแยกจากชื่อ (ผู้ใช้ขอ 2026-09-30) ติดขอบล่างของโลโก้ ลากย้ายได้ในตัวแก้
+ * overlay.js เปิดเมื่อ draftShowTag และทีมมีแท็ก ไม่งั้นซ่อนไว้ ไม่ขึ้นกรอบว่างกลางอากาศ */
+.team-tag {
+    position: absolute;
+    left: 50%;
+    bottom: -10px;
+    transform: translateX(-50%);
+    z-index: 3;
+    padding: 1px 10px;
+    border-radius: 4px;
+    background: rgba(2, 6, 23, 0.9);
+    border: 2px solid rgb(var(--ov-blue-rgb));
+    color: var(--ov-text);
+    font-family: var(--ov-font-name, 'Kanit', 'Segoe UI', Arial, sans-serif);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-transform: uppercase;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+.team-logo-score.red .team-tag { border-color: rgb(var(--ov-red-rgb)); }
+.team-tag[hidden] { display: none !important; }

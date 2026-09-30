@@ -255,10 +255,16 @@ function isBoardSwap(state) {
 
 function updateOverlay(state) {
     // Update team names
-    // แท็กแทนชื่อเต็มเมื่อเปิดไว้ในตัวแก้ ทีมที่ไม่มีแท็กยังได้ชื่อเต็ม ช่องจะได้ไม่ว่าง
-    const shown = (team) => (state.draftShowTag && team.tag) || team.name;
-    document.getElementById('blueTeamName').textContent = shown(state.teamBlue);
-    document.getElementById('redTeamName').textContent = shown(state.teamRed);
+    document.getElementById('blueTeamName').textContent = state.teamBlue.name;
+    document.getElementById('redTeamName').textContent = state.teamRed.name;
+    // แท็กเป็นชิ้นแยก ไม่แทนที่ชื่อ (ผู้ใช้ขอ) ซ่อนเมื่อปิดไว้หรือทีมไม่มีแท็ก
+    [['blueTeamTag', state.teamBlue], ['redTeamTag', state.teamRed]].forEach(([id, team]) => {
+        const tagEl = document.getElementById(id);
+        if (!tagEl) return;
+        const tag = state.draftShowTag && team.tag ? team.tag : '';
+        if (tagEl.textContent !== tag) tagEl.textContent = tag;
+        tagEl.hidden = !tag;
+    });
     
     // Update center team names
     document.getElementById('blueCenterName').textContent = state.teamBlue.name;

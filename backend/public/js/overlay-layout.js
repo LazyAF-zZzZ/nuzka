@@ -232,12 +232,12 @@
             bans: `แบนฝั่ง${side}`, ban: `แบน${side}${n}`, 'ban-label': `ป้าย BAN ฝั่ง${side}`,
             picks: `พิคฝั่ง${side}`, pick: `พิค${side}${n}`, team: `ทีม${side}`, half: `ครึ่งฝั่ง${side}`,
             header: `หัวฝั่ง${side} (ชื่อ + แบน)`, column: `คอลัมน์ฝั่ง${side}`, score: `คะแนนซีรีส์ฝั่ง${side}`,
-            logo: `โลโก้ทีม${side}`, name: `ชื่อทีม${side}`
+            logo: `โลโก้ทีม${side}`, name: `ชื่อทีม${side}`, tag: `แท็กทีม${side}`
         } : {
             bans: `${side} bans`, ban: `${side} ban${n}`, 'ban-label': `${side} "BAN" label`,
             picks: `${side} picks`, pick: `${side} pick${n}`, team: `${side} team`, half: `${side} half`,
             header: `${side} header (name + bans)`, column: `${side} column`, score: `${side} series score`,
-            logo: `${side} logo`, name: `${side} team name`
+            logo: `${side} logo`, name: `${side} team name`, tag: `${side} team tag`
         };
         return what[m[2]] || key;
     }

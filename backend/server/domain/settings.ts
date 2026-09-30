@@ -227,8 +227,8 @@ export function sanitizeFonts(value: unknown): Fonts {
   return fonts;
 }
 
-// แสดงแท็กทีมแทนชื่อเต็มบน overlay ดราฟต์ ผู้ใช้ขอ 2026-09-30 ให้เป็นตัวเลือก ปิดไว้ก่อน
-// ทีมที่ไม่มีแท็กยังแสดงชื่อเต็มเหมือนเดิม ช่องชื่อจะได้ไม่ว่างกลางอากาศ
+// แสดงแท็กทีมบน overlay ดราฟต์ เป็นชิ้นแยกจากชื่อ ผู้ใช้ขอ 2026-09-30 ให้เป็นตัวเลือก ปิดไว้ก่อน
+// ทีมที่ไม่มีแท็กไม่ขึ้นอะไร (overlay.js ซ่อนชิ้นนั้นไว้)
 export function sanitizeDraftShowTag(value: unknown): boolean {
   return value === true;
 }

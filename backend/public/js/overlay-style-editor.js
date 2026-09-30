@@ -59,8 +59,8 @@
             failed: 'Could not save: ',
             textSec: 'Text', textHint: 'The same boxes as in Control. Changing either one changes both.',
             tournament: 'Tournament name', title: 'Match title', blueName: 'Blue team name', redName: 'Red team name',
-            blueTag: 'Blue team tag', redTag: 'Red team tag', showTag: 'Show team tags instead of names',
-            tagHint: 'Tags come from the team list. A team without a tag keeps its full name.',
+            blueTag: 'Blue team tag', redTag: 'Red team tag', showTag: 'Show team tags',
+            tagHint: 'A small tag on each logo, separate from the name; move it in the Layout tab. Tags come from the team list, and a team without one shows none.',
             blueScore: 'Blue score', redScore: 'Red score', bluePlayers: 'Blue players', redPlayers: 'Red players'
         },
         th: {
@@ -85,8 +85,8 @@
             failed: 'บันทึกไม่ได้: ',
             textSec: 'ข้อความ', textHint: 'ช่องเดียวกับในหน้า Control แก้ที่ไหนก็เปลี่ยนทั้งสองที่',
             tournament: 'ชื่อทัวร์นาเมนต์', title: 'ชื่อแมตช์', blueName: 'ชื่อทีมน้ำเงิน', redName: 'ชื่อทีมแดง',
-            blueTag: 'แท็กทีมน้ำเงิน', redTag: 'แท็กทีมแดง', showTag: 'แสดงแท็กทีมแทนชื่อ',
-            tagHint: 'แท็กมาจากรายชื่อทีม ทีมที่ไม่มีแท็กจะแสดงชื่อเต็ม',
+            blueTag: 'แท็กทีมน้ำเงิน', redTag: 'แท็กทีมแดง', showTag: 'แสดงแท็กทีม',
+            tagHint: 'ป้ายแท็กเล็กๆ ที่โลโก้ แยกจากชื่อ ย้ายได้ในแท็บตำแหน่ง แท็กมาจากรายชื่อทีม ทีมที่ไม่มีแท็กจะไม่ขึ้น',
             blueScore: 'คะแนนน้ำเงิน', redScore: 'คะแนนแดง', bluePlayers: 'ผู้เล่นทีมน้ำเงิน', redPlayers: 'ผู้เล่นทีมแดง'
         }
     };

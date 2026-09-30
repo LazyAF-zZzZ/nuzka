@@ -203,6 +203,17 @@ public sealed class ControlViewModel : ObservableObject
         }
     }
 
+    // The team tag badge on the draft overlay (the tag boxes sit beside each team name).
+    public bool ShowTeamTags
+    {
+        get => _state?.ShowTags == true;
+        set
+        {
+            if (value == ShowTeamTags) return;
+            Emit("updateDraftShowTag", new { enabled = value });
+        }
+    }
+
     // ---- game over --------------------------------------------------------
 
     public bool SeriesOver { get => _seriesOver; private set => Set(ref _seriesOver, value); }
@@ -538,7 +549,7 @@ public sealed class ControlViewModel : ObservableObject
                  {
                      nameof(PhaseLabel), nameof(TimerText), nameof(IsUrgent), nameof(PhaseIndexText), nameof(IsRunning),
                      nameof(PauseResumeText), nameof(StatusText), nameof(RoundText), nameof(CanPrevRound), nameof(RoundNote),
-                     nameof(SwapSidesEachRound), nameof(Is1080), nameof(Is1440), nameof(BannerOn)
+                     nameof(SwapSidesEachRound), nameof(ShowTeamTags), nameof(Is1080), nameof(Is1440), nameof(BannerOn)
                  })
             OnPropertyChanged(name);
 

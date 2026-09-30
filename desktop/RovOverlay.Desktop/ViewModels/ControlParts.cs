@@ -265,6 +265,8 @@ public sealed class PlayerSlot : ObservableObject
 public sealed class SideViewModel : ObservableObject
 {
     private readonly Debouncer _nameSave = new();
+    private readonly Debouncer _tagSave = new();
+    private string _tag = "";
     private readonly Debouncer _scoreSave = new();
     private string _name = "";
     private string _scoreText = "0";
@@ -327,6 +329,18 @@ public sealed class SideViewModel : ObservableObject
             OnPropertyChanged(nameof(AddPointName));
             OnPropertyChanged(nameof(RemovePointName));
             _nameSave.Run(() => Owner.Emit("updateTeamName", new { team = Key, name = Name }));
+            FlashSaved();
+        }
+    }
+
+    // Empty is allowed, unlike the name: it means "no tag", and the overlay then shows no badge.
+    public string Tag
+    {
+        get => _tag;
+        set
+        {
+            if (!Set(ref _tag, value ?? "")) return;
+            _tagSave.Run(() => Owner.Emit("updateTeamTag", new { team = Key, tag = Tag }));
             FlashSaved();
         }
     }
@@ -430,6 +444,11 @@ public sealed class SideViewModel : ObservableObject
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(AddPointName));
             OnPropertyChanged(nameof(RemovePointName));
+        }
+        if (!isEditing(this) && side.Tag != _tag)
+        {
+            _tag = side.Tag;
+            OnPropertyChanged(nameof(Tag));
         }
         if (side.Score != _serverScore)
         {
