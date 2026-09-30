@@ -18,7 +18,7 @@ import {
 test('an entry is rounded and clamped', () => {
   assert.deepEqual(sanitizeLayoutEntry({ x: 10.6, y: -99999, s: 9, h: true }), { x: 11, y: -3000, s: 4, h: true });
   assert.deepEqual(sanitizeLayoutEntry({ x: '5', y: 0, s: 0.01 }), { x: 5, y: 0, s: 0.2, h: false });
-  assert.deepEqual(sanitizeLayoutEntry({ x: -0.3, y: 2, s: 1.234 }), { x: 0, y: 2, s: 1.23, h: false });
+  assert.deepEqual(sanitizeLayoutEntry({ x: -0.3, y: 2, s: 1.23456 }), { x: 0, y: 2, s: 1.235, h: false });
 });
 
 test('an entry equal to as designed is not stored', () => {

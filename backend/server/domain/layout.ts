@@ -47,7 +47,8 @@ export function sanitizeLayoutEntry(value: unknown): LayoutEntry | null {
   const entry: LayoutEntry = {
     x: Math.round(Math.min(limit, Math.max(-limit, num(source.x, 0)))),
     y: Math.round(Math.min(limit, Math.max(-limit, num(source.y, 0)))),
-    s: Math.round(Math.min(max, Math.max(min, num(source.s, 1))) * 100) / 100,
+    // ทีละ 0.1% ไม่ใช่ 1%: ย่อขยายแบบดูดเข้าเส้นนำ ขอบของชิ้นกว้างๆ จะคลาดจากเส้นหลายพิกเซลถ้าปัดทีละ 1%
+    s: Math.round(Math.min(max, Math.max(min, num(source.s, 1))) * 1000) / 1000,
     h: source.h === true
   };
   // Math.round(-0.4) is -0; keep the stored JSON tidy.

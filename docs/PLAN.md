@@ -700,7 +700,7 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
-### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.7; beta.2 to beta.6 were built but never published)
+### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.8; beta.2 to beta.7 were built but never published)
 
 User's request: "move all design into edit layout and move the edit layout button to OBS sources, next
 to each page title". The app's Design screen, its view model and its menu entry are deleted.
@@ -739,6 +739,12 @@ to each page title". The app's Design screen, its view model and its menu entry 
   Targets are collected once at pointerdown. A pink line runs part-to-part, or the full stage for a stage line.
   Ctrl while dragging turns snapping off; the "Snap to guides" box is remembered in localStorage (per viewer). The
   old snap back home within 6 px still applies when no guide is close.
+- **Resize handles** (same day): four corner handles on the selection (size is one uniform `s`, so no edge
+  handles). The part scales about its transform-origin (read from computed style, usually the centre), so all four
+  edges move; size follows the mouse projected onto the origin-to-corner diagonal, and the edge nearest a guide
+  is solved back into the exact `s` that lands it on the line. `s` is now stored to 0.001 (was 0.01): at 1% steps
+  a snapped edge of a wide part missed its line by several pixels. **Trap:** `drag` must be declared before the
+  self-starting `frame()` loop that reads it (TDZ).
 - Global editor rules (`#layout-editor label` stacks vertically, `input` is full width) are meant for
   the Layout tab's X/Y boxes; Style tick boxes override both.
 - Not done: the Design.*, Fonts.*, Layout.* and TeamList.* strings in Loc.M5.cs are now unused.

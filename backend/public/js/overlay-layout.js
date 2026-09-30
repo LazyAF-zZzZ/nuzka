@@ -172,7 +172,7 @@
             standings: 'ตารางคะแนน', matchup: 'เจอกันมาก่อน', 'team-drafts': 'พิค/แบนของทีม',
             'team-card': 'การ์ดทีม', prev: 'พิค/แบนเกมก่อน'
         },
-        help: 'ลากเพื่อย้าย คลิกเลือกชิ้นเล็กสุดที่อยู่ใต้เมาส์ กด "เลือกทั้งกลุ่ม" หรือ Alt+คลิก เพื่อเลือกกลุ่มที่ครอบอยู่ ปุ่มลูกศรขยับทีละ 1 px (Shift = 10 px) ลากกลับใกล้ที่เดิมจะดูดเข้าที่เดิมเอง ระหว่างลาก ชิ้นส่วนจะดูดเข้าขอบและกึ่งกลางของจอและของชิ้นอื่น พร้อมเส้นนำสีชมพู กด Ctrl ค้างไว้เพื่อลากอิสระ',
+        help: 'ลากเพื่อย้าย คลิกเลือกชิ้นเล็กสุดที่อยู่ใต้เมาส์ กด "เลือกทั้งกลุ่ม" หรือ Alt+คลิก เพื่อเลือกกลุ่มที่ครอบอยู่ ปุ่มลูกศรขยับทีละ 1 px (Shift = 10 px) ลากกลับใกล้ที่เดิมจะดูดเข้าที่เดิมเอง ลากมุมกรอบเพื่อย่อขยาย ระหว่างลากหรือย่อขยาย ชิ้นส่วนจะดูดเข้าขอบและกึ่งกลางของจอและของชิ้นอื่น พร้อมเส้นนำสีชมพู กด Ctrl ค้างไว้เพื่อลากอิสระ',
         snap: 'ดูดเข้าเส้นนำ',
         none: 'ยังไม่ได้เลือก คลิกชิ้นส่วนบน overlay หรือในรายการด้านล่าง',
         size: 'ขนาด %', parent: 'เลือกทั้งกลุ่ม', hide: 'ซ่อน', show: 'แสดง', reset: 'คืนที่เดิม',
@@ -187,7 +187,7 @@
             standings: 'Standings', matchup: 'Head to head', 'team-drafts': 'Team picks & bans',
             'team-card': 'Team card', prev: 'Previous picks & bans'
         },
-        help: 'Drag to move. A click picks the smallest part under the mouse; "Select group" or Alt+click picks the group around it. Arrow keys move 1 px (Shift: 10 px). Dragging back near the original spot snaps into it. While dragging, parts snap to the edges and centres of the screen and of other parts, with pink guide lines; hold Ctrl to drag freely.',
+        help: 'Drag to move. A click picks the smallest part under the mouse; "Select group" or Alt+click picks the group around it. Arrow keys move 1 px (Shift: 10 px). Dragging back near the original spot snaps into it. Drag a corner of the selection to resize. While moving or resizing, parts snap to the edges and centres of the screen and of other parts, with pink guide lines; hold Ctrl to drag freely.',
         snap: 'Snap to guides',
         none: 'Nothing selected. Click a part on the overlay or in the list below.',
         size: 'Size %', parent: 'Select group', hide: 'Hide', show: 'Show', reset: 'Reset',
@@ -258,6 +258,10 @@
         .le-box { position: fixed; pointer-events: none; z-index: 2147483000; border-radius: 3px; }
         .le-guide { position: fixed; pointer-events: none; z-index: 2147483001; background: #ff3fd0; display: none; }
         .le-guide.v { width: 1px; }
+        .le-handle { position: fixed; z-index: 2147483002; width: 10px; height: 10px; box-sizing: border-box; display: none;
+            background: #fff; border: 2px solid #3da5ff; border-radius: 2px; }
+        .le-handle[data-corner="nw"], .le-handle[data-corner="se"] { cursor: nwse-resize; }
+        .le-handle[data-corner="ne"], .le-handle[data-corner="sw"] { cursor: nesw-resize; }
         .le-guide.h { height: 1px; }
         #layout-editor label.le-snap { flex-direction: row; align-items: center; gap: 6px; margin-top: 10px; cursor: pointer; }
         #layout-editor label.le-snap input { width: auto; margin: 0; }
@@ -372,7 +376,14 @@
     // เส้นนำตอนลาก แบบ Photoshop/OBS (ผู้ใช้ขอ 2026-09-30): แนวตั้งหนึ่งเส้น แนวนอนหนึ่งเส้น
     const guideV = Object.assign(document.createElement('div'), { className: 'le-guide v' });
     const guideH = Object.assign(document.createElement('div'), { className: 'le-guide h' });
-    document.documentElement.append(hoverBox, selBox, guideV, guideH, panel);
+    // มุมจับสำหรับย่อขยาย (ผู้ใช้ขอ 2026-09-30) ขนาดเป็นสัดส่วนเดียว (s) จึงมีแค่สี่มุม ไม่มีขอบ
+    const handles = ['nw', 'ne', 'sw', 'se'].map((corner) => {
+        const h = document.createElement('div');
+        h.className = 'le-handle';
+        h.dataset.corner = corner;
+        return h;
+    });
+    document.documentElement.append(hoverBox, selBox, guideV, guideH, ...handles, panel);
 
     const $ = (sel) => panel.querySelector(sel);
     $('h1').textContent = `${T.title} · ${T.scene[scene] || scene}`;
@@ -529,18 +540,30 @@
         Object.assign(box.style, { display: 'block', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
         if (label !== undefined) box.firstChild.textContent = label;
     }
+    // ประกาศก่อน frame(): frame เรียกตัวเองทันที และอ่าน drag เพื่อซ่อนมุมจับระหว่างลากย้าย
+    /** @type {any} */
+    let drag = null;
     (function frame() {
         const sel = selected ? partByKey(selected) : null;
         drawBox(selBox, sel, selected ? nameOf(selected) : '');
+        // มุมจับย่อขยาย ซ่อนระหว่างลากย้าย
+        const r = sel && !(drag && drag.mode === 'move') ? sel.getBoundingClientRect() : null;
+        handles.forEach((h) => {
+            if (!r || !r.width) { h.style.display = 'none'; return; }
+            const c = h.dataset.corner || '';
+            h.style.display = 'block';
+            h.style.left = (c[1] === 'w' ? r.left : r.right) - 5 + 'px';
+            h.style.top = (c[0] === 'n' ? r.top : r.bottom) - 5 + 'px';
+        });
         drawBox(hoverBox, hovered && hovered !== sel ? hovered : null);
         requestAnimationFrame(frame);
     })();
 
     // --- mouse on the stage
-    let drag = null;
     document.addEventListener('pointermove', (ev) => {
         if (panel.contains(/** @type {Node} */ (ev.target))) { hovered = null; return; }
         if (!drag) { hovered = partAt(ev.clientX, ev.clientY); return; }
+        if (drag.mode === 'resize') { resizeTo(ev); return; }
 
         let dx = (ev.clientX - drag.startX) / drag.scale;
         let dy = (ev.clientY - drag.startY) / drag.scale;
@@ -629,6 +652,71 @@
         place(guideV, snapped.x, true);
         place(guideH, snapped.y, false);
     }
+    // --- resize from a corner
+    //
+    // ขนาดขยายรอบ transform-origin ของชิ้นนั้น (ปกติคือกึ่งกลาง) จุดนั้นอยู่กับที่ ขอบทั้งสี่จึงขยับพร้อมกัน
+    // ขนาดคิดจากการฉายตำแหน่งเมาส์ลงแนวทแยงจากจุดนั้นไปมุมที่จับ ลากเฉียงไปทางไหนก็ได้ผลลื่นๆ
+    function startResize(ev, corner) {
+        const el = selected ? partByKey(selected) : null;
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        const origin = getComputedStyle(el).transformOrigin.split(' ').map(parseFloat);
+        const fx = r.left + (el.offsetWidth && Number.isFinite(origin[0]) ? origin[0] / el.offsetWidth : 0.5) * r.width;
+        const fy = r.top + (el.offsetHeight && Number.isFinite(origin[1]) ? origin[1] / el.offsetHeight : 0.5) * r.height;
+        const key = el.dataset.layout;
+        drag = {
+            mode: 'resize', key, el, from: entryOf(key), entry: entryOf(key), sentAt: 0,
+            rect0: r, fx, fy,
+            cx: corner[1] === 'w' ? r.left : r.right, cy: corner[0] === 'n' ? r.top : r.bottom,
+            targets: collectTargets(el)
+        };
+        dragKey = key;
+        el.classList.add('layout-dragging');
+    }
+
+    function resizeTo(ev) {
+        const vx = drag.cx - drag.fx;
+        const vy = drag.cy - drag.fy;
+        const along = ((ev.clientX - drag.fx) * vx + (ev.clientY - drag.fy) * vy) / (vx * vx + vy * vy || 1);
+        const [min, max] = [0.2, 4];
+        let s = Math.min(max, Math.max(min, drag.from.s * along));
+        const hit = snapBox.checked && !ev.ctrlKey ? snapScale(s) : null;
+        if (hit && hit.s >= min && hit.s <= max) s = hit.s;
+        s = Math.round(s * 1000) / 1000;
+        drag.entry = { ...drag.from, s };
+        applyPart(drag.el, drag.entry);
+        releaseClipped();
+        showGuides({ x: hit && hit.axis === 'x' ? hit : null, y: hit && hit.axis === 'y' ? hit : null });
+        const now = performance.now();
+        if (now - drag.sentAt > 80) { drag.sentAt = now; send(drag.key, drag.entry); }
+        refreshPanelSoon();
+    }
+
+    // ขอบไหนก็ได้ในสี่ขอบที่เข้าใกล้เส้นนำที่สุด แปลงกลับเป็นขนาดที่ทำให้ขอบนั้นทับเส้นพอดี
+    function snapScale(s) {
+        const k = s / drag.from.s;
+        const r0 = drag.rect0;
+        const edges = [
+            { axis: 'x', at: drag.fx, dist: drag.fx - r0.left, sign: -1 },
+            { axis: 'x', at: drag.fx, dist: r0.right - drag.fx, sign: 1 },
+            { axis: 'y', at: drag.fy, dist: drag.fy - r0.top, sign: -1 },
+            { axis: 'y', at: drag.fy, dist: r0.bottom - drag.fy, sign: 1 }
+        ];
+        let best = null;
+        edges.forEach((e) => {
+            if (e.dist < 1) return;
+            const pos = e.at + e.sign * e.dist * k;
+            (e.axis === 'x' ? drag.targets.xs : drag.targets.ys).forEach((t) => {
+                const d = t.at - pos;
+                if (Math.abs(d) > SNAP_PX || (best && Math.abs(d) >= Math.abs(best.d))) return;
+                const k2 = e.sign * (t.at - e.at) / e.dist;
+                if (k2 > 0) best = { d, s: drag.from.s * k2, axis: e.axis, line: t.at, t };
+            });
+        });
+        return best;
+    }
+
     const hideGuides = () => { guideV.style.display = 'none'; guideH.style.display = 'none'; };
 
     /** @type {ReturnType<typeof setTimeout> | 0} */
@@ -644,6 +732,8 @@
     document.addEventListener('pointerdown', (ev) => {
         if (panel.contains(/** @type {Node} */ (ev.target)) || ev.button !== 0) return;
         ev.preventDefault();
+        const handle = handles.find((h) => h === ev.target);
+        if (handle) { startResize(ev, handle.dataset.corner || 'se'); return; }
         let el = partAt(ev.clientX, ev.clientY);
         if (!el) { select(null); return; }
         const current = selected ? partByKey(selected) : null;
@@ -652,7 +742,7 @@
         const key = el.dataset.layout;
         select(key);
         drag = {
-            key, el, from: entryOf(key), entry: entryOf(key),
+            mode: 'move', key, el, from: entryOf(key), entry: entryOf(key),
             startX: ev.clientX, startY: ev.clientY, scale: screenScale(el), sentAt: 0,
             rect0: el.getBoundingClientRect(), targets: collectTargets(el)
         };
@@ -668,7 +758,7 @@
         dragKey = null;
         hideGuides();
         el.classList.remove('layout-dragging');
-        if (entry.x !== from.x || entry.y !== from.y) {
+        if (entry.x !== from.x || entry.y !== from.y || entry.s !== from.s) {
             undoStack.push({ key, entry: from });
             if (isDefault(entry)) delete layout[key]; else layout[key] = entry;
             send(key, entry);
