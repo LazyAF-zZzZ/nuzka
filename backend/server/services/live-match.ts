@@ -211,6 +211,7 @@ export function goLive(matchId: string, wantedGameNo?: number): GoLiveResult {
     teamBlue: {
       ...deepClone(defaultState.teamBlue),
       name: onBlue.name,
+      tag: onBlue.tag,
       // โลโก้ของทีมในทะเบียนอยู่ไฟล์ <teamId>.<ext> ไม่ใช่ blue-team.<ext>
       // ต้องบอก src ไปด้วย ไม่งั้น overlay จะไปเปิดไฟล์ของช่องน้ำเงินที่ค้างอยู่
       // ซึ่งเป็นภาพของทีมอื่นที่เคยอัปโหลดไว้ ไม่ใช่ของทีมที่กำลังแข่ง
@@ -221,6 +222,7 @@ export function goLive(matchId: string, wantedGameNo?: number): GoLiveResult {
     teamRed: {
       ...deepClone(defaultState.teamRed),
       name: onRed.name,
+      tag: onRed.tag,
       logo: { ...onRed.logo, src: onRed.id },
       players: onRed.players.map((p, i) => p.name || `Player ${i + 1}`),
       positions: onRed.players.map((p) => p.position)
@@ -657,6 +659,7 @@ export function loadTeamIntoSide(teamKey: unknown, teamId: string): LoadTeamResu
   state[teamKey] = sanitizeTeam({
     ...state[teamKey],
     name: team.name,
+    tag: team.tag,
     logo: { ...team.logo, src: team.id },
     players: team.players.map((player, i) => player.name || `Player ${i + 1}`),
     positions: team.players.map((player) => player.position)

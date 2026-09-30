@@ -12,7 +12,7 @@
     // สีและขนาดที่แต่ละหน้าอ่านจริง (ยกมาจาก DesignPages ของแอพเดิม ซึ่งไล่จากสไตล์ชีตแล้ว)
     const PAGES = {
         draft: { colours: ['blue', 'red', 'text', 'label'], sizes: true, images: ['overlayBottom'],
-            text: ['tournament', 'title', 'names', 'scores', 'players'] },
+            text: ['tournament', 'title', 'names', 'tags', 'scores', 'players'] },
         teams: { colours: [], teamList: true },
         standings: { colours: ['accent', 'text', 'label'] },
         result: { colours: [], images: ['resultTop', 'resultBottom'], text: ['title', 'names', 'scores'] },
@@ -59,6 +59,8 @@
             failed: 'Could not save: ',
             textSec: 'Text', textHint: 'The same boxes as in Control. Changing either one changes both.',
             tournament: 'Tournament name', title: 'Match title', blueName: 'Blue team name', redName: 'Red team name',
+            blueTag: 'Blue team tag', redTag: 'Red team tag', showTag: 'Show team tags instead of names',
+            tagHint: 'Tags come from the team list. A team without a tag keeps its full name.',
             blueScore: 'Blue score', redScore: 'Red score', bluePlayers: 'Blue players', redPlayers: 'Red players'
         },
         th: {
@@ -83,6 +85,8 @@
             failed: 'บันทึกไม่ได้: ',
             textSec: 'ข้อความ', textHint: 'ช่องเดียวกับในหน้า Control แก้ที่ไหนก็เปลี่ยนทั้งสองที่',
             tournament: 'ชื่อทัวร์นาเมนต์', title: 'ชื่อแมตช์', blueName: 'ชื่อทีมน้ำเงิน', redName: 'ชื่อทีมแดง',
+            blueTag: 'แท็กทีมน้ำเงิน', redTag: 'แท็กทีมแดง', showTag: 'แสดงแท็กทีมแทนชื่อ',
+            tagHint: 'แท็กมาจากรายชื่อทีม ทีมที่ไม่มีแท็กจะแสดงชื่อเต็ม',
             blueScore: 'คะแนนน้ำเงิน', redScore: 'คะแนนแดง', bluePlayers: 'ผู้เล่นทีมน้ำเงิน', redPlayers: 'ผู้เล่นทีมแดง'
         }
     };
@@ -160,6 +164,29 @@
             const sides = [['teamBlue', 'blue'], ['teamRed', 'red']];
             if (want('names')) sides.forEach(([team, c]) => textBox(sec, T[c + 'Name'], 24,
                 () => state && state[team] && state[team].name, (name) => emit('updateTeamName', { team, name })));
+            if (want('tags')) {
+                const show = /** @type {HTMLInputElement} */ (el('input'));
+                show.type = 'checkbox';
+                show.addEventListener('change', () => emit('updateDraftShowTag', { enabled: show.checked }));
+                row(sec, T.showTag, show).classList.add('st-check');
+                updaters.push(() => { show.checked = Boolean(state && state.draftShowTag); });
+                sides.forEach(([team, c]) => {
+                    // แท็กว่างได้ จึงส่งทุกครั้ง ไม่ใช้ textBox ที่ข้ามค่าว่าง
+                    const input = /** @type {HTMLInputElement} */ (el('input', 'st-input short'));
+                    input.type = 'text';
+                    input.maxLength = 6;
+                    input.addEventListener('input', () => {
+                        const tag = input.value;
+                        later('tag-' + team, () => emit('updateTeamTag', { team, tag }), 300);
+                    });
+                    row(sec, T[c + 'Tag'], input);
+                    updaters.push(() => {
+                        const v = state && state[team] && state[team].tag;
+                        if (idle(input)) input.value = typeof v === 'string' ? v : '';
+                    });
+                });
+                sec.appendChild(el('p', 'st-hint', T.tagHint));
+            }
             if (want('scores')) sides.forEach(([team, c]) => {
                 const input = /** @type {HTMLInputElement} */ (el('input', 'st-input short'));
                 input.type = 'number';

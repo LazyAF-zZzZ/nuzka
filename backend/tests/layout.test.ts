@@ -241,3 +241,14 @@ test('every broadcast page loads the style editor, just before the layout script
     assert.ok(styleAt < layoutAt, `${route}: the style editor is defined before overlay-layout.js calls it`);
   }
 });
+
+test('team tag on the draft: off unless asked, kept across matches, and each side keeps a short tag', () => {
+  assert.strictEqual(defaultState.draftShowTag, false);
+  assert.strictEqual(sanitizeState({ draftShowTag: 'yes' }).draftShowTag, false);
+  const on = sanitizeState({ draftShowTag: true });
+  assert.strictEqual(carryOverSettings(sanitizeState({}), on).draftShowTag, true);
+  assert.strictEqual(defaultState.teamBlue.tag, '');
+  assert.strictEqual(sanitizeState({ teamBlue: { name: 'Alpha', tag: 'ALPHAWOLF' } }).teamBlue.tag, 'ALPHAW');
+  // state.json จากรุ่นก่อนไม่มีแท็ก ต้องได้ค่าว่าง ไม่ใช่ undefined
+  assert.strictEqual(sanitizeState({ teamRed: { name: 'Old' } }).teamRed.tag, '');
+});

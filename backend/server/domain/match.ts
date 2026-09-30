@@ -14,6 +14,7 @@
 import { deepClone } from '../lib/json';
 import { clampNumber, sanitizeText, normalizeArray } from '../lib/sanitize';
 import { sanitizeHero } from './heroes';
+import { TAG_MAX } from './team';
 import type { TeamKey, SlotType } from './draft';
 import { DRAFT_SEQUENCE, PICK_COUNT, BAN_COUNT, isSlotId, sanitizeTimer } from './draft';
 import type { OverlaySize, Theme, Hotkeys, SfxLevels, GlobalHotkeys } from './settings';
@@ -25,6 +26,7 @@ import {
   TEAM_LIST_STYLE_DEFAULT,
   sanitizeTeamListPerSet,
   sanitizeTeamListAutoText,
+  sanitizeDraftShowTag,
   emptyFonts,
   sanitizeFonts,
   sanitizeTeamListColumns,
@@ -55,6 +57,8 @@ import { FIRST_ROUND, sanitizeRoundNumber, sanitizeRounds } from './rounds';
 
 export interface TeamState {
   name: string;
+  // แท็กสั้นของทีมจากทะเบียน (สูงสุด 6 ตัว) ว่างได้ ใช้เมื่อเปิด draftShowTag
+  tag: string;
   score: number;
   logo: Logo;
   picks: (string | null)[];
@@ -128,6 +132,8 @@ export interface GameState {
   teamListColumns: number;
   // ฟอนต์ของกราฟิกออกอากาศ แยกตามบทบาทข้อความและตามหน้า ดู sanitizeFonts
   fonts: Fonts;
+  // overlay ดราฟต์แสดงแท็กทีมแทนชื่อเต็ม ดู sanitizeDraftShowTag
+  draftShowTag: boolean;
 }
 
 export interface SlotOwner {
@@ -142,6 +148,7 @@ const SLOT_TYPES: SlotType[] = ['picks', 'bans'];
 function emptyTeam(name: string): TeamState {
   return {
     name,
+    tag: '',
     score: 0,
     // logo: v = 0 คือยังไม่มีภาพ, ตัวเลขอื่นคือเวอร์ชันไว้กัน cache
     // เก็บนามสกุลไว้ด้วย overlay จะได้ประกอบ URL ได้เลย ไม่ต้องลองโหลดทีละแบบ
@@ -198,7 +205,8 @@ export const defaultState: GameState = {
   teamListScrollSpeed: TEAM_LIST_SCROLL_SPEED_DEFAULT,
   teamListAutoText: TEAM_LIST_AUTO_TEXT_DEFAULT,
   teamListColumns: TEAM_LIST_COLUMNS_DEFAULT,
-  fonts: emptyFonts()
+  fonts: emptyFonts(),
+  draftShowTag: false
 };
 
 export function isTeamKey(team: unknown): team is TeamKey {
@@ -268,6 +276,7 @@ export function sanitizeTeam(team: unknown, fallback: TeamState): TeamState {
   const source = (team && typeof team === 'object' ? team : {}) as Record<string, unknown>;
   return {
     name: sanitizeText(source.name, 24) || fallback.name,
+    tag: sanitizeText(source.tag, TAG_MAX),
     score: clampNumber(source.score, 0, 99),
     logo: sanitizeLogo(source.logo),
     picks: normalizeArray(source.picks, PICK_COUNT, sanitizeHero),
@@ -364,6 +373,7 @@ export function sanitizeState(state: unknown): GameState {
     teamListScrollSpeed: sanitizeTeamListScrollSpeed(source.teamListScrollSpeed),
     teamListAutoText: sanitizeTeamListAutoText(source.teamListAutoText),
     teamListColumns: sanitizeTeamListColumns(source.teamListColumns),
-    fonts: sanitizeFonts(source.fonts)
+    fonts: sanitizeFonts(source.fonts),
+    draftShowTag: sanitizeDraftShowTag(source.draftShowTag)
   });
 }

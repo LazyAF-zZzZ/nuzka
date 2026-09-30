@@ -227,6 +227,12 @@ export function sanitizeFonts(value: unknown): Fonts {
   return fonts;
 }
 
+// แสดงแท็กทีมแทนชื่อเต็มบน overlay ดราฟต์ ผู้ใช้ขอ 2026-09-30 ให้เป็นตัวเลือก ปิดไว้ก่อน
+// ทีมที่ไม่มีแท็กยังแสดงชื่อเต็มเหมือนเดิม ช่องชื่อจะได้ไม่ว่างกลางอากาศ
+export function sanitizeDraftShowTag(value: unknown): boolean {
+  return value === true;
+}
+
 export const TEAM_LIST_AUTO_TEXT_DEFAULT = true;
 
 export function sanitizeTeamListAutoText(value: unknown): boolean {
@@ -332,7 +338,8 @@ export function sanitizeSfx(value: unknown): SfxLevels {
 // ให้ใช้ทางนี้ อย่าเขียนทับ state ทั้งก้อน
 export const CARRIED_OVER_KEYS = [
   'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound', 'layout', 'teamListPerSet',
-  'teamListStyle', 'teamListScrollSpeed', 'teamListAutoText', 'teamListColumns', 'fonts'
+  'teamListStyle', 'teamListScrollSpeed', 'teamListAutoText', 'teamListColumns', 'fonts',
+  'draftShowTag'
 ] as const;
 
 export type CarriedOverKey = typeof CARRIED_OVER_KEYS[number];

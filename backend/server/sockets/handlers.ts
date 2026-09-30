@@ -7,6 +7,7 @@
 // จะประกาศชนิดตายตัวไม่ได้ เพราะฝั่งที่ส่งมาคือหน้าเว็บที่ใครก็เปิดได้
 
 import type { Socket } from 'socket.io';
+import { TAG_MAX } from '../domain/team';
 import { clampNumber, sanitizeText } from '../lib/sanitize';
 import { sanitizeHero } from '../domain/heroes';
 import {
@@ -34,6 +35,7 @@ import { patchLayout, resetSceneLayout } from '../domain/layout';
 import {
   sanitizeTeamListPerSet,
   sanitizeTeamListAutoText,
+  sanitizeDraftShowTag,
   sanitizeTeamListColumns,
   sanitizeFontFamily,
   FONT_ROLES,
@@ -124,6 +126,18 @@ export function registerHandlers(socket: Socket): void {
   //
   // ตอนนี้เขียนต่อลงตารางแข่ง แล้วเดาผู้ชนะด้วยกติกาเดียวกับการกรอกในสาย
   // ไม่ได้ผูกกับแมตช์ของทัวร์นาเมนต์อยู่ (แมตช์เดี่ยว) ก็ไม่มีอะไรเกิดขึ้น
+  // แท็กว่างได้ ต่างจากชื่อ: ว่างคือ "ไม่มีแท็ก" แล้ว overlay กลับไปแสดงชื่อเต็มเอง
+  controlEvent(socket, 'updateTeamTag', ({ team, tag }) => {
+    if (!isTeamKey(team)) return;
+    getState()[team].tag = sanitizeText(tag, TAG_MAX);
+    emitState();
+  });
+
+  controlEvent(socket, 'updateDraftShowTag', ({ enabled }) => {
+    getState().draftShowTag = sanitizeDraftShowTag(enabled);
+    emitState();
+  });
+
   controlEvent(socket, 'updateScore', ({ team, score }) => {
     if (!isTeamKey(team)) return;
     getState()[team].score = clampNumber(score, 0, 99);

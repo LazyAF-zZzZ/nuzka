@@ -349,3 +349,20 @@ test('rates are zero rather than NaN when there are no games at all', () => {
   assert.strictEqual(only.presence, 0);
   assert.strictEqual(only.winRate, null);
 });
+
+test('a team taken from the registry brings its tag to the live board', () => {
+  const { teams } = getStores();
+  const tagged = must(teams.create({ name: 'Tagged Team', tag: 'TGD' }).team);
+  const plain = must(teams.create({ name: 'Plain Team' }).team);
+  live.loadTeamIntoSide('teamBlue', tagged.id);
+  live.loadTeamIntoSide('teamRed', plain.id);
+  const state = liveState.getState();
+  assert.strictEqual(state.teamBlue.tag, 'TGD');
+  assert.strictEqual(state.teamRed.tag, '');
+
+  const cup = twoTeamCup('Tag cup');
+  live.goLive(cup.matchId);
+  const after = liveState.getState();
+  assert.strictEqual(after.teamBlue.name, cup.blue.name);
+  assert.strictEqual(after.teamBlue.tag, cup.blue.tag);
+});

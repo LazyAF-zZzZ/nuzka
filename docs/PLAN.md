@@ -700,7 +700,7 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
-### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.3; beta.2 was built but never published)
+### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.4; beta.2 and beta.3 were built but never published)
 
 User's request: "move all design into edit layout and move the edit layout button to OBS sources, next
 to each page title". The app's Design screen, its view model and its menu entry are deleted.
@@ -726,6 +726,11 @@ to each page title". The app's Design screen, its view model and its menu entry 
   draft overlay (tournament, title, names, scores, players), result (title, names, scores) and previous picks
   (tournament, names). Same socket events as Control, so the two never disagree; an emptied box is not sent
   and shows the live value again on blur, because the server keeps the old name for an empty one.
+- **Team tag on the draft** (user's request, optional): `TeamState.tag` (TAG_MAX 6, empty allowed) comes from the
+  registry in goLive and loadTeamIntoSide; `state.draftShowTag` (carried over, off by default) makes overlay.js
+  show the tag in the name boxes, falling back to the name for a team with no tag. Editor Text section has the
+  toggle and both tags (`updateTeamTag`, `updateDraftShowTag`); an empty tag IS sent, unlike names. The match
+  title still uses full names. The desktop Control has no tag box yet.
 - Global editor rules (`#layout-editor label` stacks vertically, `input` is full width) are meant for
   the Layout tab's X/Y boxes; Style tick boxes override both.
 - Not done: the Design.*, Fonts.*, Layout.* and TeamList.* strings in Loc.M5.cs are now unused.
