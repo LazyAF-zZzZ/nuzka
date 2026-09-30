@@ -20,14 +20,14 @@ Everything runs on your own computer. No account, no internet needed.
 1. Double-click **START_APP.cmd**
 2. Wait for the window to open. Leave it open while you stream.
 
-The pages you will use are on the top bar: **HOME · TEAMS · ANALYTICS · CONTROL · DESIGN · HOTKEYS**
+The pages you will use are on the top bar: **HOME · TEAMS · ANALYTICS · CONTROL · HOTKEYS**
 
 **TH**
 
 1. ดับเบิลคลิก **START_APP.cmd**
 2. รอจนหน้าต่างเปิดขึ้นมา แล้วเปิดทิ้งไว้ตลอดเวลาที่ไลฟ์
 
-หน้าที่ใช้บ่อยอยู่บนแถบด้านบน: **HOME · TEAMS · ANALYTICS · CONTROL · DESIGN · HOTKEYS**
+หน้าที่ใช้บ่อยอยู่บนแถบด้านบน: **HOME · TEAMS · ANALYTICS · CONTROL · HOTKEYS**
 
 ---
 
@@ -270,11 +270,11 @@ If you hear nothing, open **http://127.0.0.1:3000/sfx-test** — it tells you wh
 
 **EN**
 
-Go to **DESIGN**. You can change colours, text sizes, logo size, and upload your own background images. The preview at the top updates as you change things.
+Open **OBS sources** in the app and press **Edit** next to the page you want. The overlay opens in your browser with an editor beside it: **Layout** moves, resizes and hides parts, and **Style** holds that page's colours, fonts (including importing your own), text sizes, background images and page settings. OBS follows every change at once.
 
 **TH**
 
-ไปหน้า **DESIGN** เปลี่ยนสี ขนาดตัวหนังสือ ขนาดโลโก้ และอัปโหลดภาพพื้นหลังของคุณเองได้ ตัวอย่างด้านบนจะเปลี่ยนตามทันที
+เปิด **OBS sources** ในแอพ แล้วกด **แก้ไข** ข้างหน้าที่ต้องการ หน้า overlay จะเปิดในเบราว์เซอร์พร้อมตัวแก้ แท็บ **ตำแหน่ง** ย้าย ย่อ และซ่อนชิ้นส่วน แท็บ **สไตล์** มีสี ฟอนต์ (นำเข้าฟอนต์เองได้) ขนาดตัวหนังสือ ภาพพื้นหลัง และค่าของหน้านั้น OBS เปลี่ยนตามทันทีทุกครั้ง
 
 ---
 
@@ -593,7 +593,7 @@ What comes across: teams and their players, tournaments, brackets, every match a
 recorded draft.
 
 What does not: team logos and background images, the board as you left it (current picks and
-bans, the score), your colours from the Design page, sound levels and hotkeys. Those are quick
+bans, the score), your colours and styles, sound levels and hotkeys. Those are quick
 to set again and are meant to be per-machine.
 
 - **Restoring twice is safe.** Anything already here is kept and duplicates are skipped, so a
@@ -612,7 +612,7 @@ to set again and are meant to be per-machine.
 
 **ของที่ย้ายมา** ทีมและผู้เล่น ทัวร์นาเมนต์ สายการแข่ง คู่แข่งทุกคู่ และดราฟต์ที่บันทึกไว้ทุกชุด
 
-**ของที่ไม่ย้าย** โลโก้ทีมและภาพพื้นหลัง กระดานที่ค้างอยู่ (พิคแบนและสกอร์ปัจจุบัน) สีจากหน้า Design
+**ของที่ไม่ย้าย** โลโก้ทีมและภาพพื้นหลัง กระดานที่ค้างอยู่ (พิคแบนและสกอร์ปัจจุบัน) สีและสไตล์
 ระดับเสียง และคีย์ลัด พวกนี้ตั้งใหม่ไม่กี่นาที และตั้งใจให้เป็นของแต่ละเครื่องอยู่แล้ว
 
 - **กู้คืนซ้ำได้ ไม่เสียหาย** ของที่มีอยู่แล้วจะไม่ถูกแตะ รายการที่ซ้ำจะถูกข้าม กู้คืนอีกรอบจึงไม่เปลี่ยนอะไร

@@ -299,8 +299,8 @@
         #layout-editor .st-hint { color: #9aa3b2; font-size: 11.5px; margin: 0 0 8px; display: block; }
         #layout-editor .st-row { display: grid; grid-template-columns: 118px 1fr auto; align-items: center; gap: 8px;
             margin: 6px 0; font-size: 12px; color: #c9ced8; }
-        #layout-editor .st-row.st-check { display: flex; align-items: center; gap: 8px; }
-        #layout-editor .st-row.st-check input { order: 0; margin: 0; } #layout-editor .st-row.st-check .st-label { order: 1; }
+        #layout-editor .st-row.st-check { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px; text-align: left; }
+        #layout-editor .st-row.st-check input { order: 0; margin: 0; width: auto; flex: 0 0 auto; } #layout-editor .st-row.st-check .st-label { order: 1; }
         #layout-editor .st-note { grid-column: 2 / 4; color: #9aa3b2; font-size: 11px; margin-top: -2px; }
         #layout-editor .st-note:empty { display: none; }
         #layout-editor select.st-input, #layout-editor input.st-input { width: 100%; background: #0f1216; border: 1px solid #353c47;

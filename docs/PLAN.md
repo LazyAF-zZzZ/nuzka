@@ -700,6 +700,32 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
+### Design moves into the overlay editor; the Design screen is gone (2026-09-30, 3.2.2-beta.2)
+
+User's request: "move all design into edit layout and move the edit layout button to OBS sources, next
+to each page title". The app's Design screen, its view model and its menu entry are deleted.
+- **OBS sources** rows have an **Edit** button beside the name (`ObsSourceRow.EditCommand`), opening
+  `<page>?edit=1&lang=..` without `sfx=1` so the editor never plays draft sounds. The name column is
+  250px so "Previous picks & bans" fits with its button and the SOUND badge.
+- The editor panel (overlay-layout.js, now 360px) has **Layout** and **Style** tabs; `?tab=style` opens
+  on Style. `public/js/overlay-style-editor.js` (loaded by every broadcast page before
+  overlay-layout.js, inert until `RovStyleEditor.mount`) builds Style from a per-page table taken from
+  the old DesignPages: fonts on every page (scope This page / All pages, the four roles, import and
+  delete), the colours that page reads, sizes on the draft overlay, background images (1080 and 1440
+  slots, the two skin toggles) on draft and result, and the team-list settings on the team list. It
+  sends the same socket events the Design screen did. **Trap:** values are captured when the control
+  changes, not when its 150 ms debounce fires; a stateUpdate arriving in between wrote the old value
+  back into the picker and the old colour was sent.
+- **Installed fonts:** a page cannot list Windows fonts, so `Services/SystemFonts.cs` (moved out of the
+  view model) PUTs `/api/system-fonts` on every socket connect; the server keeps it in memory. The
+  editor reloads its font lists on window focus, in case the app connected after it opened.
+- **Importing in the browser:** the server now reads the family/face name (`name` table) and whether
+  U+0E01 is mapped (`cmap` formats 4 and 12) from TTF/OTF files itself (`domain/font-info.ts`), as the
+  WPF app used to; WOFF/WOFF2 keep the file name. Checked against Tahoma, Leelawadee, Impact, Arial.
+- Global editor rules (`#layout-editor label` stacks vertically, `input` is full width) are meant for
+  the Layout tab's X/Y boxes; Style tick boxes override both.
+- Not done: the Design.*, Fonts.*, Layout.* and TeamList.* strings in Loc.M5.cs are now unused.
+
 ### Overlay review (2026-09-30, 3.2.2-beta.1)
 
 All nine overlays were rendered at 1920x1080 from a copy of the user's backup (headless Edge; the agent

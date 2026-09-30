@@ -238,7 +238,12 @@
         const colourInput = (key, sec, label) => {
             const pick = /** @type {HTMLInputElement} */ (el('input', 'st-colour'));
             pick.type = 'color';
-            pick.addEventListener('input', () => later('c-' + key, () => emit('updateTheme', { [key]: pick.value })));
+            // ค่าต้องจับไว้ตอนเลือก ไม่ใช่ตอนตัวหน่วงเวลาทำงาน: ระหว่างนั้น stateUpdate อาจเขียนค่าเก่ากลับลงช่อง
+            // แล้วสีที่ถูกส่งไปคือสีเดิม (เจอตอนทดสอบ 2026-09-30)
+            pick.addEventListener('input', () => {
+                const value = pick.value;
+                later('c-' + key, () => emit('updateTheme', { [key]: value }));
+            });
             const r = row(sec, label, pick);
             const hex = el('code', 'st-hex');
             r.appendChild(hex);
@@ -265,7 +270,8 @@
             const out = el('span', 'st-value');
             range.addEventListener('input', () => {
                 out.textContent = range.value;
-                later('r-' + label, () => send(Number(range.value)), 120);
+                const value = Number(range.value);   // จับไว้ตอนลาก เหตุผลเดียวกับช่องสี
+                later('r-' + label, () => send(value), 120);
             });
             const r = row(sec, label, range);
             r.appendChild(out);
@@ -391,6 +397,8 @@
         // ตัวแก้อาจเปิดหลัง stateUpdate แรกผ่านไปแล้ว อ่านครั้งเดียวไว้ก่อน ไม่งั้นแท็บว่างจนกว่าจะมีอะไรเปลี่ยน
         fetch('/api/state').then((r) => r.json()).then((s) => { if (!state) { state = s; refresh(); } }).catch(() => {});
         loadFonts();
+        // แอพอาจส่งรายชื่อฟอนต์ในเครื่องมาหลังตัวแก้เปิดแล้ว หรือนำเข้าจากอีกแท็บ กลับมาที่แท็บนี้ก็โหลดใหม่
+        window.addEventListener('focus', loadFonts);
     }
 
     window.RovStyleEditor = { mount };
