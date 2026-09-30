@@ -801,6 +801,9 @@ that spot when it is clear and otherwise slides along the banner's top strip in 
 and right, to the nearest spot where no drawn content (the same `drawnBoxes()` the corner picker uses) is under
 it, staying inside the banner; if none is clear it takes the least covered. It re-places on rov-layout,
 rov-fonts, resize, a size switch and a tournament-name change. Not yet released.
+**Trap:** `drawnBoxes()` sized "panels" against the window; in the layout editor the stage is drawn at ~0.2x, so
+the whole banner counted as content and the mark always moved. It now uses the stage (body) area, skips the
+mark's own containers, and the 6 px clearance is in banner pixels.
 
 ### 3.2.2 released (2026-09-30)
 

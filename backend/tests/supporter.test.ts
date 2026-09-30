@@ -310,7 +310,10 @@ test('on full-screen graphics the watermark picks a free corner, and looks again
   // A fixed corner was covered by the last row of a 32-team standings table (2026-09-28).
   assert.match(js, /const CORNERS = \['bottom-right', 'bottom-left', 'top-right', 'top-left'\];/);
   assert.match(js, /new MutationObserver\(\(\) => placeSoon\(/, 'placement follows content changes');
-  assert.match(js, /if \(slot\) return;/, 'the draft banner keeps its fixed place');
+  // In the draft banner it keeps its spot left of the red bans unless a moved or enlarged part covers
+  // it, then slides along the banner to the nearest free spot (enlarged bans covered it, 2026-09-30).
+  assert.match(js, /const candidates = \[BANNER_RIGHT\];/, 'the banner spot is tried first');
+  assert.match(js, /if \(slot\) \{[\s\S]*?placeInBanner\(\);/, 'the draft banner places itself inside the banner');
   // Covering content must always lose to sitting on a panel, and text is measured by its
   // letters: a full-width footnote box once made every corner look busy.
   assert.match(js, /overlap\(drawn\.content, 8\) \* 1000 \+ overlap\(drawn\.panels, 0\)/);

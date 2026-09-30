@@ -337,11 +337,15 @@
     //            standings table the mark reads as part of the table.
     // Elements still at opacity 0 count: that is an entrance animation about to show them.
     function drawnBoxes() {
-        const screen = window.innerWidth * window.innerHeight;
+        // พื้นที่ของเวที ไม่ใช่ของหน้าต่าง: ในตัวแก้ layout เวทีถูกย่อลง ถ้าเทียบกับหน้าต่าง
+        // แผงใหญ่ทั้งแผง (เช่นแบนเนอร์ดราฟต์) จะถูกนับเป็นเนื้อหาที่ห้ามทับ แล้วลายน้ำหนีไปทั้งที่ไม่มีอะไรทับ
+        const stage = body.getBoundingClientRect();
+        const screen = (stage.width * stage.height) || (window.innerWidth * window.innerHeight);
         const content = [];
         const panels = [];
         body.querySelectorAll('*').forEach((el) => {
-            if (el === watermark || watermark.contains(el)) return;
+            // กล่องที่ลายน้ำอยู่ข้างใน (แบนเนอร์) คือที่ของมัน ไม่ใช่สิ่งกีดขวาง
+            if (el === watermark || watermark.contains(el) || el.contains(watermark)) return;
             const r = el.getBoundingClientRect();
             if (r.width < 1 || r.height < 1) return;
             const cs = getComputedStyle(el);
@@ -388,6 +392,8 @@
     function placeInBanner() {
         const drawn = drawnBoxes().content;
         const box = slot.getBoundingClientRect();
+        // ระยะเผื่อ 6px ของแบนเนอร์ ไม่ใช่ของจอ: ในตัวแก้แบนเนอร์ถูกย่อ ถ้าเผื่อเป็นพิกเซลจอจะเลื่อนหนีโดยไม่มีอะไรทับ
+        const k = box.width / (/** @type {HTMLElement} */ (slot).offsetWidth || box.width || 1);
         const candidates = [BANNER_RIGHT];
         for (let d = 12; d <= 1900; d += 12) {
             candidates.push(BANNER_RIGHT + d);
@@ -399,7 +405,7 @@
             watermark.style.right = right + 'px';
             const r = watermark.getBoundingClientRect();
             if (r.left < box.left + 4 || r.right > box.right - 4) continue;   // ต้องอยู่ในแบนเนอร์ทั้งตัว
-            const score = overlap(drawn, 6);
+            const score = overlap(drawn, 6 * k);
             if (score < bestScore) { best = right; bestScore = score; }
             if (score === 0) break;
         }
