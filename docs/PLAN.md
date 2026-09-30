@@ -708,6 +708,10 @@ icon before release; `data/heroes.json` (the fallback list `check-heroes.js` rea
 Published with `pack.ps1 -Publish`, which now also drops the old-named Setup/Portable copies; the
 release keeps the Nuzka installers, both .nupkg files, releases.win.json and RELEASES. Delta from
 3.2.0 is 1 MB.
+**Local `releases/` trimmed after 3.2.1** (user asked, ~7 GB freed): it now holds only
+`RovOverlayTool3-3.2.1-full.nupkg` and a `releases.win.json` listing just that, which is all the next
+`pack.ps1` needs to make a delta. Every released version is on GitHub; the betas were never published,
+so a new beta channel starts with a full package only. `publish/` is rebuilt by every pack.
 
 ### 3.2.0 released (2026-09-30)
 
