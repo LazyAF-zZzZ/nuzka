@@ -29,7 +29,7 @@ installed app has the same exe name, and that closes the operator's real Nuzka t
 shutdown backup (done once, 2026-09-28).
 
 **Never run smoke.ps1 (or the app without `--port`) from inside the Claude desktop app.** A process started
-there sees a merged `%APPDATA%RovOverlayTool3data`: a sandbox copy of `tournament.db` from 2026-09-28
+there sees a merged `%APPDATA%\RovOverlayTool3\data`: a sandbox copy of `tournament.db` from 2026-09-28
 shadows the real one while `tournament.db-wal` comes from the real folder, so the app would open an old
 database against the operator's live WAL. The pre-release smoke check is done by the user, installing the
 exact Setup.exe from Explorer.
