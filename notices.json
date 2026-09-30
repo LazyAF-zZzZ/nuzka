@@ -1,5 +1,21 @@
 [
   {
+    "id": "update-3-2-0",
+    "level": "info",
+    "title": {
+      "th": "Nuzka 3.2.0 พร้อมแล้ว",
+      "en": "Nuzka 3.2.0 is ready"
+    },
+    "body": {
+      "th": "ROV Overlay Tool เปลี่ยนชื่อเป็น Nuzka แล้ว ใหม่ใน 3.2.0: สำรองข้อมูลอัตโนมัติ ย้ายชิ้นส่วนบน overlay ได้ทุกหน้า นำเข้าฟอนต์ และรายชื่อทีมแบบแบ่งชุด overlay จะมีลายน้ำเล็กๆ 'Powered by Nuzka' ซึ่งเอาออกได้ด้วยคีย์ผู้สนับสนุน (฿159 ต่อเดือน ที่เมนูสนับสนุน) อัปเดตได้ที่เลขเวอร์ชันบนแถบด้านบน ตอนที่ไม่ได้ออกอากาศ",
+      "en": "ROV Overlay Tool is now Nuzka. New in 3.2.0: automatic backups, move any part of any overlay, imported fonts, and team list sets. Overlays now show a small 'Powered by Nuzka' mark; a supporter key (฿159 a month, in Support) removes it. Update from the version number in the title bar when you are not on air."
+    },
+    "url": "https://github.com/LazyAF-zZzZ/nuzka/releases/tag/v3.2.0",
+    "minVersion": "3.0.9",
+    "maxVersion": "3.1.2",
+    "expires": "2026-10-31T00:00:00Z"
+  },
+  {
     "id": "update-3-1-1",
     "level": "info",
     "title": {
