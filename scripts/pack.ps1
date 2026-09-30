@@ -173,6 +173,11 @@ Write-Host "  done: $releases" -ForegroundColor Green
 # Uploading is the moment users start receiving this build, so it is never automatic.
 if ($Publish) {
     Write-Host '  uploading to GitHub Releases…'
+    # vpk needs a token; the gh CLI on this machine is already logged in, so use its token unless one is set.
+    # (3.2.2's first publish stopped here after packing, and a repack of the same version is refused.)
+    $token = $env:GITHUB_TOKEN
+    if (-not $token) { $token = (& gh auth token) }
+    if (-not $token) { throw 'no GitHub token: set GITHUB_TOKEN or run gh auth login' }
     & $vpk upload github `
         --repoUrl $RepoUrl `
         --channel $vpkChannel `
@@ -180,7 +185,7 @@ if ($Publish) {
         --tag "v$Version" `
         --releaseName "Nuzka $Version" `
         --publish true `
-        --token $env:GITHUB_TOKEN
+        --token $token
     if ($LASTEXITCODE -ne 0) { throw 'vpk upload failed' }
     # vpk uploads only the files it made; add the Nuzka-named copies to the same release.
     if ($friendlyFiles.Count -gt 0) {
