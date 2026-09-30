@@ -1,5 +1,21 @@
 [
   {
+    "id": "update-3-2-2",
+    "level": "info",
+    "title": {
+      "th": "Nuzka 3.2.2 พร้อมแล้ว",
+      "en": "Nuzka 3.2.2 is ready"
+    },
+    "body": {
+      "th": "หน้า Design ย้ายไปอยู่ในตัวแก้ของแต่ละหน้าแล้ว: เปิด OBS sources แล้วกด แก้ไข ข้างชื่อหน้า มีแท็บตำแหน่งและสไตล์ ใหม่: เส้นนำและการดูดตอนลากและย่อขยายแบบ Photoshop พื้นผิว (texture) ทับพื้นเดิมของทุกหน้า แท็กทีมบนดราฟต์ แก้ข้อความจากตัวแก้ได้ และ overlay ดีขึ้นทุกหน้า หลังอัปเดตไม่ต้องล้างแคชใน OBS แล้ว อัปเดตได้ที่เลขเวอร์ชันบนแถบด้านบน ตอนที่ไม่ได้ออกอากาศ",
+      "en": "The Design screen now lives in each page's editor: open OBS sources and press Edit next to a page, with Layout and Style tabs. New: Photoshop-style guides and snapping when moving and resizing, textures over every page's own background, team tags on the draft, text editing from the editor, and improvements to every overlay. No more clearing the OBS cache after an update. Update from the version number in the title bar when you are not on air."
+    },
+    "url": "https://github.com/LazyAF-zZzZ/nuzka/releases/tag/v3.2.2",
+    "minVersion": "3.2.0",
+    "maxVersion": "3.2.1",
+    "expires": "2026-11-15T00:00:00Z"
+  },
+  {
     "id": "update-3-2-0",
     "level": "info",
     "title": {
