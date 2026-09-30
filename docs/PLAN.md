@@ -800,7 +800,8 @@ layout editor ran them into it (user's screenshot, 2026-09-30). `placeInBanner()
 that spot when it is clear and otherwise slides along the banner's top strip in 12 px steps, alternating left
 and right, to the nearest spot where no drawn content (the same `drawnBoxes()` the corner picker uses) is under
 it, staying inside the banner; if none is clear it takes the least covered. It re-places on rov-layout,
-rov-fonts, resize, a size switch and a tournament-name change. Not yet released.
+rov-fonts, resize, a size switch and a tournament-name change. Shipped by rebuilding **3.2.2 in place** (user's
+request, same release and notes): installs already on 3.2.2 keep the earlier build, new downloads get this one.
 **Trap:** `drawnBoxes()` sized "panels" against the window; in the layout editor the stage is drawn at ~0.2x, so
 the whole banner counted as content and the mark always moved. It now uses the stage (body) area, skips the
 mark's own containers, and the 6 px clearance is in banner pixels.
