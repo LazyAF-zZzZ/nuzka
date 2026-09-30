@@ -38,7 +38,7 @@ $vpkChannel = if ($Channel -eq 'beta') { 'beta' } else { 'win' }
 
 # Images the operator uploaded. They live in the same folders as the app's own art, so
 # they are removed by name after the copy rather than filtered during it.
-$uploadDirs = @('team-logos', 'skins')
+$uploadDirs = @('team-logos', 'skins', 'fonts')
 
 # The HTML operator pages v2 shipped. Every one has a native screen now, so shipping them
 # would hand users a second way to drive the app that nobody maintains.

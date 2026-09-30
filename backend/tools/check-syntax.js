@@ -70,9 +70,13 @@ walk(ROOT);
 //
 // (electron-builder ไม่ได้แตะไฟล์นี้ ยืนยันแล้วด้วยการรันแยกทีละขั้น)
 // จะแตกไฟล์จาก asar มาดู ต้อง cd ไปโฟลเดอร์ชั่วคราวก่อนเสมอ
-const REQUIRED_SCRIPTS = ['build', 'typecheck', 'typecheck:web', 'test', 'check', 'dist', 'start', 'app'];
-// สองบรรทัดนี้คือสิ่งที่กันข้อมูลของผู้ใช้ออกจากไฟล์ .exe ห้ามหาย
-const REQUIRED_EXCLUDES = ['!data/state.json', '!data/tournament.db*'];
+// v3 ไม่มี Electron แล้ว (dist, app, main, build.files หายไปโดยตั้งใจ) ตัวติดตั้งทำด้วย scripts/pack.ps1
+// ซึ่งคัดลอกเฉพาะ build, public, server.js, package.json แล้วล้างไฟล์ที่ผู้ใช้อัปโหลดทิ้ง
+// การกันข้อมูลของเครื่องที่ build ออกจากตัวติดตั้งจึงย้ายไปตรวจที่ pack.ps1 แทน (ข้างล่าง)
+const REQUIRED_SCRIPTS = ['build', 'typecheck', 'typecheck:web', 'test', 'check', 'start'];
+// โฟลเดอร์ใน public/images ที่เก็บของที่ผู้ใช้อัปโหลดตอนรันจากโฟลเดอร์โปรเจกต์ (โหมดพัฒนา)
+// pack.ps1 ต้องล้างทุกอันก่อนแพ็ค ไม่งั้นโลโก้ ภาพพื้นหลัง หรือฟอนต์ของเครื่องที่ build ติดไปกับแอพ
+const UPLOAD_DIRS = ['team-logos', 'skins', 'fonts'];
 
 try {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
@@ -85,19 +89,19 @@ try {
   if (!pkg.devDependencies || Object.keys(pkg.devDependencies).length === 0) {
     problems.push('package.json lost its devDependencies');
   }
-  if (!pkg.main) problems.push('package.json lost "main", the Electron entry point');
-
-  const buildFiles = (pkg.build && pkg.build.files) || [];
-  if (buildFiles.length === 0) {
-    problems.push('package.json lost build.files, which the installer is built from');
-  }
-  REQUIRED_EXCLUDES.forEach((entry) => {
-    if (buildFiles.length && !buildFiles.includes(entry)) {
-      problems.push(`build.files no longer excludes ${entry} - the installer would ship the builder's own data`);
-    }
-  });
 } catch (error) {
   problems.push('package.json could not be read: ' + error.message);
+}
+
+try {
+  const pack = fs.readFileSync(path.join(ROOT, '..', 'scripts', 'pack.ps1'), 'utf8');
+  const line = /\$uploadDirs\s*=\s*@\(([^)]*)\)/.exec(pack);
+  const listed = line ? line[1].split(',').map((s) => s.trim().replace(/'/g, '')) : [];
+  UPLOAD_DIRS.forEach((dir) => {
+    if (!listed.includes(dir)) problems.push(`scripts/pack.ps1 no longer clears public/images/${dir} - the installer would ship the builder's own uploads`);
+  });
+} catch (error) {
+  problems.push('scripts/pack.ps1 could not be read: ' + error.message);
 }
 
 if (problems.length) {
