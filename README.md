@@ -29,7 +29,7 @@ bank details.
 **Refunds:** if your key does not work for you, you get a full refund within 7 days of
 buying it. Send your Stripe receipt to the contact below. A refunded key is switched off.
 
-**Contact:** _to be added before release_ <!-- MAKER: an email and/or LINE ID for support and refunds -->
+**Contact:** [lazyaf1538@gmail.com](mailto:lazyaf1538@gmail.com), for support and refunds.
 
 ## Licence
 
