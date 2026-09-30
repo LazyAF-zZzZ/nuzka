@@ -12,7 +12,7 @@
          from App.xaml, and this is what picks ours over it. -->
     <StartupObject>RovOverlay.Desktop.Program</StartupObject>
     <Product>Nuzka</Product>
-    <Version>3.2.1</Version>
+    <Version>3.2.2</Version>
     <ApplicationIcon>..\..\backend\public\images\app-icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>

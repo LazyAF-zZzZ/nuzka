@@ -1,6 +1,6 @@
 {
   "name": "rov-overlay-backend",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Backend for Nuzka: HTTP API, Socket.IO and the OBS overlays. The operator UI is the WPF app in ../desktop.",
   "scripts": {
     "build": "tsc -p tsconfig.json",

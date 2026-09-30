@@ -8,7 +8,7 @@ session with no conversation history should be able to continue from here and
 
 ## 0. Where things stand
 
-**Last updated 2026-09-28: 3.2.0 is packed and smoke-tested locally, NOT published (see "Release 3.2.0" below). The app is renamed **Nuzka** (§1). Supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
+**Last updated 2026-09-30: 3.2.2 released (see "3.2.2 released" below); 3.2.0 and 3.2.1 released the same day. The app is renamed **Nuzka** (§1). Supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
 
 | Area | State |
 |---|---|
@@ -792,6 +792,13 @@ preview pane cannot screenshot while minimised) and reviewed. The user took ever
   ascenders overhang a tight line-height by a few px, so a plain `scrollHeight > clientHeight`
   check shrank every name to the minimum; it allows ~0.3em vertically. Words are not broken
   mid-word (`overflow-wrap: normal`) so a long word shrinks rather than splitting "PHANT/OM".
+
+### 3.2.2 released (2026-09-30)
+
+Everything from the 3.2.2 betas (beta.1 to beta.9, none published): the Design screen moved into each page's
+overlay editor (Style tab), text editing and team tags, smart guides with move and resize snapping, page
+textures, and the overlay review. Published with `pack.ps1 -Version 3.2.2 -Publish` on the win channel after
+pushing; notice `update-3-2-2` targets 3.2.0 and 3.2.1. Same code the user had been running as beta.9.
 
 ### 3.2.1 released (2026-09-30)
 
