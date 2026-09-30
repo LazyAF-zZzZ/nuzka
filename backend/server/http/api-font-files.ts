@@ -8,7 +8,8 @@ import express, { Router } from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { FONT_MAX_BYTES, FONT_MIME, fontExtOf, importedFamily, isFontId } from '../domain/font-files';
 import type { FontExt } from '../domain/font-files';
-import { dropFontFamily } from '../domain/settings';
+import { dropFontFamily, sanitizeFontFamily } from '../domain/settings';
+import { fontName, fontHasThai } from '../domain/font-info';
 import { listFonts, addFont, removeFont, findFont, FONT_DIR } from '../store/font-files';
 import { getState, emitState } from '../store/live-state';
 import { requireControl } from './auth';
@@ -18,6 +19,9 @@ const noSniff = (_req: Request, res: Response, next: NextFunction): void => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   next();
 };
+
+interface SystemFont { family: string; thai: boolean; }
+let systemFonts: SystemFont[] = [];
 
 export function fontFileRoutes(): Router {
   const router = express.Router();
@@ -37,8 +41,13 @@ export function fontFileRoutes(): Router {
       res.status(415).json({ error: 'Not a font file. Use TTF, OTF, WOFF or WOFF2.' });
       return;
     }
-    const thai = req.query.thai === '1' ? true : req.query.thai === '0' ? false : null;
-    const result = addFont(req.query.name, ext, body, thai);
+    // ชื่อกับอักษรไทยอ่านจากตัวไฟล์ก่อน (TTF/OTF) ตัวแก้บนเบราว์เซอร์ส่งมาได้แค่ชื่อไฟล์
+    // ที่ส่งมาทาง query ใช้เมื่ออ่านไม่ได้ เช่น WOFF/WOFF2 ที่ตารางถูกบีบอัดไว้
+    const readable = ext === 'ttf' || ext === 'otf';
+    const queryThai = req.query.thai === '1' ? true : req.query.thai === '0' ? false : null;
+    const name = (readable && fontName(body)) || req.query.name;
+    const thai = (readable ? fontHasThai(body) : null) ?? queryThai;
+    const result = addFont(name, ext, body, thai);
     if (result.error !== undefined) {
       res.status(409).json({ error: result.error });
       return;
@@ -59,6 +68,22 @@ export function fontFileRoutes(): Router {
     if (dropFontFamily(getState().fonts, importedFamily(font.id))) emitState();
     notifyData({ topic: 'fonts' });
     res.json({ ok: true });
+  });
+
+  // ฟอนต์ที่ลงไว้ในเครื่อง: เบราว์เซอร์ขอรายชื่อจากระบบไม่ได้ แอพ WPF ส่งมาให้ตอนต่อเซิร์ฟเวอร์
+  // เก็บในหน่วยความจำอย่างเดียว เปิดแอพใหม่ก็ส่งมาใหม่ ชื่อผ่าน sanitizeFontFamily แบบเดียวกับ state.fonts
+  router.get('/api/system-fonts', (_req, res) => {
+    res.json({ fonts: systemFonts });
+  });
+
+  router.put('/api/system-fonts', requireControl, express.json({ limit: '1mb' }), (req, res) => {
+    const list = Array.isArray(req.body?.fonts) ? req.body.fonts.slice(0, 3000) : [];
+    const seen = new Set<string>();
+    systemFonts = list.map((f: unknown) => {
+      const raw = (f && typeof f === 'object' ? f : {}) as Record<string, unknown>;
+      return { family: sanitizeFontFamily(raw.family), thai: raw.thai === true };
+    }).filter((f: SystemFont) => f.family && !f.family.startsWith('nzf-') && !seen.has(f.family) && !!seen.add(f.family));
+    res.json({ ok: true, count: systemFonts.length });
   });
 
   // ไฟล์ตาม id โดยไม่ต้องรู้นามสกุล overlay จึงประกอบ URL ได้จากชื่อ family อย่างเดียว

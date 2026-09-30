@@ -40,6 +40,11 @@ public sealed class ObsSourceRow : ObservableObject
         Url = services.Url(route);
         CopyCommand = new RelayCommand(() => Clip.Copy(Url));
         OpenCommand = new RelayCommand(() => Browser.Open(Url));
+        // All design lives in the editor on the overlay page itself since 2026-09-30 (the
+        // Design screen is gone). ?sfx=1 is dropped: the editor must not play draft sounds.
+        var page = route.Replace("?sfx=1", "").Replace("&sfx=1", "");
+        EditCommand = new RelayCommand(() => Browser.Open(services.Url(
+            page + (page.Contains('?') ? "&" : "?") + "edit=1&lang=" + Loc.Instance.Language)));
         Loc.Instance.Changed += () => OnPropertyChanged(nameof(SizeText));
     }
 
@@ -61,6 +66,7 @@ public sealed class ObsSourceRow : ObservableObject
     public string SizeText => _size ?? Loc.T("Obs.SameSize");
     public ICommand CopyCommand { get; }
     public ICommand OpenCommand { get; }
+    public ICommand EditCommand { get; }
 }
 
 public sealed class SettingsViewModel : ObservableObject

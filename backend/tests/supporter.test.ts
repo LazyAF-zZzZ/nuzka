@@ -288,7 +288,7 @@ test('every broadcast graphic carries the watermark script, after the script tha
     assert.ok(size > 0, `${route} loads overlay-size.js, where the watermark lives`);
     const scripts = [...html.matchAll(/src="(\/?js\/[^"]+\.js)"/g)].map((m) => m[1] as string);
     // overlay-layout.js reads the socket too, like overlay-size.js (tests/layout.test.ts).
-    const own = scripts.filter((s) => !/overlay-size|overlay-sfx|overlay-layout|overlay-fonts|\/lib\//.test(s));
+    const own = scripts.filter((s) => !/overlay-size|overlay-sfx|overlay-layout|overlay-fonts|overlay-style-editor|\/lib\//.test(s));
     for (const s of own) assert.ok(html.indexOf(s) < size, `${route}: ${s} declares the socket before overlay-size.js reads it`);
   }
 });

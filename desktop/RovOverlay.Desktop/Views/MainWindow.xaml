@@ -157,13 +157,17 @@
                                     <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,6">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="250"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                    <Button Style="{StaticResource GhostButton}" Padding="7,0" Height="20" Margin="7,0,0,0"
+                                                            FontSize="10.5" VerticalAlignment="Center"
+                                                            Content="{svc:T Obs.Edit}" ToolTip="{svc:T Obs.EditTip}"
+                                                            Command="{Binding EditCommand}"/>
                                                     <!-- Which sources actually carry the draft sounds -->
                                                     <Border CornerRadius="8" Padding="6,0,6,1" Margin="7,0,0,0" VerticalAlignment="Center"
                                                             Background="{StaticResource GoldSoftBrush}"

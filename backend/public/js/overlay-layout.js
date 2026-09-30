@@ -244,7 +244,7 @@
 
     // The editor's own chrome lives on <html>, outside <body>, so fitting the stage to
     // the window (a transform on <body>) does not shrink it.
-    const PANEL_W = 320;
+    const PANEL_W = 360;
     document.documentElement.classList.add('layout-editing');
     style.textContent += `
         html.layout-editing { overflow: hidden; background: #2b2f36
@@ -287,6 +287,40 @@
         #layout-editor .le-item .le-tag { font-size: 10px; color: #3da5ff; }
         #layout-editor .le-item .le-eye { padding: 0 6px; font-size: 11px; background: none; border: none; color: #9aa3b2; }
         #layout-editor .le-foot { padding: 12px 16px; border-top: 1px solid #2c323b; display: flex; gap: 6px; flex-wrap: wrap; }
+        #layout-editor .le-tabs { display: flex; gap: 4px; padding: 10px 16px 0; border-bottom: 1px solid #2c323b; }
+        #layout-editor .le-tabs button { border: none; border-bottom: 2px solid transparent; border-radius: 0; background: none;
+            padding: 8px 12px; font-size: 13px; font-weight: 600; color: #9aa3b2; }
+        #layout-editor .le-tabs button.on { color: #e6e9ef; border-bottom-color: #3da5ff; }
+        #layout-editor .le-pane { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+        #layout-editor .le-pane[hidden] { display: none; }
+        #layout-editor .le-style { flex: 1; overflow: auto; padding-bottom: 16px; }
+        #layout-editor .st-sec { padding: 14px 16px; border-bottom: 1px solid #2c323b; }
+        #layout-editor .st-h { font-size: 14px; font-weight: 700; margin: 0 0 6px; }
+        #layout-editor .st-hint { color: #9aa3b2; font-size: 11.5px; margin: 0 0 8px; display: block; }
+        #layout-editor .st-row { display: grid; grid-template-columns: 118px 1fr auto; align-items: center; gap: 8px;
+            margin: 6px 0; font-size: 12px; color: #c9ced8; }
+        #layout-editor .st-row.st-check { display: flex; align-items: center; gap: 8px; }
+        #layout-editor .st-row.st-check input { order: 0; margin: 0; } #layout-editor .st-row.st-check .st-label { order: 1; }
+        #layout-editor .st-note { grid-column: 2 / 4; color: #9aa3b2; font-size: 11px; margin-top: -2px; }
+        #layout-editor .st-note:empty { display: none; }
+        #layout-editor select.st-input, #layout-editor input.st-input { width: 100%; background: #0f1216; border: 1px solid #353c47;
+            border-radius: 4px; padding: 5px 6px; color: #e6e9ef; font-size: 12.5px; min-width: 0; }
+        #layout-editor input.st-input.short { width: 90px; }
+        #layout-editor .st-colour { width: 44px; height: 26px; padding: 0; border: 1px solid #353c47; border-radius: 4px; background: none; }
+        #layout-editor .st-hex { font-family: Consolas, monospace; font-size: 11.5px; color: #9aa3b2; }
+        #layout-editor .st-range { width: 100%; padding: 0; border: none; background: none; }
+        #layout-editor .st-value { min-width: 32px; text-align: right; font-size: 11.5px; color: #9aa3b2; }
+        #layout-editor .st-btn { margin-top: 8px; }
+        #layout-editor .st-btn.small { margin-top: 0; padding: 3px 8px; font-size: 11.5px; }
+        #layout-editor .st-lib { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+        #layout-editor .st-libitem { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            padding: 4px 8px; background: #1b2027; border-radius: 4px; font-size: 12px; }
+        #layout-editor .st-libname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #layout-editor .st-image { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0;
+            padding: 8px; background: #1b2027; border-radius: 4px; font-size: 12px; }
+        #layout-editor .st-imageinfo { display: flex; flex-direction: column; gap: 1px; }
+        #layout-editor .st-imageinfo .st-hint { margin: 0; }
+        #layout-editor .st-buttons { display: flex; gap: 6px; }
     `;
 
     const hoverBox = Object.assign(document.createElement('div'), { className: 'le-box le-hover' });
@@ -300,6 +334,11 @@
             <p class="le-muted" data-help></p>
             <p class="le-status" data-status></p>
         </div>
+        <div class="le-tabs">
+            <button data-tab="layout" class="on"></button>
+            <button data-tab="style"></button>
+        </div>
+        <div class="le-pane" data-pane="layout">
         <div class="le-sec">
             <div class="le-selname" data-selname></div>
             <div class="le-grid">
@@ -318,7 +357,9 @@
         <div class="le-foot">
             <button data-a="undo"></button>
             <button data-a="resetAll" class="danger"></button>
-        </div>`;
+        </div>
+        </div>
+        <div class="le-pane" data-pane="style" hidden><div class="le-style" data-style></div></div>`;
     document.documentElement.append(hoverBox, selBox, panel);
 
     const $ = (sel) => panel.querySelector(sel);
@@ -543,7 +584,20 @@
     document.addEventListener('pointercancel', endDrag, true);
 
     // --- panel
+    // แท็บ Layout (ย้าย/ย่อ/ซ่อนชิ้นส่วน) กับ Style (สี ฟอนต์ ภาพ ค่าของหน้า: ที่เคยอยู่หน้า Design ของแอพ)
+    $('[data-tab="layout"]').textContent = th ? 'ตำแหน่ง' : 'Layout';
+    $('[data-tab="style"]').textContent = th ? 'สไตล์' : 'Style';
+    if (window.RovStyleEditor) window.RovStyleEditor.mount(/** @type {HTMLElement} */ ($('[data-style]')), { scene, th });
+    function showTab(name) {
+        panel.querySelectorAll('[data-tab]').forEach((b) => b.classList.toggle('on', /** @type {HTMLElement} */ (b).dataset.tab === name));
+        panel.querySelectorAll('[data-pane]').forEach((p) => { /** @type {HTMLElement} */ (p).hidden = /** @type {HTMLElement} */ (p).dataset.pane !== name; });
+        if (name === 'style') select(null);
+    }
+    if (params.get('tab') === 'style') showTab('style');
+
     panel.addEventListener('click', (ev) => {
+        const tab = /** @type {HTMLElement} */ (ev.target).closest('[data-tab]');
+        if (tab) { showTab(/** @type {HTMLElement} */ (tab).dataset.tab || 'layout'); return; }
         const target = /** @type {HTMLElement} */ (ev.target);
         const eye = /** @type {HTMLElement | null} */ (target.closest('[data-eye]'));
         if (eye) {
@@ -586,7 +640,9 @@
 
     // --- keyboard
     document.addEventListener('keydown', (ev) => {
-        if (ev.target instanceof HTMLInputElement) return;
+        // ปุ่มลูกศรในช่องกรอกหรือกล่องเลือก (แท็บ Style) เป็นของช่องนั้น ไม่ใช่การขยับชิ้นส่วน
+        if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLSelectElement
+            || ev.target instanceof HTMLTextAreaElement) return;
         if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); undo(); return; }
         if (!selected) return;
         const step = ev.shiftKey ? 10 : 1;

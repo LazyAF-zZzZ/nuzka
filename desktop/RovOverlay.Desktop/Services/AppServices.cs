@@ -76,6 +76,8 @@ public sealed class AppServices : IAsyncDisposable
         socket.Connected += () =>
         {
             _ = socket.EmitAsync("data:join");
+            // The overlay editor's font boxes list what is installed here (SystemFonts.cs).
+            _ = SystemFonts.SendAsync(Api);
             ConnectionChanged?.Invoke(true);
         };
         socket.Disconnected += () => ConnectionChanged?.Invoke(false);

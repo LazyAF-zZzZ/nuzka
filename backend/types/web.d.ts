@@ -157,6 +157,8 @@ interface Window {
   HotkeyUtils: RovHotkeyUtilsApi;
   /** overlay-layout.js: วัดขนาดโดยไม่นับชิ้นที่ถูกลากย้าย */
   RovLayout?: { measuring: boolean; asDesigned<T>(fn: () => T): T };
+  /** overlay-style-editor.js: แท็บ Style ของตัวแก้ layout */
+  RovStyleEditor?: { mount(box: HTMLElement, ctx: { scene: string; th: boolean }): void };
   /** overlay-size.js: ย่อตัวหนังสือให้พอดีกล่อง */
   RovFitText?: (el: HTMLElement | null, min?: number) => void;
   // overlay-size.js ตั้งไว้ให้หน้าอื่นเรียก

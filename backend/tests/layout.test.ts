@@ -228,3 +228,16 @@ test('team list scroll speed: 40 unless set, kept between 10 and 200, and kept a
   assert.strictEqual(state.teamListScrollSpeed, 80);
   assert.strictEqual(carryOverSettings(sanitizeState({}), state).teamListScrollSpeed, 80);
 });
+
+test('every broadcast page loads the style editor, just before the layout script that mounts it', () => {
+  const { PAGES } = require('../server/http/pages') as typeof import('../server/http/pages');
+  const publicDir = path.join(__dirname, '..', '..', 'public');
+  const broadcast = Object.entries(PAGES).filter(([route]) => route.startsWith('/overlay') || route === '/result');
+  for (const [route, file] of broadcast) {
+    const html = fs.readFileSync(path.join(publicDir, file), 'utf8');
+    const styleAt = html.search(/src="\/?js\/overlay-style-editor\.js"/);
+    const layoutAt = html.search(/src="\/?js\/overlay-layout\.js"/);
+    assert.ok(styleAt > 0, `${route} loads overlay-style-editor.js`);
+    assert.ok(styleAt < layoutAt, `${route}: the style editor is defined before overlay-layout.js calls it`);
+  }
+});
