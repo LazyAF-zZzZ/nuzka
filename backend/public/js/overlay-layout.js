@@ -306,6 +306,7 @@
         #layout-editor select.st-input, #layout-editor input.st-input { width: 100%; background: #0f1216; border: 1px solid #353c47;
             border-radius: 4px; padding: 5px 6px; color: #e6e9ef; font-size: 12.5px; min-width: 0; }
         #layout-editor input.st-input.short { width: 90px; }
+        #layout-editor .st-players { display: grid; gap: 4px; margin: 6px 0 8px; }
         #layout-editor .st-colour { width: 44px; height: 26px; padding: 0; border: 1px solid #353c47; border-radius: 4px; background: none; }
         #layout-editor .st-hex { font-family: Consolas, monospace; font-size: 11.5px; color: #9aa3b2; }
         #layout-editor .st-range { width: 100%; padding: 0; border: none; background: none; }

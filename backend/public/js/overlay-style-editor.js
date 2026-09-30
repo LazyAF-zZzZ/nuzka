@@ -11,13 +11,14 @@
 (function () {
     // สีและขนาดที่แต่ละหน้าอ่านจริง (ยกมาจาก DesignPages ของแอพเดิม ซึ่งไล่จากสไตล์ชีตแล้ว)
     const PAGES = {
-        draft: { colours: ['blue', 'red', 'text', 'label'], sizes: true, images: ['overlayBottom'] },
+        draft: { colours: ['blue', 'red', 'text', 'label'], sizes: true, images: ['overlayBottom'],
+            text: ['tournament', 'title', 'names', 'scores', 'players'] },
         teams: { colours: [], teamList: true },
         standings: { colours: ['accent', 'text', 'label'] },
-        result: { colours: [], images: ['resultTop', 'resultBottom'] },
+        result: { colours: [], images: ['resultTop', 'resultBottom'], text: ['title', 'names', 'scores'] },
         analytics: { colours: [] },
         matchup: { colours: ['blue', 'red', 'accent', 'text', 'label'] },
-        prev: { colours: ['blue', 'red', 'accent', 'text', 'label'] },
+        prev: { colours: ['blue', 'red', 'accent', 'text', 'label'], text: ['tournament', 'names'] },
         'team-card': { colours: ['blue', 'red', 'accent', 'text', 'label'] },
         'team-drafts': { colours: ['blue', 'red', 'accent', 'text', 'label'] }
     };
@@ -55,7 +56,10 @@
             teamList: 'Team list', perSet: 'Teams per set', style: 'List style', sets: 'Sets', scroll: 'Scrolling',
             speed: 'Scroll speed (px/s)', columns: 'Columns', auto: 'Auto', cardColour: 'Card colour',
             cardBg: 'Card background', radius: 'Corner radius', autoText: 'Dark text on a light card',
-            failed: 'Could not save: '
+            failed: 'Could not save: ',
+            textSec: 'Text', textHint: 'The same boxes as in Control. Changing either one changes both.',
+            tournament: 'Tournament name', title: 'Match title', blueName: 'Blue team name', redName: 'Red team name',
+            blueScore: 'Blue score', redScore: 'Red score', bluePlayers: 'Blue players', redPlayers: 'Red players'
         },
         th: {
             fonts: 'ฟอนต์', scope: 'ใช้กับ', thisPage: 'หน้านี้', allPages: 'ทุกหน้า',
@@ -76,7 +80,10 @@
             teamList: 'รายชื่อทีม', perSet: 'จำนวนทีมต่อชุด', style: 'รูปแบบ', sets: 'สลับชุด', scroll: 'เลื่อนวน',
             speed: 'ความเร็วเลื่อน (px/วินาที)', columns: 'จำนวนคอลัมน์', auto: 'อัตโนมัติ', cardColour: 'สีการ์ด',
             cardBg: 'สีพื้นการ์ด', radius: 'ความมนของมุม', autoText: 'ตัวหนังสือเข้มบนการ์ดสีอ่อน',
-            failed: 'บันทึกไม่ได้: '
+            failed: 'บันทึกไม่ได้: ',
+            textSec: 'ข้อความ', textHint: 'ช่องเดียวกับในหน้า Control แก้ที่ไหนก็เปลี่ยนทั้งสองที่',
+            tournament: 'ชื่อทัวร์นาเมนต์', title: 'ชื่อแมตช์', blueName: 'ชื่อทีมน้ำเงิน', redName: 'ชื่อทีมแดง',
+            blueScore: 'คะแนนน้ำเงิน', redScore: 'คะแนนแดง', bluePlayers: 'ผู้เล่นทีมน้ำเงิน', redPlayers: 'ผู้เล่นทีมแดง'
         }
     };
 
@@ -123,6 +130,62 @@
         };
         // ไม่เขียนทับช่องที่คนกำลังใช้อยู่ ค่าจาก stateUpdate จะมาถึงระหว่างลากแถบเลื่อน
         const idle = (node) => document.activeElement !== node;
+
+        // ---- text (ผู้ใช้ขอ 2026-09-30: แก้ข้อความจากตัวแก้ได้ด้วย และยังคงช่องในหน้า Control ไว้)
+        //
+        // ส่ง event เดียวกับหน้า Control (updateMatchInfo, updateTeamName, updateScore, updatePlayerName)
+        // สองที่จึงไม่มีทางเห็นค่าไม่ตรงกัน ช่องว่างถูกเซิร์ฟเวอร์ปฏิเสธและคงค่าเดิมไว้ เหมือนใน Control
+        if (page.text) {
+            const sec = section(T.textSec, T.textHint);
+            const want = (key) => page.text.includes(key);
+            const textBox = (parent, label, max, read, send) => {
+                const input = /** @type {HTMLInputElement} */ (el('input', 'st-input'));
+                input.type = 'text';
+                input.maxLength = max;
+                input.addEventListener('input', () => {
+                    const value = input.value;   // จับไว้ตอนพิมพ์ เหตุผลเดียวกับช่องสี
+                    if (value.trim()) later('t-' + label, () => send(value), 300);
+                });
+                // ลบจนว่างแล้วออกจากช่อง: คืนค่าที่ใช้อยู่ให้เห็น แทนที่จะค้างว่างทั้งที่จอยังแสดงชื่อเดิม
+                input.addEventListener('blur', () => { if (!input.value.trim()) input.value = read() || ''; });
+                if (label) row(parent, label, input);
+                else parent.appendChild(input);
+                updaters.push(() => { const v = read(); if (typeof v === 'string' && idle(input)) input.value = v; });
+                return input;
+            };
+            const info = () => (state && state.matchInfo) || {};
+            const matchInfo = (patch) => emit('updateMatchInfo', { title: info().title, tournament: info().tournament, ...patch });
+            if (want('tournament')) textBox(sec, T.tournament, 50, () => info().tournament, (v) => matchInfo({ tournament: v }));
+            if (want('title')) textBox(sec, T.title, 80, () => info().title, (v) => matchInfo({ title: v }));
+            const sides = [['teamBlue', 'blue'], ['teamRed', 'red']];
+            if (want('names')) sides.forEach(([team, c]) => textBox(sec, T[c + 'Name'], 24,
+                () => state && state[team] && state[team].name, (name) => emit('updateTeamName', { team, name })));
+            if (want('scores')) sides.forEach(([team, c]) => {
+                const input = /** @type {HTMLInputElement} */ (el('input', 'st-input short'));
+                input.type = 'number';
+                input.min = '0';
+                input.max = '99';
+                input.addEventListener('change', () => {
+                    const score = Math.max(0, Math.min(99, Math.round(Number(input.value) || 0)));
+                    input.value = String(score);
+                    emit('updateScore', { team, score });
+                });
+                row(sec, T[c + 'Score'], input);
+                updaters.push(() => {
+                    const v = state && state[team] && state[team].score;
+                    if (typeof v === 'number' && idle(input)) input.value = String(v);
+                });
+            });
+            if (want('players')) sides.forEach(([team, c]) => {
+                const group = el('div', 'st-players');
+                group.appendChild(el('span', 'st-label', T[c + 'Players']));
+                for (let index = 0; index < 5; index++) {
+                    textBox(group, '', 24, () => state && state[team] && state[team].players && state[team].players[index],
+                        (name) => emit('updatePlayerName', { team, index, name }));
+                }
+                sec.appendChild(group);
+            });
+        }
 
         // ---- fonts
         const fonts = section(T.fonts, T.fontsHint);
