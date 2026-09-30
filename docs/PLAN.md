@@ -700,6 +700,16 @@ What each page shows, taken from what the stylesheets actually read, not from gu
   layout scene and font scope in step, so it syncs them by hand straight after `LayoutScenes`
   exists — and it has to be after, or a remembered page reads a collection that is still null.
 
+### 3.2.0 released (2026-09-30)
+
+Published as **Nuzka 3.2.0** (tag v3.2.0, Latest) at github.com/LazyAF-zZzZ/nuzka, built once and uploaded as
+tested: the user installed `Nuzka-win-Setup.exe` from Explorer and opened it before the upload. Delta from
+3.1.2 is 2.1 MB. The upload used `vpk upload` + `gh release upload` directly rather than `pack.ps1 -Publish`,
+which would have rebuilt. Order: push code, publish, then push the `update-3-2-0` notice (3.0.9-3.1.2,
+expires 2026-10-31) so nobody was told about an update before it existed. Checked afterwards: the old
+repo address returns v3.2.0 as latest with all 8 assets, and both notice URLs serve the new entry.
+Support contact in the README: lazyaf1538@gmail.com.
+
 ### Name and repo (2026-09-30)
 
 Every name people read is **Nuzka**: page titles (the OBS source list shows them), the guide, the
