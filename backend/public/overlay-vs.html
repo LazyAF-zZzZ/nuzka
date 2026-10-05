@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Nuzka VS</title>
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/overlay-broadcast.css">
+</head>
+<body data-layout-scene="vs">
+    <div class="bc-stage">
+        <div class="bc-scene">
+            <canvas class="bc-bg" id="bg"></canvas>
+            <div class="bc-shade"></div>
+            <div class="bc-split">
+                <div class="bc-side blue" data-layout="side-blue"><img data-layout="blue-logo" id="blueLogo" alt="" hidden><div class="tag" data-layout="blue-tag" id="blueTag"></div><div class="name" data-layout="blue-name" id="blueName"></div></div>
+                <div class="bc-side red" data-layout="side-red"><img data-layout="red-logo" id="redLogo" alt="" hidden><div class="tag" data-layout="red-tag" id="redTag"></div><div class="name" data-layout="red-name" id="redName"></div></div>
+            </div>
+            <div class="bc-vs" data-layout="vs-mark">VS</div>
+            <div class="bc-footer" data-layout="footer"><span class="e bc-cut-l" id="footTournament"></span><span class="bc-panel bc-cut-r" id="footTitle"></span></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/lib/overlay-common.js"></script>
+    <script src="/js/lib/motion-core.js"></script>
+    <script src="/js/lib/overlay-broadcast.js"></script>
+    <!-- overlay-vs.js ประกาศ socket ไว้ ต้องมาก่อน overlay-size.js ที่ไปอ่านตัวนั้น -->
+    <script src="/js/overlay-vs.js"></script>
+    <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-fonts.js"></script>
+    <script src="/js/overlay-style-editor.js"></script>
+    <script src="/js/overlay-layout.js"></script>
+</body>
+</html>

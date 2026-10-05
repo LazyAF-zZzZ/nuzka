@@ -68,6 +68,34 @@
     // และการตั้งค่าเป็น BASE ตรงๆ ทำให้ไม่มีจังหวะที่ตัวหนังสือกระโดดเปลี่ยนฟอนต์กลางอากาศ
     apply(null);
 
+    // overlay-layout.js styles single text parts with a font of the operator's choice (2026-10-05) and needs
+    // the same stack and the same @font-face for imported files.
+    window.RovFonts = { stack, declare };
+
+    // สีของธีมบนหน้ากลุ่ม "หัวต่อหัว" (2026-10-05): ตารางคะแนน เจอกันมาก่อน พิค/แบนของทีม และการ์ดทีมมีสีน้ำเงิน/แดง/
+    // ทอง/ตัวอักษร/ป้ายในแท็บ Style แต่ไม่เคยมีหน้าไหนในกลุ่มนี้เอาค่าจาก state.theme ไปใช้เลย (มีแค่ overlay.js กับ
+    // overlay-prev.js) ตั้งสีแล้วไม่เปลี่ยนอะไร ชื่อตัวแปรตรงกับ :root ในแผ่น CSS ของหน้าเหล่านี้ ที่นี่ใช้ที่เดียวเพราะ
+    // ไฟล์นี้ทุกหน้าโหลดอยู่แล้วและฟัง stateUpdate อยู่แล้ว
+    const THEMED = ['standings', 'matchup', 'team-drafts', 'team-card'];
+    const COLOUR_VARS = { blue: '--ov-blue', red: '--ov-red', accent: '--ov-accent', text: '--ov-text', label: '--ov-silver' };
+    const HEX = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i;
+    function applyColours(theme) {
+        if (!theme || typeof theme !== 'object') return;
+        const root = document.documentElement;
+        Object.keys(COLOUR_VARS).forEach((key) => {
+            const value = theme[key];
+            if (typeof value !== 'string' || !HEX.test(value)) return;
+            root.style.setProperty(COLOUR_VARS[key], value);
+            if (key === 'blue' || key === 'red') {
+                const m = HEX.exec(value);
+                root.style.setProperty('--ov-' + key + '-rgb', parseInt(m[1], 16) + ', ' + parseInt(m[2], 16) + ', ' + parseInt(m[3], 16));
+            }
+        });
+    }
+
     if (typeof socket === 'undefined') return;
-    socket.on('stateUpdate', (state) => apply(state && state.fonts));
+    socket.on('stateUpdate', (state) => {
+        apply(state && state.fonts);
+        if (THEMED.includes(scene)) applyColours(state && state.theme);
+    });
 })();

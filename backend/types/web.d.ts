@@ -141,6 +141,24 @@ interface RovOverlayApi {
   note(message: string | null | undefined): void;
 }
 
+/** ตัวช่วยร่วมของฉากเต็มจอ VS lower third และสกอร์บอร์ด (public/js/lib/overlay-broadcast.js) */
+interface RovBroadcastApi {
+  applyTheme(theme: any): void;
+  applyFontMode(fonts: any, scene: string): void;
+  coloursFor(state: any, scene: string): any;
+  logoUrl(teamKey: string, logo: any): string;
+  setLogo(img: HTMLImageElement | null, url: string): void;
+  /** true ถ้าข้อความเปลี่ยนจริง */
+  setText(el: HTMLElement | null, value: unknown): boolean;
+  bump(el: HTMLElement): void;
+  fitHeadline(el: HTMLElement | null, maxWidth: number): void;
+  createBackground(canvas: HTMLCanvasElement | null): (background: any, theme: any) => void;
+  backgroundFor(broadcast: any, scene: string): any;
+  secondsLeft(countdown: any, now: number): number | null;
+  formatClock(totalSeconds: number): string;
+  leader(state: any): { key: string; team: any } | null;
+}
+
 interface Window {
   RovClient: RovClientApi;
   RovI18n: RovI18nApi;
@@ -154,11 +172,18 @@ interface Window {
   RovObsSources: RovObsSourcesApi;
   RovHeroArt: RovHeroArtApi;
   RovOverlay: RovOverlayApi;
+  RovBroadcast: RovBroadcastApi;
+  /** public/js/lib/motion-core.js */
+  MotionCore: any;
   HotkeyUtils: RovHotkeyUtilsApi;
   /** overlay-layout.js: วัดขนาดโดยไม่นับชิ้นที่ถูกลากย้าย */
   RovLayout?: { measuring: boolean; asDesigned<T>(fn: () => T): T };
   /** overlay-style-editor.js: แท็บ Style ของตัวแก้ layout */
-  RovStyleEditor?: { mount(box: HTMLElement, ctx: { scene: string; th: boolean }): void };
+  RovStyleEditor?: {
+    mount(box: HTMLElement, ctx: { scene: string; th: boolean }): void;
+    fontLists(): Promise<{ bundled: string[]; imported: { family: string; name: string; thai: boolean | null }[]; installed: { family: string; thai: boolean }[] }>;
+  };
+  RovFonts?: { stack(family: string): string; declare(family: string): void };
   /** overlay-size.js: ย่อตัวหนังสือให้พอดีกล่อง */
   RovFitText?: (el: HTMLElement | null, min?: number) => void;
   // overlay-size.js ตั้งไว้ให้หน้าอื่นเรียก

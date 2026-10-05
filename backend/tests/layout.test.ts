@@ -273,3 +273,66 @@ test('page textures: defaults, clamping, unknown pages dropped, kept across matc
   });
   assert.ok(!media.isTextureSlot('overlayBottom1080'));
 });
+
+// ---- text style and custom text (2026-10-05)
+
+test('a text style is cleaned field by field and kept inside the entry', () => {
+  const entry = sanitizeLayoutEntry({
+    x: 4,
+    tx: { t: 'Hi\u0007 there\r\nline', f: 'Oxanium"; x', z: 9999, w: 640, c: '#FFAA00', a: 'center', ls: 1.234, tt: 'upper', ow: 3, oc: 'red', sb: 8, sx: 2, sy: -2, sc: '#000000', bad: 1 }
+  });
+  assert.deepEqual(entry!.tx, {
+    t: 'Hi there\nline', f: 'Oxanium x', z: 400, w: 600, c: '#ffaa00', a: 'center', ls: 1.2, tt: 'upper', ow: 3, sc: '#000000', sb: 8, sx: 2, sy: -2
+  });
+});
+
+test('an entry with only a text style is stored, and an empty style is not', () => {
+  assert.deepEqual(sanitizeLayoutEntry({ tx: { c: '#ffffff' } }), { x: 0, y: 0, s: 1, h: false, tx: { c: '#ffffff' } });
+  assert.equal(sanitizeLayoutEntry({ tx: { a: 'justify', c: 'nope', z: 'x' } }), null);
+  assert.equal(sanitizeLayoutEntry({ tx: [] }), null);
+});
+
+test('a custom text part survives at its starting spot', () => {
+  assert.deepEqual(sanitizeLayoutEntry({ k: true, tx: { t: 'Hello' } }), { x: 0, y: 0, s: 1, h: false, tx: { t: 'Hello' }, k: true });
+  assert.deepEqual(sanitizeLayoutEntry({ k: true }), { x: 0, y: 0, s: 1, h: false, k: true });
+  assert.equal(sanitizeLayoutEntry({ k: 'yes' }), null);
+});
+
+test('text longer than the limit is cut', () => {
+  const tx = sanitizeLayoutEntry({ k: true, tx: { t: 'a'.repeat(500) } })!.tx!;
+  assert.equal(tx.t!.length, 200);
+});
+
+// Added text is built inside the page's 1080p stage; a page whose stage class is not in overlay-layout.js's
+// STAGES list would quietly lose "+ Add text" (2026-10-05).
+test('every page with a layout scene has a stage that added text can live in', () => {
+  const publicDir = path.join(__dirname, '..', '..', 'public');
+  const script = fs.readFileSync(path.join(publicDir, 'js', 'overlay-layout.js'), 'utf8');
+  const stages = /const STAGES = '([^']+)'/.exec(script)![1]!.split(',').map((s) => s.trim());
+  const classes = stages.filter((s) => s.startsWith('.')).map((s) => s.slice(1));
+  const pages = fs.readdirSync(publicDir).filter((f) => f.endsWith('.html'));
+  let checked = 0;
+  for (const page of pages) {
+    const html = fs.readFileSync(path.join(publicDir, page), 'utf8');
+    if (!/<body[^>]*data-layout-scene=/.test(html)) continue;
+    checked++;
+    const used = new Set<string>();
+    for (const m of html.matchAll(/class="([^"]*)"/g)) m[1]!.split(' ').forEach((c) => used.add(c));
+    const hasStage = html.includes('data-layout-host') || classes.some((c) => used.has(c));
+    assert.ok(hasStage, `${page} has no stage element listed in STAGES`);
+  }
+  assert.ok(checked >= 13, 'expected every broadcast page to be checked');
+});
+
+test('effects: a gradient needs both colours, an entrance and a loop keep their timing, unknown names are dropped', () => {
+  const full = sanitizeLayoutEntry({
+    k: true, tx: { g1: '#FF0000', g2: '#0000ff', ga: 93, gc: '#00FF00', gs: 99, en: 'up', ed: 5, edl: 120, lp: 'pulse', lt: 0.04 }
+  })!.tx!;
+  assert.deepEqual(full, { g1: '#ff0000', g2: '#0000ff', ga: 95, gc: '#00ff00', gs: 60, en: 'up', ed: 100, edl: 100, lp: 'pulse', lt: 0.5 });
+  // half a gradient is dropped, with its angle
+  assert.equal(sanitizeLayoutEntry({ tx: { g1: '#ff0000', ga: 45 } }), null);
+  // timing without an effect is dropped; unknown effects are ignored
+  assert.equal(sanitizeLayoutEntry({ tx: { ed: 500, edl: 100, lt: 3 } }), null);
+  assert.equal(sanitizeLayoutEntry({ tx: { en: 'explode', lp: 'spin' } }), null);
+  assert.deepEqual(sanitizeLayoutEntry({ tx: { gs: 12 } })!.tx, { gs: 12 });
+});

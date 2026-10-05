@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Nuzka Scene</title>
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/overlay-broadcast.css">
+</head>
+<body data-layout-scene="scene">
+    <!-- ?scene=starting|brb|ending (ไม่ใส่ = starting) ข้อความมาจาก state.broadcast.text -->
+    <div class="bc-stage">
+        <div class="bc-scene">
+            <canvas class="bc-bg" id="bg"></canvas>
+            <div class="bc-shade"></div>
+            <div class="bc-content bc-stagger">
+                <div class="bc-kicker" data-layout="kicker" id="kicker"></div>
+                <div class="bc-headline" data-layout="headline" id="headline"></div>
+                <div class="bc-subline" data-layout="subline" id="subline"></div>
+                <div id="extra">
+                    <span class="bc-count bc-num bc-panel bc-cut" data-layout="countdown" id="count" hidden><span class="bc-count-label" id="countLabel" hidden></span><span id="clock"></span></span>
+                    <div class="bc-score-line" data-layout="score-line" id="scoreLine" hidden>
+                        <span class="blue" id="blueTag"></span>
+                        <span class="mid bc-num"><span id="blueScore"></span> : <span id="redScore"></span></span>
+                        <span class="red" id="redTag"></span>
+                    </div>
+                    <div class="bc-winner" data-layout="winner" id="winner" hidden><span class="label" id="winnerLabel"></span><span class="team bc-cut" id="winnerName"></span></div>
+                </div>
+            </div>
+            <div class="bc-bar-bottom" data-layout="bottom-bar">
+                <span class="bc-chip bc-panel bc-cut" id="chipLeft"></span>
+                <span class="bc-chip accent bc-cut" id="chipRight"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/lib/overlay-common.js"></script>
+    <script src="/js/lib/motion-core.js"></script>
+    <script src="/js/lib/overlay-broadcast.js"></script>
+    <!-- overlay-scene.js ประกาศ socket ไว้ ต้องมาก่อน overlay-size.js ที่ไปอ่านตัวนั้น -->
+    <script src="/js/overlay-scene.js"></script>
+    <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-fonts.js"></script>
+    <script src="/js/overlay-style-editor.js"></script>
+    <script src="/js/overlay-layout.js"></script>
+</body>
+</html>

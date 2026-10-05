@@ -1,0 +1,199 @@
+/* ฉากเต็มจอ (Starting soon / BRB / Ending), VS, lower third และสกอร์บอร์ด
+ *
+ * ที่มา: overlay.css ของชุด stock-studio เปลี่ยนตัวแปรสีให้มาจากธีมของแอพ (--bc-*)
+ * และใช้หลักเดียวกับหน้าอื่น: วางบนผืน 1920x1080 ถ้าเลือก 1440p ก็ขยายทั้งผืนด้วย 4/3
+ * พื้นหลังโปร่งใสเสมอ ยกเว้นฉากเต็มจอที่วาดพื้นหลังเคลื่อนไหวเอง */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bc-blue: #38bdf8;
+    --bc-red: #f87171;
+    --bc-accent: #f59e0b;
+    --bc-text: #ffffff;
+    --bc-panel: rgba(10, 10, 16, 0.86);
+    --bc-primary: var(--bc-accent);
+    --bc-display: 'Oxanium', var(--ov-font-heading, 'Kanit', 'Segoe UI', Arial, sans-serif);
+    --bc-body: 'Rajdhani', var(--ov-font-body, 'Kanit', 'Segoe UI', Arial, sans-serif);
+    --bc-cut: 18px;
+    --bc-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ฟอนต์ประจำชุดคือ Oxanium (หัวเรื่อง/ตัวเลข) กับ Rajdhani (เนื้อความ) แล้วตามด้วยสาย Kanit
+   ถ้าผู้ใช้เลือกฟอนต์ใน Design ให้ฟอนต์นั้นชนะ: overlay-broadcast.js ใส่คลาสให้เฉพาะบทบาทที่ถูกเลือกจริง
+   (overlay-fonts.js ตั้ง --ov-font-* เป็นสาย Kanit เสมอแม้ไม่ได้เลือก จึงใช้ตัวแปรนั้นเป็นตัวบอกไม่ได้) */
+body.bc-font-heading { --bc-display: var(--ov-font-heading); }
+body.bc-font-body { --bc-body: var(--ov-font-body); }
+
+body {
+    width: 1920px;
+    height: 1080px;
+    background: transparent;
+    color: var(--bc-text);
+    font-family: var(--bc-body);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+body[data-size="1440"] { width: 2560px; height: 1440px; }
+body[data-size="1440"] .bc-stage {
+    transform: scale(calc(4 / 3));
+    transform-origin: top left;
+}
+
+.bc-stage { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+.bc-num { font-family: var(--bc-display); font-variant-numeric: tabular-nums; }
+
+/* กรอบเหลี่ยมเฉียง */
+.bc-cut { clip-path: polygon(var(--bc-cut) 0, 100% 0, calc(100% - var(--bc-cut)) 100%, 0 100%); }
+.bc-cut-l { clip-path: polygon(var(--bc-cut) 0, 100% 0, 100% 100%, 0 100%); }
+.bc-cut-r { clip-path: polygon(0 0, 100% 0, calc(100% - var(--bc-cut)) 100%, 0 100%); }
+
+.bc-panel { background: var(--bc-panel); }
+
+@keyframes bc-bump {
+    0% { transform: scale(1.35); filter: brightness(1.8); }
+    100% { transform: scale(1); filter: none; }
+}
+.bc-bump { animation: bc-bump 0.5s var(--bc-ease); }
+
+@keyframes bc-wipe-in {
+    from { clip-path: inset(0 100% 0 0); opacity: 0; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+@keyframes bc-rise {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: none; }
+}
+
+[hidden] { display: none !important; }
+
+/* ---------- ฉากเต็มจอ ---------- */
+.bc-scene { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; }
+.bc-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+body.nz-bg-off .bc-shade { display: none; }
+.bc-bg[hidden] { display: none; }
+.bc-shade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.55) 100%); }
+.bc-content { position: relative; text-align: center; max-width: 1760px; }
+
+.bc-kicker {
+    display: inline-flex; align-items: center; gap: 14px;
+    font: 600 30px/1 var(--bc-body); letter-spacing: 0.35em; text-transform: uppercase;
+    color: var(--bc-accent);
+    /* พื้นหลังมีดวงอาทิตย์สว่างอยู่หลังบรรทัดนี้ ไม่มีเงาแล้วอ่านไม่ออก */
+    text-shadow: 0 0 14px rgba(0, 0, 0, 0.9), 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+.bc-kicker::before, .bc-kicker::after { content: ''; width: 60px; height: 3px; background: currentColor; }
+
+.bc-headline {
+    font: 800 150px/0.95 var(--bc-display); white-space: nowrap; letter-spacing: 0.02em; text-transform: uppercase;
+    text-shadow: 0 0 40px color-mix(in srgb, var(--bc-accent) 60%, transparent), 0 6px 0 rgba(0, 0, 0, 0.35);
+    margin: 26px 0 18px;
+}
+.bc-subline { font: 500 40px/1.2 var(--bc-body); letter-spacing: 0.04em; opacity: 0.9; }
+
+.bc-bar-bottom {
+    position: absolute; left: 0; right: 0; bottom: 70px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 90px; font: 600 30px/1 var(--bc-body); letter-spacing: 0.12em; text-transform: uppercase;
+}
+.bc-chip { padding: 14px 34px; }
+.bc-chip.accent { background: var(--bc-accent); color: #111; }
+
+.bc-stagger > * { animation: bc-rise 1s var(--bc-ease) both; }
+.bc-stagger > *:nth-child(2) { animation-delay: 0.12s; }
+.bc-stagger > *:nth-child(3) { animation-delay: 0.24s; }
+.bc-stagger > *:nth-child(4) { animation-delay: 0.36s; }
+
+.bc-count {
+    display: inline-block; margin-top: 18px; padding: 16px 60px;
+    font: 700 96px/1 var(--bc-display); letter-spacing: 0.06em; color: var(--bc-accent);
+}
+.bc-count-label { display: block; font: 600 26px/1 var(--bc-body); letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.8; margin-bottom: 8px; }
+
+.bc-score-line { margin-top: 44px; display: inline-flex; align-items: center; }
+.bc-score-line > * { padding: 14px 34px; font: 700 40px/1 var(--bc-display); }
+.bc-score-line .blue { background: var(--bc-blue); color: #0a0a10; }
+.bc-score-line .red { background: var(--bc-red); color: #0a0a10; }
+.bc-score-line .mid { background: rgba(0, 0, 0, 0.6); color: var(--bc-accent); }
+
+.bc-winner { margin-top: 40px; display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
+.bc-winner .label { font: 700 24px/1 var(--bc-body); letter-spacing: 0.4em; color: var(--bc-accent); }
+.bc-winner .team { padding: 16px 50px; font: 800 64px/1 var(--bc-display); text-transform: uppercase; color: #0a0a10; }
+
+/* ---------- VS ---------- */
+.bc-split { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; }
+.bc-side { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 0 140px; overflow: hidden; }
+.bc-side.blue { align-items: flex-start; background: linear-gradient(110deg, color-mix(in srgb, var(--bc-blue) 70%, transparent), transparent 75%); animation: bc-from-left 1.1s var(--bc-ease) both; }
+.bc-side.red { align-items: flex-end; text-align: right; background: linear-gradient(-70deg, color-mix(in srgb, var(--bc-red) 70%, transparent), transparent 75%); animation: bc-from-right 1.1s var(--bc-ease) both; }
+@keyframes bc-from-left { from { transform: translateX(-60%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes bc-from-right { from { transform: translateX(60%); opacity: 0; } to { transform: none; opacity: 1; } }
+.bc-side img { width: 260px; height: 260px; object-fit: contain; margin-bottom: 30px; filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.5)); }
+.bc-side .tag { font: 800 170px/0.9 var(--bc-display); letter-spacing: 0.02em; max-width: 680px; white-space: nowrap; }
+.bc-side .name { font: 600 40px/1.1 var(--bc-body); letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.9; margin-top: 14px; max-width: 800px; }
+.bc-vs {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) skewX(-10deg);
+    font: 800 180px/1 var(--bc-display); color: var(--bc-accent);
+    text-shadow: 0 0 60px color-mix(in srgb, var(--bc-accent) 60%, transparent);
+    animation: bc-slam 0.7s 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes bc-slam {
+    from { transform: translate(-50%, -50%) skewX(-10deg) scale(3); opacity: 0; }
+    to { transform: translate(-50%, -50%) skewX(-10deg) scale(1); opacity: 1; }
+}
+.bc-footer { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); display: flex; animation: bc-rise 0.8s 1s var(--bc-ease) both; }
+.bc-footer > * { padding: 14px 34px; font: 700 26px/1 var(--bc-body); letter-spacing: 0.25em; text-transform: uppercase; }
+.bc-footer .e { background: var(--bc-accent); color: #111; }
+
+/* ---------- lower third ---------- */
+/* หลายแถบซ้อนจากล่างขึ้นบน แถบที่ซ่อนอยู่ไม่กินที่ (display: none หลังเล่นอนิเมชันลง) */
+.bc-lt-stack { position: absolute; left: 90px; bottom: 120px; display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 16px; }
+.bc-lt {
+    position: relative; display: flex; align-items: stretch;
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.5));
+    opacity: 0; transform: translateY(24px); pointer-events: none;
+    transition: opacity 0.5s var(--bc-ease), transform 0.6s var(--bc-ease);
+}
+.bc-lt.on { opacity: 1; transform: none; }
+.bc-lt .stripe { width: 14px; background: var(--bc-accent); transform: skewX(-14deg); margin-right: 10px; }
+.bc-lt .body { padding: 18px 46px 18px 30px; min-width: 480px; }
+.bc-lt .name { font: 800 54px/1 var(--bc-display); letter-spacing: 0.02em; text-transform: uppercase; }
+.bc-lt .meta { display: flex; gap: 18px; align-items: center; margin-top: 10px; }
+.bc-lt .title { background: var(--bc-accent); color: #111; padding: 6px 16px; font: 700 22px/1 var(--bc-body); letter-spacing: 0.22em; text-transform: uppercase; }
+.bc-lt .handle { font: 600 24px/1 var(--bc-body); letter-spacing: 0.08em; opacity: 0.8; }
+.bc-lt.on .body { animation: bc-wipe-in 0.8s var(--bc-ease) both; }
+.bc-lt.on .stripe { animation: bc-rise 0.6s var(--bc-ease) both; }
+
+/* ---------- สกอร์บอร์ด ---------- */
+.bc-board {
+    position: absolute; top: 28px; left: 50%; transform: translateX(-50%);
+    display: grid; grid-template-columns: 430px 96px 250px 96px 430px; height: 96px;
+    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
+    animation: bc-wipe-in 0.9s var(--bc-ease) both;
+}
+.bc-team { display: flex; align-items: center; gap: 16px; padding: 0 28px; position: relative; min-width: 0; }
+.bc-team::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; }
+.bc-team.blue { justify-content: flex-end; }
+.bc-team.blue::after { background: var(--bc-blue); }
+.bc-team.red { flex-direction: row-reverse; justify-content: flex-end; }
+.bc-team.red::after { background: var(--bc-red); }
+.bc-team img { width: 58px; height: 58px; object-fit: contain; flex: none; }
+.bc-names { display: flex; flex-direction: column; line-height: 1; min-width: 0; }
+.bc-team.blue .bc-names { align-items: flex-end; }
+.bc-names .tag { font: 800 40px/1 var(--bc-display); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+.bc-names .full { font: 600 19px/1 var(--bc-body); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+.bc-score { display: grid; place-items: center; font: 800 62px/1 var(--bc-display); font-variant-numeric: tabular-nums; color: #0a0a10; }
+.bc-score.blue { background: var(--bc-blue); }
+.bc-score.red { background: var(--bc-red); }
+.bc-mid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: #050508; }
+.bc-mid .stage { font: 700 26px/1 var(--bc-display); letter-spacing: 0.14em; color: var(--bc-accent); text-transform: uppercase; }
+.bc-mid .game { font: 700 26px/1 var(--bc-display); letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
+.bc-event-tab {
+    position: absolute; top: 124px; left: 50%; transform: translateX(-50%);
+    padding: 8px 30px; background: var(--bc-accent); color: #111;
+    font: 700 18px/1 var(--bc-body); letter-spacing: 0.3em; text-transform: uppercase; white-space: nowrap;
+}
+
+/* ดูตัวอย่างในเบราว์เซอร์: เติม ?preview=1 เพื่อเห็นบนพื้นตารางหมากรุก */
+body.bc-preview { background: repeating-conic-gradient(#2a2a33 0 25%, #1d1d24 0 50%) 0 0 / 40px 40px; }

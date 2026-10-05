@@ -26,6 +26,14 @@ public sealed class ObsSourceRow : ObservableObject
         // teams swap after a game the two cards swap with them.
         ("Team card, blue side", "/overlay-team-card?side=blue", null, false, false),
         ("Team card, red side", "/overlay-team-card?side=red", null, false, false),
+        // Break scenes with the animated background, driven from the Scenes card in the Control
+        // Panel. Each is its own source so a scene collection can cut between them.
+        ("Starting soon", "/overlay-scene?scene=starting", null, false, false),
+        ("Be right back", "/overlay-scene?scene=brb", null, false, false),
+        ("Ending", "/overlay-scene?scene=ending", null, false, false),
+        ("VS screen", "/overlay-vs", null, false, false),
+        ("Lower third", "/overlay-lower-third", null, false, false),
+        ("Scoreboard", "/overlay-scoreboard", null, false, false),
         ("Team list", "/overlay-teams", null, false, true),
         ("Stats board", "/overlay-analytics", null, false, true)
     ];

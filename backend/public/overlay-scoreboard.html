@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Nuzka Scoreboard</title>
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/overlay-broadcast.css">
+</head>
+<body data-layout-scene="scoreboard">
+    <!-- คะแนนซีรีส์ของทีมน้ำเงิน/แดงตามฝั่งบนจอ (ทีมสลับฝั่งทุกเกม ป้ายก็สลับตาม) -->
+    <div class="bc-stage">
+        <div class="bc-board" data-layout="scoreboard" id="board">
+            <div class="bc-team blue bc-panel bc-cut-l" data-layout="blue-team">
+                <div class="bc-names"><span class="tag" id="blueTag"></span><span class="full" id="blueName"></span></div>
+                <img id="blueLogo" alt="" hidden>
+            </div>
+            <div class="bc-score blue bc-num" data-layout="blue-score" id="blueScore"></div>
+            <div class="bc-mid" data-layout="center"><div class="stage" id="midTitle"></div><div class="game" id="midGame"></div></div>
+            <div class="bc-score red bc-num" data-layout="red-score" id="redScore"></div>
+            <div class="bc-team red bc-panel bc-cut-r" data-layout="red-team">
+                <div class="bc-names"><span class="tag" id="redTag"></span><span class="full" id="redName"></span></div>
+                <img id="redLogo" alt="" hidden>
+            </div>
+        </div>
+        <div class="bc-event-tab bc-cut" data-layout="event-tab" id="eventTab"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/lib/overlay-common.js"></script>
+    <script src="/js/lib/motion-core.js"></script>
+    <script src="/js/lib/overlay-broadcast.js"></script>
+    <!-- overlay-scoreboard.js ประกาศ socket ไว้ ต้องมาก่อน overlay-size.js ที่ไปอ่านตัวนั้น -->
+    <script src="/js/overlay-scoreboard.js"></script>
+    <script src="/js/overlay-bg.js"></script>
+    <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-fonts.js"></script>
+    <script src="/js/overlay-style-editor.js"></script>
+    <script src="/js/overlay-layout.js"></script>
+</body>
+</html>

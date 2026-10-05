@@ -39,6 +39,7 @@ public sealed class ControlViewModel : ObservableObject
         Blue = new SideViewModel(this, "teamBlue");
         Red = new SideViewModel(this, "teamRed");
         foreach (var key in SfxKeys) SfxRows.Add(new SfxRow(this, key));
+        Broadcast = new BroadcastViewModel(Emit);
 
         OpenBracketCommand = new RelayCommand(OpenBracket);
         StartCommand = new RelayCommand(() => Emit("draftStart"));
@@ -80,6 +81,8 @@ public sealed class ControlViewModel : ObservableObject
     public AppServices Services { get; }
     public SideViewModel Blue { get; }
     public SideViewModel Red { get; }
+    // Scenes card: lower third, countdown, animated background.
+    public BroadcastViewModel Broadcast { get; }
     public ObservableCollection<SeqBadge> Sequence { get; } = new();
     public ObservableCollection<SfxRow> SfxRows { get; } = new();
     public ObservableCollection<TeamChoice> Teams { get; } = new();
@@ -542,6 +545,8 @@ public sealed class ControlViewModel : ObservableObject
         {
             if (state.Sfx.TryGetValue(row.Key, out var level)) row.Apply(level);
         }
+
+        Broadcast.Apply(state.Broadcast);
 
         BuildHints(state);
 

@@ -507,6 +507,56 @@ each team has played in the event, and the line under it says so; it is not a sc
 
 ---
 
+## Break scenes, VS, lower third and scoreboard / ฉากคั่นรายการ
+
+**EN**
+
+Six more Browser sources (OBS sources in the title bar): **Starting soon**, **Be right back**,
+**Ending**, **VS screen**, **Lower third** and **Scoreboard**. All take their teams, scores and
+colours from the match on air, so teams that swap sides after a game swap here too.
+
+The **Scenes and lower third** card at the bottom of the Control Panel drives them:
+
+- **Lower third:** type a name, a role and a handle, press **Show**, press **Hide** when done. While it
+  is on air the button reads **Update**, which swaps the text without taking the bar down. A bar with
+  all three boxes empty never shows. **+ Add another card** adds more bars (up to four): each has its own
+  Show/Hide and they stack from the bottom while on air, so two casters can be up together.
+- **Countdown:** minutes (0.5 is 30 seconds), an optional label, **Start**. The Starting soon scene
+  counts down and reads LIVE NOW at zero. Every open copy shows the same time.
+- **Animated background:** six styles and twelve colour sets, or **Match the app colours**. **New layout**
+  rearranges the same style. Lower **Quality** if OBS stutters on a slow computer.
+- **Scene wording:** headlines for Starting soon, Be right back and Ending. Empty boxes use the standard wording.
+
+**Colours are per page** on these six sources: in each page's editor (OBS source > Interact > Style) the blue, red, accent and text colours belong to that page only. Colours you leave alone follow the app colours; **×** puts one back, **Reset this page's colours** puts them all back. Starting soon, Be right back and Ending share one set.
+
+Ending shows a WINNER tag for whichever team leads on score, and nothing while the score is level.
+Each page has its own **Edit layout** (OBS source > Interact), like the other overlays, and Oxanium and
+Rajdhani are available in its font lists without installing anything.
+
+**TH**
+
+Browser source เพิ่มอีกหก (แถบบน OBS sources): **Starting soon**, **Be right back**, **Ending**,
+**VS screen**, **Lower third** และ **Scoreboard** ทุกอันดึงทีม คะแนน และสีจากคู่ที่ออกอากาศ
+ทีมสลับฝั่งหลังจบเกมก็สลับตามด้วย
+
+การ์ด **ฉากคั่นรายการและแถบชื่อ** ท้ายหน้าคุมงานสั่งทั้งหมด:
+
+- **แถบชื่อ:** พิมพ์ชื่อ ตำแหน่ง ชื่อบัญชี กด **แสดง** แล้วกด **ซ่อน** เมื่อเสร็จ ระหว่างที่ขึ้นอยู่ ปุ่มจะเป็น
+  **อัปเดต** ซึ่งเปลี่ยนข้อความโดยไม่ต้องเอาแถบลง ถ้าทั้งสามช่องว่าง แถบจะไม่ขึ้นเลย **+ เพิ่มแถบอีกอัน** เพิ่มได้สูงสุดสี่แถบ แต่ละแถบแสดง/ซ่อนแยกกัน และซ้อนจากล่างขึ้นบนตอนขึ้นพร้อมกัน เช่น ผู้บรรยายสองคน
+- **นับถอยหลัง:** ใส่นาที (0.5 คือ 30 วินาที) ข้อความกำกับ (ไม่ใส่ก็ได้) แล้วกด **เริ่ม** ฉาก Starting soon
+  นับถอยหลังและขึ้น LIVE NOW เมื่อถึงศูนย์ ทุกหน้าที่เปิดอยู่ขึ้นเวลาตรงกัน
+- **พื้นหลังเคลื่อนไหว:** หกสไตล์ สิบสองชุดสี หรือ **ตามสีของแอพ** **สุ่มใหม่** จัดวางสไตล์เดิมใหม่
+  ลด **คุณภาพ** ถ้า OBS กระตุกบนเครื่องที่ช้า
+- **ข้อความบนฉาก:** หัวเรื่องของ Starting soon, Be right back และ Ending ช่องที่ว่างใช้ข้อความมาตรฐาน
+
+**สีแยกรายหน้า** ในหกแหล่งนี้: ในตัวแก้ของแต่ละหน้า (OBS source > Interact > Style) สีน้ำเงิน แดง สีเน้น และตัวอักษรเป็นของหน้านั้นหน้าเดียว สีที่ไม่ได้แตะจะตามสีของแอพ **×** คืนสีนั้นให้ตามแอพ **คืนสีของหน้านี้** คืนทั้งหมด Starting soon, Be right back และ Ending ใช้ชุดเดียวกัน
+
+ฉาก Ending ขึ้นป้าย WINNER ให้ทีมที่นำอยู่ และไม่ขึ้นอะไรถ้าคะแนนเท่ากัน
+ทุกหน้ามี **จัดตำแหน่ง** ของตัวเอง (OBS source > Interact) เหมือน overlay อื่น และเลือกฟอนต์
+Oxanium กับ Rajdhani ได้เลยโดยไม่ต้องลงในเครื่อง
+
+---
+
 ## Team card on stream / การ์ดทีมบนจอ
 
 **EN**

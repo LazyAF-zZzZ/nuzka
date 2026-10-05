@@ -8,7 +8,7 @@ Nuzka (formerly ROV Overlay Tool) is provided free of charge for tournament, com
 
 - Use the application for free.
 - Copy and share the application for free.
-- Use it in live broadcasts, community tournaments, school events, and non-commercial productions.
+- Use it in live broadcasts, community tournaments, school events, and other productions, including ones with ads, sponsors, donations, or entry fees, as long as you do not charge for Nuzka itself.
 - Modify the source code for your own use.
 - Share modified versions for free, as long as this license notice remains included.
 
@@ -16,9 +16,21 @@ Nuzka (formerly ROV Overlay Tool) is provided free of charge for tournament, com
 
 - Sell this application.
 - Resell, rent, lease, sublicense, or charge for access to this application.
-- Include this application in a paid software bundle, paid overlay pack, paid service, or paid tournament production package.
+- Include this application in a paid software bundle, paid overlay pack, or paid service where Nuzka is what the customer is paying for.
 - Remove this license notice or claim the original application as your own product.
 - Use the name, branding, or included project files to imply endorsement by the original creator.
+
+## What "Non-Commercial" Means Here
+
+Running an event or a broadcast with Nuzka is allowed even when money is involved around it. This is fine:
+
+- Ads, subscriptions, donations, or tips on your stream or videos.
+- Sponsors for your tournament or channel.
+- Entry fees, including when the prize pool is funded by those entry fees.
+
+What is not allowed is charging people for Nuzka itself: selling it, renting it, charging for access to it, or bundling it into something you sell (a paid overlay pack, a paid software bundle, or a paid service where Nuzka is the product being delivered).
+
+If you are unsure whether your use is allowed, ask the creator first.
 
 ## Redistribution
 

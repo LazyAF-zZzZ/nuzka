@@ -61,10 +61,12 @@
     /** @type {(key: string) => HTMLElement | null} */
     const partByKey = (key) => document.querySelector(`[data-layout="${key}"]`);
     const entryOf = (key) => ({ x: 0, y: 0, s: 1, h: false, ...(layout[key] || {}) });
-    const isDefault = (e) => e.x === 0 && e.y === 0 && e.s === 1 && !e.h;
+    const isDefault = (e) => e.x === 0 && e.y === 0 && e.s === 1 && !e.h && !(e.tx && Object.keys(e.tx).length) && !e.k;
 
     function applyPart(el, entry) {
-        el.style.translate = entry.x || entry.y ? `${entry.x}px ${entry.y}px` : '';
+        // A part the operator added is centred by its own translate (-50%), so its offset rides on top of that.
+        if (el.hasAttribute('data-nz-custom')) el.style.translate = `calc(-50% + ${entry.x}px) calc(-50% + ${entry.y}px)`;
+        else el.style.translate = entry.x || entry.y ? `${entry.x}px ${entry.y}px` : '';
         el.style.scale = entry.s !== 1 ? String(entry.s) : '';
         el.toggleAttribute('data-layout-hidden', entry.h);
     }
@@ -110,7 +112,144 @@
         window.dispatchEvent(new Event('rov-layout'));
     }
 
+    // ---------------------------------------------------------------- text
+    //
+    // User's request (2026-10-05): every text part adjustable, and text of the operator's own. A part's
+    // look and wording live in its layout entry (entry.tx, server/domain/layout.ts); a part the operator
+    // added has entry.k and is built here, inside the page's 1080p stage so it scales with the page
+    // at 1440p. Nothing here needs the editor: OBS applies it all the same.
+    const textStyleEl = document.createElement('style');
+    document.head.appendChild(textStyleEl);
+    // The page's 1080p stage: the box its own sizes are laid out in, which the page scales by 4/3 at 1440p.
+    const STAGES = '[data-layout-host], .overlay-container, .result-container, .pv-stage, .st-stage, .mu-stage, .tl-stage, .an-stage, .bc-stage';
+    const stageHost = () => document.querySelector(STAGES);
+
+    const hasLook = (tx) => !!tx && ['f', 'z', 'w', 'c', 'a', 'ls', 'tt', 'ow', 'sb', 'sx', 'sy', 'g1', 'gs', 'en', 'lp'].some((k) => tx[k] !== undefined);
+
+    function textRule(key, tx) {
+        const sel = `[data-layout="${key}"], [data-layout="${key}"] *`;
+        const p = [];
+        if (tx.f) {
+            if (window.RovFonts) window.RovFonts.declare(tx.f);
+            p.push(`font-family: ${window.RovFonts ? window.RovFonts.stack(tx.f) : '"' + tx.f + '", Kanit, sans-serif'}`);
+        }
+        if (tx.z !== undefined) p.push(`font-size: ${tx.z}px`);
+        if (tx.w !== undefined) p.push(`font-weight: ${tx.w}`);
+        if (tx.c) p.push(`color: ${tx.c}`);
+        if (tx.a) p.push(`text-align: ${tx.a}`);
+        if (tx.ls !== undefined) p.push(`letter-spacing: ${tx.ls}px`);
+        if (tx.tt) p.push(`text-transform: ${{ upper: 'uppercase', lower: 'lowercase', title: 'capitalize' }[tx.tt]}`);
+        if (tx.ow) p.push(`-webkit-text-stroke: ${tx.ow}px ${tx.oc || '#000000'}`, 'paint-order: stroke fill');
+        // Shadow and glow share one list. Text filled with a gradient is transparent, so a text-shadow would show
+        // through the letters; it is drawn as a drop-shadow filter on the whole part instead.
+        const layers = [];
+        if (tx.sb !== undefined || tx.sx !== undefined || tx.sy !== undefined) {
+            layers.push([tx.sx || 0, tx.sy || 0, tx.sb || 0, tx.sc || '#000000']);
+        }
+        if (tx.gs) {
+            layers.push([0, 0, tx.gs, tx.gc || '#ffffff'], [0, 0, Math.round(tx.gs * 2.2), tx.gc || '#ffffff']);
+        }
+        const gradient = !!(tx.g1 && tx.g2);
+        if (gradient) p.push('text-shadow: none');
+        else if (layers.length) p.push(`text-shadow: ${layers.map((l) => `${l[0]}px ${l[1]}px ${l[2]}px ${l[3]}`).join(', ')}`);
+        let css = p.length ? `${sel} { ${p.map((d) => d + ' !important').join('; ')} }` : '';
+
+        // Effects that belong to the part as a whole, not to each piece of text inside it.
+        const own = [];
+        const images = [];
+        const sizes = [];
+        const positions = [];
+        const shimmer = tx.lp === 'shimmer';
+        if (shimmer) {
+            images.push('linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.9) 50%, transparent 65%)');
+            sizes.push('300% 100%');
+            positions.push('100% 0');
+        }
+        if (gradient) {
+            images.push(`linear-gradient(${tx.ga === undefined ? 90 : tx.ga}deg, ${tx.g1}, ${tx.g2})`);
+        } else if (shimmer) {
+            images.push('linear-gradient(currentColor, currentColor)');
+        }
+        if (images.length) {
+            while (sizes.length < images.length) sizes.push('100% 100%');
+            while (positions.length < images.length) positions.push('0 0');
+            own.push(`background-image: ${images.join(', ')}`, `background-size: ${sizes.join(', ')}`,
+                `background-position: ${positions.join(', ')}`, 'background-repeat: no-repeat',
+                '-webkit-background-clip: text', 'background-clip: text', '-webkit-text-fill-color: transparent');
+        }
+        if (gradient && layers.length) own.push(`filter: ${layers.map((l) => `drop-shadow(${l[0]}px ${l[1]}px ${l[2]}px ${l[3]})`).join(' ')}`);
+        const anims = [];
+        if (tx.en) anims.push(`nz-in-${tx.en} ${tx.ed || 600}ms ease-out ${tx.edl || 0}ms backwards`);
+        if (tx.lp) {
+            const seconds = tx.lt || (shimmer ? 2.6 : 2);
+            anims.push(`nz-lp-${tx.lp} ${seconds}s ${shimmer ? 'linear' : 'ease-in-out'} infinite`);
+        }
+        if (anims.length) own.push(`animation: ${anims.join(', ')}`);
+        if (own.length) css += ` [data-layout="${key}"] { ${own.map((d) => d + ' !important').join('; ')} }`;
+        return css;
+    }
+
+    function applyText() {
+        const entries = Object.keys(layout).filter((k) => hasLook(layout[k].tx));
+        // A group before the parts inside it, so a part styled on its own wins over its group's style.
+        const depth = (k) => { const el = partByKey(k); return el ? depthOf(el) : 0; };
+        const css = entries.sort((a, b) => depth(a) - depth(b)).map((k) => textRule(k, layout[k].tx)).join(' ');
+        if (textStyleEl.textContent !== css) textStyleEl.textContent = css;
+    }
+
+    // Parts the operator added: made and removed to match the layout.
+    function syncCustom() {
+        const host = stageHost();
+        const wanted = Object.keys(layout).filter((k) => layout[k].k);
+        document.querySelectorAll('[data-nz-custom]').forEach((el) => {
+            if (!wanted.includes(/** @type {HTMLElement} */ (el).dataset.layout || '')) el.remove();
+        });
+        if (!host) return;
+        wanted.forEach((key) => {
+            let el = /** @type {HTMLElement | null} */ (host.querySelector(`[data-nz-custom][data-layout="${key}"]`));
+            if (!el) {
+                el = document.createElement('div');
+                el.className = 'nz-custom-text';
+                el.setAttribute('data-nz-custom', '');
+                el.setAttribute('data-layout', key);
+                host.appendChild(el);
+            }
+            const words = (layout[key].tx && layout[key].tx.t) || '';
+            if (el.textContent !== words) el.textContent = words;
+        });
+    }
+
+    // New wording for a part the page owns (a label, a heading). Only a part with no elements inside it can
+    // be reworded. The page may write its own text into it again later (names, the timer), so a change
+    // there is put back to the operator's words before the next paint. The original is kept to restore.
+    let wording = false;
+    function applyWording() {
+        wording = true;
+        try {
+            parts().forEach((el) => {
+                if (el.hasAttribute('data-nz-custom') || el.childElementCount > 0) return;
+                const t = layout[el.dataset.layout || ''] && layout[el.dataset.layout || ''].tx && layout[el.dataset.layout || ''].tx.t;
+                if (t) {
+                    if (el.dataset.nzOrig === undefined) el.dataset.nzOrig = el.textContent || '';
+                    if (el.textContent !== t) el.textContent = t;
+                } else if (el.dataset.nzOrig !== undefined) {
+                    el.textContent = el.dataset.nzOrig;
+                    delete el.dataset.nzOrig;
+                }
+            });
+        } finally { wording = false; }
+    }
+    let wordingQueued = false;
+    new MutationObserver(() => {
+        if (wording || wordingQueued || !document.querySelector('[data-nz-orig]')) return;
+        wordingQueued = true;
+        queueMicrotask(() => { wordingQueued = false; applyWording(); });
+    }).observe(body, { childList: true, characterData: true, subtree: true });
+
+    function refreshText() { syncCustom(); applyText(); applyWording(); }
+
     function applyAll() {
+        refreshText();
         nameItems();
         parts().forEach((el) => {
             const key = el.dataset.layout;
@@ -124,6 +263,21 @@
 
     const style = document.createElement('style');
     style.textContent = `
+        @keyframes nz-in-fade { from { opacity: 0; } }
+        @keyframes nz-in-up { from { opacity: 0; transform: translateY(40px); } }
+        @keyframes nz-in-down { from { opacity: 0; transform: translateY(-40px); } }
+        @keyframes nz-in-left { from { opacity: 0; transform: translateX(-80px); } }
+        @keyframes nz-in-right { from { opacity: 0; transform: translateX(80px); } }
+        @keyframes nz-in-pop { from { opacity: 0; transform: scale(0.6); } }
+        @keyframes nz-in-blur { from { opacity: 0; filter: blur(14px); } }
+        @keyframes nz-lp-pulse { 50% { transform: scale(1.08); opacity: 0.85; } }
+        @keyframes nz-lp-float { 50% { transform: translateY(-10px); } }
+        @keyframes nz-lp-flicker { 0%, 18%, 22%, 62%, 100% { opacity: 1; } 20%, 60% { opacity: 0.35; } 64% { opacity: 0.7; } 66% { opacity: 1; } }
+        @keyframes nz-lp-shimmer { from { background-position: 100% 0, 0 0; } to { background-position: 0% 0, 0 0; } }
+        .nz-custom-text { position: absolute; left: 960px; top: 540px; width: max-content; max-width: 1760px;
+            white-space: pre-wrap; text-align: center; z-index: 40; pointer-events: none;
+            font: 600 48px/1.2 var(--ov-font-body, Kanit, 'Segoe UI', sans-serif); color: #fff;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55); }
         [data-layout-hidden] { visibility: hidden !important; }
         [data-layout-settling] [data-layout] { transition: none !important; }
         [data-layout-overflow] { overflow: visible !important; }
@@ -170,7 +324,8 @@
         title: 'จัดตำแหน่ง overlay', scene: {
             draft: 'หน้าดราฟต์', result: 'หน้าผลดราฟต์', teams: 'รายชื่อทีม', analytics: 'กระดานสถิติ',
             standings: 'ตารางคะแนน', matchup: 'เจอกันมาก่อน', 'team-drafts': 'พิค/แบนของทีม',
-            'team-card': 'การ์ดทีม', prev: 'พิค/แบนเกมก่อน'
+            'team-card': 'การ์ดทีม', prev: 'พิค/แบนเกมก่อน',
+            scene: 'ฉากคั่นรายการ', vs: 'หน้า VS', 'lower-third': 'แถบชื่อ', scoreboard: 'สกอร์บอร์ด'
         },
         help: 'ลากเพื่อย้าย คลิกเลือกชิ้นเล็กสุดที่อยู่ใต้เมาส์ กด "เลือกทั้งกลุ่ม" หรือ Alt+คลิก เพื่อเลือกกลุ่มที่ครอบอยู่ ปุ่มลูกศรขยับทีละ 1 px (Shift = 10 px) ลากกลับใกล้ที่เดิมจะดูดเข้าที่เดิมเอง ลากมุมกรอบเพื่อย่อขยาย ระหว่างลากหรือย่อขยาย ชิ้นส่วนจะดูดเข้าขอบและกึ่งกลางของจอและของชิ้นอื่น พร้อมเส้นนำสีชมพู กด Ctrl ค้างไว้เพื่อลากอิสระ',
         snap: 'ดูดเข้าเส้นนำ',
@@ -180,12 +335,27 @@
         confirmReset: 'คืนทุกชิ้นส่วนของหน้านี้กลับตำแหน่งเดิมใช่ไหม',
         saved: 'บันทึกทันทีทุกครั้งที่ย้าย OBS เปลี่ยนตามเลย ปิดแท็บนี้ได้เมื่อเสร็จ',
         offline: 'ต่อเซิร์ฟเวอร์ไม่ได้ ตอนนี้ยังไม่ได้บันทึก เปิด Nuzka ไว้แล้วลองใหม่',
-        refused: 'เซิร์ฟเวอร์ไม่รับการแก้ไข: ', notShown: 'ตอนนี้ไม่แสดง', moved: 'ย้ายแล้ว'
+        refused: 'เซิร์ฟเวอร์ไม่รับการแก้ไข: ', notShown: 'ตอนนี้ไม่แสดง', moved: 'ย้ายแล้ว',
+        text: 'ข้อความ', wording: 'ถ้อยคำ', wordingNote: 'แก้ข้อความของป้าย/หัวข้อ ช่องที่เว็บเขียนทับเองอย่างชื่อทีมให้แก้ที่แท็บ Style หรือหน้า Control',
+        font: 'ฟอนต์', fontDefault: 'ตามหน้านี้', fontSize: 'ขนาด (px)', weight: 'ความหนา', colour: 'สี', byPage: 'ตามเดิม',
+        align: 'จัดแนว', alignNote: 'มีผลกับข้อความหลายบรรทัดหรือกล่องที่กว้างกว่าตัวอักษร', spacing: 'ระยะห่างตัวอักษร', caseLabel: 'ตัวพิมพ์',
+        caseNone: 'ตามเดิม', caseUpper: 'ตัวใหญ่ทั้งหมด', caseLower: 'ตัวเล็กทั้งหมด', caseTitle: 'ขึ้นต้นด้วยตัวใหญ่',
+        outline: 'ขอบตัวอักษร', outlineWidth: 'หนา', shadow: 'เงา', shadowBlur: 'เบลอ', shadowX: 'เงา X', shadowY: 'เงา Y',
+        weightNames: { 300: 'บาง', 400: 'ปกติ', 500: 'กลาง', 600: 'กึ่งหนา', 700: 'หนา', 800: 'หนามาก', 900: 'หนาที่สุด' },
+        resetText: 'คืนสไตล์ข้อความ',
+        fxGradient: 'ไล่สีตัวอักษร', fxGradientFrom: 'สีต้น', fxGradientTo: 'สีปลาย', fxAngle: 'มุม (°)',
+        fxGlow: 'เรืองแสง', fxGlowStrength: 'ความแรง', fxEntrance: 'ตอนขึ้นจอ', fxNone: 'ไม่มี',
+        fxIn: { fade: 'ค่อยๆ ชัด', up: 'เลื่อนขึ้น', down: 'เลื่อนลง', left: 'เลื่อนจากซ้าย', right: 'เลื่อนจากขวา', pop: 'เด้งขึ้น', blur: 'เบลอแล้วชัด' },
+        fxDuration: 'ความเร็ว (ms)', fxDelay: 'หน่วง (ms)', fxPreview: 'ดูตัวอย่าง', fxLoop: 'เล่นวน',
+        fxLp: { pulse: 'เต้นตุบๆ', shimmer: 'แสงวิ่งผ่าน', float: 'ลอยขึ้นลง', flicker: 'กะพริบ' }, fxPeriod: 'รอบ (วินาที)',
+        fxNote: 'เอฟเฟกต์ตอนขึ้นจอเล่นเมื่อโหลดหน้าหรือกดดูตัวอย่าง ใน OBS ให้ตั้ง "รีเฟรชเมื่อฉากถูกเปิด" ถ้าอยากให้เล่นทุกครั้งที่ฉากขึ้น', addText: '+ เพิ่มข้อความ', deleteText: 'ลบ', newText: 'ข้อความใหม่',
+        confirmDelete: 'ลบข้อความนี้ใช่ไหม', noHost: 'หน้านี้ยังเพิ่มข้อความเองไม่ได้', customName: 'ข้อความ'
     } : {
         title: 'Edit overlay layout', scene: {
             draft: 'Draft overlay', result: 'Result', teams: 'Team list', analytics: 'Stats board',
             standings: 'Standings', matchup: 'Head to head', 'team-drafts': 'Team picks & bans',
-            'team-card': 'Team card', prev: 'Previous picks & bans'
+            'team-card': 'Team card', prev: 'Previous picks & bans',
+            scene: 'Break scenes', vs: 'VS screen', 'lower-third': 'Lower third', scoreboard: 'Scoreboard'
         },
         help: 'Drag to move. A click picks the smallest part under the mouse; "Select group" or Alt+click picks the group around it. Arrow keys move 1 px (Shift: 10 px). Dragging back near the original spot snaps into it. Drag a corner of the selection to resize. While moving or resizing, parts snap to the edges and centres of the screen and of other parts, with pink guide lines; hold Ctrl to drag freely.',
         snap: 'Snap to guides',
@@ -195,7 +365,21 @@
         confirmReset: 'Put every part of this overlay back where it was?',
         saved: 'Every move is saved at once and shows in OBS right away. Close this tab when you are done.',
         offline: 'Not connected to Nuzka, so nothing is being saved. Keep the app open and try again.',
-        refused: 'The server refused the change: ', notShown: 'not showing now', moved: 'moved'
+        refused: 'The server refused the change: ', notShown: 'not showing now', moved: 'moved',
+        text: 'Text', wording: 'Wording', wordingNote: 'Changes a label or heading. Text the page fills in itself, such as team names, is edited on the Style tab or in Control.',
+        font: 'Font', fontDefault: 'As the page', fontSize: 'Size (px)', weight: 'Weight', colour: 'Colour', byPage: 'As designed',
+        align: 'Align', alignNote: 'Shows on multi-line text or a box wider than its letters', spacing: 'Letter spacing', caseLabel: 'Case',
+        caseNone: 'As designed', caseUpper: 'UPPERCASE', caseLower: 'lowercase', caseTitle: 'Capitalise Each Word',
+        outline: 'Outline', outlineWidth: 'Width', shadow: 'Shadow', shadowBlur: 'Blur', shadowX: 'Shadow X', shadowY: 'Shadow Y',
+        weightNames: { 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semibold', 700: 'Bold', 800: 'Extra bold', 900: 'Black' },
+        resetText: 'Reset text style',
+        fxGradient: 'Gradient fill', fxGradientFrom: 'From', fxGradientTo: 'To', fxAngle: 'Angle (°)',
+        fxGlow: 'Glow', fxGlowStrength: 'Strength', fxEntrance: 'Entrance', fxNone: 'None',
+        fxIn: { fade: 'Fade in', up: 'Slide up', down: 'Slide down', left: 'Slide from left', right: 'Slide from right', pop: 'Pop', blur: 'Blur in' },
+        fxDuration: 'Speed (ms)', fxDelay: 'Delay (ms)', fxPreview: 'Preview', fxLoop: 'Loop',
+        fxLp: { pulse: 'Pulse', shimmer: 'Shimmer', float: 'Float', flicker: 'Flicker' }, fxPeriod: 'Period (s)',
+        fxNote: 'An entrance plays when the page loads or when you press Preview. In OBS, tick "Refresh browser when scene becomes active" if you want it every time the scene comes up.', addText: '+ Add text', deleteText: 'Delete', newText: 'New text',
+        confirmDelete: 'Delete this text?', noHost: 'Adding your own text is not available on this page yet', customName: 'Text'
     };
 
     const NAMES = th ? {
@@ -206,7 +390,11 @@
         groups: 'ตารางทุกกลุ่ม', scope: 'ขอบเขตข้อมูล', columns: 'คอลัมน์ทั้งหมด', games: 'ทุกเกม',
         logo: 'โลโก้', 'side-label': 'ป้ายฝั่ง', name: 'ชื่อทีม', tiles: 'ช่องตัวเลขทั้งหมด',
         'heroes-column': 'คอลัมน์ฮีโร่', 'players-column': 'คอลัมน์ผู้เล่น',
-        'game-tag': 'ป้ายเกมที่เท่าไหร่', meetings: 'ซีรีส์ที่เคยเจอกัน'
+        'game-tag': 'ป้ายเกมที่เท่าไหร่', meetings: 'ซีรีส์ที่เคยเจอกัน',
+        kicker: 'ชื่อทัวร์นาเมนต์ (บรรทัดบน)', headline: 'หัวเรื่องใหญ่', subline: 'บรรทัดใต้หัวเรื่อง',
+        countdown: 'นาฬิกานับถอยหลัง', 'score-line': 'คะแนนปัจจุบัน', winner: 'ป้ายผู้ชนะ', 'bottom-bar': 'แถบล่าง',
+        'side-blue': 'ฝั่งน้ำเงิน', 'side-red': 'ฝั่งแดง', 'vs-mark': 'ตัวอักษร VS', footer: 'แถบล่าง (รายการ + แมตช์)',
+        'lower-third': 'แถบชื่อทั้งหมด', scoreboard: 'สกอร์บอร์ดทั้งแถบ', 'event-tab': 'ป้ายชื่อรายการ'
     } : {
         banner: 'Whole banner', center: 'Centre block', tournament: 'Tournament name', score: 'Score row',
         'score-numbers': 'Score numbers', timer: 'Timer', 'match-title': 'Match title',
@@ -215,16 +403,25 @@
         groups: 'All groups', scope: 'Data range', columns: 'Both columns', games: 'All games',
         logo: 'Logo', 'side-label': 'Side label', name: 'Team name', tiles: 'All number tiles',
         'heroes-column': 'Heroes column', 'players-column': 'Players column',
-        'game-tag': 'Game number tag', meetings: 'Previous meetings'
+        'game-tag': 'Game number tag', meetings: 'Previous meetings',
+        kicker: 'Tournament name (top line)', headline: 'Big headline', subline: 'Line under the headline',
+        countdown: 'Countdown clock', 'score-line': 'Current score', winner: 'Winner label', 'bottom-bar': 'Bottom bar',
+        'side-blue': 'Blue side', 'side-red': 'Red side', 'vs-mark': 'VS mark', footer: 'Bottom bar (event + match)',
+        'lower-third': 'All lower thirds', scoreboard: 'Whole scoreboard', 'event-tab': 'Event name tab'
     };
 
     const ITEMS = th
-        ? { team: 'การ์ดทีม', row: 'แถว', group: 'กลุ่ม', tile: 'ช่องตัวเลข', game: 'เกม' }
-        : { team: 'Team card', row: 'Row', group: 'Group', tile: 'Tile', game: 'Game' };
+        ? { team: 'การ์ดทีม', row: 'แถว', group: 'กลุ่ม', tile: 'ช่องตัวเลข', game: 'เกม', card: 'แถบชื่อ' }
+        : { team: 'Team card', row: 'Row', group: 'Group', tile: 'Tile', game: 'Game', card: 'Lower third' };
 
     function nameOf(key) {
         if (NAMES[key]) return NAMES[key];
-        const item = /^(team|row|group|tile|game)-(\d+)$/.exec(key);
+        const custom = /^text-(\d+)$/.exec(key);
+        if (custom && layout[key] && layout[key].k) {
+            const words = ((layout[key].tx && layout[key].tx.t) || '').replace(/\s+/g, ' ').trim();
+            return `${T.customName} ${custom[1]}${words ? ': ' + (words.length > 24 ? words.slice(0, 24) + '…' : words) : ''}`;
+        }
+        const item = /^(team|row|group|tile|game|card)-(\d+)$/.exec(key);
         if (item) return `${ITEMS[item[1]]} ${item[2]}`;
         const m = /^(blue|red)-(.+?)(?:-(\d+))?$/.exec(key);
         if (!m) return key;
@@ -333,6 +530,23 @@
         #layout-editor .st-imageinfo { display: flex; flex-direction: column; gap: 1px; }
         #layout-editor .st-imageinfo .st-hint { margin: 0; }
         #layout-editor .st-buttons { display: flex; gap: 6px; }
+        #layout-editor .le-top { flex: 0 1 auto; max-height: 62%; overflow: auto; }
+        #layout-editor .le-top .le-sec { border-bottom: 1px solid #2c323b; }
+        #layout-editor .tx-h { display: flex; align-items: center; justify-content: space-between; font-weight: 700; margin: 0 0 6px; }
+        #layout-editor .tx-row { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; color: #c9ced8; }
+        #layout-editor .tx-row > .tx-l { color: #9aa3b2; }
+        #layout-editor .tx-row select, #layout-editor .tx-row input[type=number], #layout-editor .tx-row textarea {
+            width: 100%; min-width: 0; background: #0f1216; border: 1px solid #353c47; border-radius: 4px; padding: 4px 6px; color: #e6e9ef; font-size: 12.5px; }
+        #layout-editor .tx-row textarea { resize: vertical; min-height: 44px; font-family: inherit; }
+        #layout-editor .tx-pair { display: flex; align-items: center; gap: 6px; }
+        #layout-editor .tx-pair > * { flex: 1; min-width: 0; }
+        #layout-editor .tx-pair > button { flex: 0 0 auto; padding: 3px 7px; font-size: 11px; }
+        #layout-editor input[type=color].tx-colour { width: 40px; flex: 0 0 40px; height: 24px; padding: 0; border: 1px solid #353c47; border-radius: 4px; background: none; }
+        #layout-editor .tx-seg { display: flex; gap: 4px; }
+        #layout-editor .tx-seg button { flex: 1; padding: 3px 0; }
+        #layout-editor .tx-seg button.on { background: #1c3550; border-color: #3da5ff; }
+        #layout-editor .tx-note { grid-column: 1 / 3; color: #9aa3b2; font-size: 11px; margin-top: -2px; }
+        #layout-editor .le-partshead { display: flex; align-items: center; justify-content: space-between; }
     `;
 
     const hoverBox = Object.assign(document.createElement('div'), { className: 'le-box le-hover' });
@@ -351,6 +565,7 @@
             <button data-tab="style"></button>
         </div>
         <div class="le-pane" data-pane="layout">
+        <div class="le-top">
         <div class="le-sec">
             <div class="le-selname" data-selname></div>
             <div class="le-grid">
@@ -363,9 +578,12 @@
                 <button data-a="parent"></button>
                 <button data-a="hide"></button>
                 <button data-a="reset"></button>
+                <button data-a="deleteText" class="danger" hidden></button>
             </div>
         </div>
-        <div class="le-sec" style="padding-bottom:6px"><b data-partstitle></b></div>
+        <div class="le-sec" data-textsec hidden></div>
+        </div>
+        <div class="le-sec le-partshead" style="padding-bottom:6px"><b data-partstitle></b><button data-a="addText"></button></div>
         <div class="le-list" data-list></div>
         <div class="le-foot">
             <button data-a="undo"></button>
@@ -394,6 +612,8 @@
     $('[data-a="reset"]').textContent = T.reset;
     $('[data-a="undo"]').textContent = T.undo;
     $('[data-a="resetAll"]').textContent = T.resetAll;
+    $('[data-a="addText"]').textContent = T.addText;
+    $('[data-a="deleteText"]').textContent = T.deleteText;
     $('[data-snaplabel]').textContent = T.snap;
     // เปิดไว้เป็นค่าเริ่มต้น จำค่าไว้ในเบราว์เซอร์นี้ (เป็นความสะดวกของคนแก้ ไม่ใช่ข้อมูลของงาน)
     const snapBox = /** @type {HTMLInputElement} */ ($('[data-snap]'));
@@ -439,11 +659,12 @@
     // Changes the part here at once and tells the server; the echo then agrees.
     function change(key, entry, { remember = true } = {}) {
         if (remember) undoStack.push({ key, entry: entryOf(key) });
+        if (isDefault(entry)) delete layout[key]; else layout[key] = entry;
+        refreshText();
         const el = partByKey(key);
         if (el) applyPart(el, entry);
         releaseClipped();
         setTimeout(releaseClipped, 400);
-        if (isDefault(entry)) delete layout[key]; else layout[key] = entry;
         send(key, entry);
         refreshPanel();
     }
@@ -499,6 +720,259 @@
         }
     }
 
+    // ------------------------------------------------------------ text controls
+    //
+    // The section shows for any selected part. A group's look reaches every text inside it. Wording is only
+    // offered where a part has no elements inside it (a label, a heading) or is one the operator added.
+    const textSec = $('[data-textsec]');
+    const WEIGHTS = [300, 400, 500, 600, 700, 800, 900];
+    /** @type {HTMLInputElement[]} */
+    const colourInputs = [];
+    /** @type {Record<string, HTMLElement>} */
+    const tx = {};
+
+    const mk = (tag, cls, text) => {
+        const node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (text !== undefined) node.textContent = text;
+        return node;
+    };
+    const txRow = (label, ...content) => {
+        const row = mk('div', 'tx-row');
+        row.appendChild(mk('span', 'tx-l', label));
+        const pair = mk('div', 'tx-pair');
+        pair.append(...content);
+        row.appendChild(pair);
+        textSec.appendChild(row);
+        return row;
+    };
+    const numberBox = (field, min, max, step) => {
+        const input = /** @type {HTMLInputElement} */ (mk('input'));
+        input.type = 'number'; input.min = String(min); input.max = String(max); input.step = String(step);
+        input.dataset.tx = field;
+        tx[field] = input;
+        return input;
+    };
+    const colourBox = (field) => {
+        const input = /** @type {HTMLInputElement} */ (mk('input', 'tx-colour'));
+        input.type = 'color'; input.dataset.tx = field;
+        tx[field] = input;
+        colourInputs.push(input);
+        const clear = mk('button', '', T.byPage);
+        clear.dataset.txClear = field;
+        return [input, clear];
+    };
+
+    textSec.appendChild(Object.assign(mk('div', 'tx-h'), { textContent: T.text }));
+    const wordingBox = /** @type {HTMLTextAreaElement} */ (mk('textarea'));
+    wordingBox.dataset.tx = 't'; wordingBox.rows = 2; wordingBox.maxLength = 200;
+    tx.t = wordingBox;
+    const wordingRow = txRow(T.wording, wordingBox);
+    const wordingNoteRow = mk('div', 'tx-note', T.wordingNote);
+    textSec.appendChild(wordingNoteRow);
+
+    const fontSel = /** @type {HTMLSelectElement} */ (mk('select'));
+    fontSel.dataset.tx = 'f'; tx.f = fontSel;
+    txRow(T.font, fontSel);
+    txRow(T.fontSize, numberBox('z', 6, 400, 1));
+    const weightSel = /** @type {HTMLSelectElement} */ (mk('select'));
+    weightSel.dataset.tx = 'w'; tx.w = weightSel;
+    const wDefault = mk('option', '', T.byPage); wDefault.value = '';
+    weightSel.appendChild(wDefault);
+    WEIGHTS.forEach((w) => { const o = mk('option', '', `${w} ${T.weightNames[w]}`); o.value = String(w); weightSel.appendChild(o); });
+    txRow(T.weight, weightSel);
+    txRow(T.colour, ...colourBox('c'));
+
+    const seg = mk('div', 'tx-seg');
+    [['left', '⟸'], ['center', '↔'], ['right', '⟹']].forEach(([value, glyph]) => {
+        const b = mk('button', '', glyph); b.dataset.txAlign = value; seg.appendChild(b);
+    });
+    const alignClear = mk('button', '', T.byPage); alignClear.dataset.txClear = 'a';
+    txRow(T.align, seg, alignClear);
+    textSec.appendChild(mk('div', 'tx-note', T.alignNote));
+
+    txRow(T.spacing, numberBox('ls', -5, 40, 0.5));
+    const caseSel = /** @type {HTMLSelectElement} */ (mk('select'));
+    caseSel.dataset.tx = 'tt'; tx.tt = caseSel;
+    [['', T.caseNone], ['upper', T.caseUpper], ['lower', T.caseLower], ['title', T.caseTitle]].forEach(([value, label]) => {
+        const o = mk('option', '', label); o.value = value; caseSel.appendChild(o);
+    });
+    txRow(T.caseLabel, caseSel);
+    txRow(T.outline, ...colourBox('oc'));
+    txRow(T.outlineWidth, numberBox('ow', 0, 20, 0.5));
+    txRow(T.shadow, ...colourBox('sc'));
+    txRow(T.shadowBlur, numberBox('sb', 0, 60, 1));
+    txRow(T.shadowX, numberBox('sx', -60, 60, 1));
+    txRow(T.shadowY, numberBox('sy', -60, 60, 1));
+    // effects
+    textSec.appendChild(Object.assign(mk('div', 'tx-h'), { textContent: T.fxGradient, style: 'margin-top:10px' }));
+    txRow(T.fxGradientFrom, ...colourBox('g1'));
+    txRow(T.fxGradientTo, ...colourBox('g2'));
+    txRow(T.fxAngle, numberBox('ga', 0, 360, 5));
+    txRow(T.fxGlow, ...colourBox('gc'));
+    txRow(T.fxGlowStrength, numberBox('gs', 0, 60, 1));
+    const choice = (field, label, options) => {
+        const sel = /** @type {HTMLSelectElement} */ (mk('select'));
+        sel.dataset.tx = field; tx[field] = sel;
+        const none = mk('option', '', T.fxNone); none.value = ''; sel.appendChild(none);
+        Object.keys(options).forEach((value) => { const o = mk('option', '', options[value]); o.value = value; sel.appendChild(o); });
+        txRow(label, sel);
+    };
+    textSec.appendChild(Object.assign(mk('div', 'tx-h'), { textContent: T.fxEntrance, style: 'margin-top:10px' }));
+    choice('en', T.fxEntrance, T.fxIn);
+    txRow(T.fxDuration, numberBox('ed', 100, 3000, 50));
+    txRow(T.fxDelay, numberBox('edl', 0, 5000, 50));
+    const previewBtn = mk('button', '', T.fxPreview);
+    previewBtn.dataset.a = 'previewFx';
+    textSec.appendChild(previewBtn);
+    textSec.appendChild(Object.assign(mk('div', 'tx-h'), { textContent: T.fxLoop, style: 'margin-top:10px' }));
+    choice('lp', T.fxLoop, T.fxLp);
+    txRow(T.fxPeriod, numberBox('lt', 0.5, 10, 0.1));
+    textSec.appendChild(mk('div', 'tx-note', T.fxNote));
+    const resetText = mk('button', '', T.resetText);
+    resetText.dataset.a = 'resetText';
+    resetText.style.marginTop = '8px';
+    textSec.appendChild(resetText);
+
+    // The font list: bundled, imported and installed fonts, the same as the Style tab's.
+    let fontLists = null;
+    function fillFonts(value) {
+        fontSel.textContent = '';
+        const add = (parent, family, label) => { const o = mk('option', '', label); o.value = family; parent.appendChild(o); };
+        add(fontSel, '', T.fontDefault);
+        const lists = fontLists || { bundled: [], imported: [], installed: [] };
+        const group = (label, items) => {
+            if (!items.length) return;
+            const g = mk('optgroup'); g.label = label;
+            items.forEach(([family, text]) => add(g, family, text));
+            fontSel.appendChild(g);
+        };
+        group(th ? 'มากับ Nuzka' : 'Included with Nuzka', lists.bundled.map((f) => [f, f]));
+        group(th ? 'นำเข้า' : 'Imported', lists.imported.map((f) => [f.family, f.name]));
+        group(th ? 'ลงไว้ในเครื่อง' : 'Installed on this PC', lists.installed.map((f) => [f.family, f.family]));
+        if (value && !Array.from(fontSel.options).some((o) => o.value === value)) add(fontSel, value, value);
+        fontSel.value = value || '';
+    }
+    function loadFontLists() {
+        if (!window.RovStyleEditor || !window.RovStyleEditor.fontLists) return;
+        window.RovStyleEditor.fontLists().then((lists) => { fontLists = lists; refreshPanel(); });
+    }
+    loadFontLists();
+    window.addEventListener('focus', loadFontLists);
+
+    const rgbHex = (css) => {
+        const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(css || '');
+        return m ? '#' + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, '0')).join('') : '#ffffff';
+    };
+
+    // A control shows the part's own value when the operator set one, else what the page does now.
+    function refreshTextControls() {
+        const key = selected;
+        textSec.hidden = !key;
+        if (!key) return;
+        const el = partByKey(key);
+        const e = entryOf(key);
+        const own = e.tx || {};
+        const cs = el ? getComputedStyle(el) : null;
+        const leaf = !!el && (el.hasAttribute('data-nz-custom') || (el.childElementCount === 0 && el.tagName !== 'IMG'));
+        wordingRow.hidden = wordingNoteRow.hidden = !leaf;
+        wordingNoteRow.hidden = !leaf || !!e.k;
+        const idle = (node) => document.activeElement !== node;
+        if (idle(wordingBox)) wordingBox.value = own.t !== undefined ? own.t : (el && leaf ? (el.dataset.nzOrig !== undefined ? el.dataset.nzOrig : el.textContent) || '' : '');
+        if (idle(fontSel)) fillFonts(own.f || '');
+        if (idle(weightSel)) weightSel.value = own.w !== undefined ? String(own.w) : '';
+        if (idle(caseSel)) caseSel.value = own.tt || '';
+        const num = (field, value, fallback) => {
+            const input = /** @type {HTMLInputElement} */ (tx[field]);
+            if (!idle(input)) return;
+            input.value = value !== undefined ? String(value) : '';
+            input.placeholder = fallback === undefined ? '' : String(fallback);
+        };
+        num('z', own.z, cs ? Math.round(parseFloat(cs.fontSize)) : undefined);
+        num('ls', own.ls, cs && cs.letterSpacing !== 'normal' ? Math.round(parseFloat(cs.letterSpacing) * 10) / 10 : 0);
+        num('ow', own.ow, 0);
+        num('sb', own.sb, 0);
+        num('sx', own.sx, 0);
+        num('sy', own.sy, 0);
+        const setColour = (field, value, fallback) => {
+            const input = /** @type {HTMLInputElement} */ (tx[field]);
+            if (idle(input)) input.value = value || fallback;
+            const clear = textSec.querySelector(`[data-tx-clear="${field}"]`);
+            if (clear) clear.disabled = !value;
+            input.style.opacity = value ? '1' : '0.55';
+        };
+        setColour('c', own.c, rgbHex(cs && cs.color));
+        setColour('oc', own.oc, '#000000');
+        setColour('sc', own.sc, '#000000');
+        setColour('g1', own.g1, '#ffffff');
+        setColour('g2', own.g2, '#ff8800');
+        setColour('gc', own.gc, '#ffffff');
+        num('ga', own.ga, 90);
+        num('gs', own.gs, 0);
+        num('ed', own.ed, 600);
+        num('edl', own.edl, 0);
+        num('lt', own.lt, own.lp === 'shimmer' ? 2.6 : 2);
+        if (idle(tx.en)) /** @type {HTMLSelectElement} */ (tx.en).value = own.en || '';
+        if (idle(tx.lp)) /** @type {HTMLSelectElement} */ (tx.lp).value = own.lp || '';
+        seg.querySelectorAll('[data-tx-align]').forEach((b) => b.classList.toggle('on', /** @type {HTMLElement} */ (b).dataset.txAlign === own.a));
+        const aClear = textSec.querySelector('[data-tx-clear="a"]');
+        if (aClear) aClear.disabled = !own.a;
+        resetText.disabled = !hasLook(own);
+    }
+
+    // Edits go through here: applied at once, undone as a run (typing is one step), sent a moment later.
+    let lastTx = { key: null, field: null, at: 0 };
+    /** @type {ReturnType<typeof setTimeout> | 0} */
+    let txTimer = 0;
+    function editText(mutate, field) {
+        const key = selected;
+        if (!key) return;
+        const e = entryOf(key);
+        const next = { ...(e.tx || {}) };
+        mutate(next);
+        Object.keys(next).forEach((k) => { if (next[k] === undefined || next[k] === '' || next[k] === null) delete next[k]; });
+        const now = performance.now();
+        if (lastTx.key !== key || lastTx.field !== field || now - lastTx.at > 1200) undoStack.push({ key, entry: e });
+        lastTx = { key, field, at: now };
+        const entry = { ...e };
+        if (Object.keys(next).length) entry.tx = next; else delete entry.tx;
+        if (isDefault(entry)) delete layout[key]; else layout[key] = entry;
+        refreshText();
+        refreshPanel();
+        clearTimeout(txTimer);
+        txTimer = setTimeout(() => send(key, entry), 120);
+    }
+
+    // Plays the part's entrance again: its animation is switched off for a frame, then back to the page's rule.
+    function replayEntrance(key) {
+        const el = key ? partByKey(key) : null;
+        if (!el) return;
+        el.style.setProperty('animation', 'none', 'important');
+        void el.offsetWidth;
+        el.style.removeProperty('animation');
+    }
+
+    function addText() {
+        if (!stageHost()) return;
+        let n = 1;
+        while (layout['text-' + n]) n++;
+        if (n > 30) return;
+        const key = 'text-' + n;
+        undoStack.push({ key, entry: entryOf(key) });
+        const entry = { x: 0, y: 0, s: 1, h: false, k: true, tx: { t: T.newText } };
+        layout[key] = entry;
+        refreshText();
+        send(key, entry);
+        select(key);
+    }
+
+    function deleteText(key) {
+        if (!key || !entryOf(key).k) return;
+        if (!window.confirm(T.confirmDelete)) return;
+        change(key, { x: 0, y: 0, s: 1, h: false });
+        select(null);
+    }
+
     function refreshPanel() {
         const entry = selected ? entryOf(selected) : null;
         $('[data-selname]').textContent = selected ? nameOf(selected) : T.none;
@@ -512,6 +986,12 @@
         $('[data-a="hide"]').disabled = !selected;
         $('[data-a="hide"]').textContent = entry && entry.h ? T.show : T.hide;
         $('[data-a="reset"]').disabled = !selected || isDefault(entry);
+        const isCustom = !!entry && !!entry.k;
+        $('[data-a="deleteText"]').hidden = !isCustom;
+        $('[data-a="hide"]').hidden = false;
+        $('[data-a="addText"]').disabled = !stageHost();
+        $('[data-a="addText"]').title = stageHost() ? '' : T.noHost;
+        refreshTextControls();
         $('[data-a="undo"]').disabled = undoStack.length === 0;
         $('[data-a="resetAll"]').disabled = Object.keys(layout).length === 0;
 
@@ -790,6 +1270,14 @@
             change(key, { ...entryOf(key), h: !entryOf(key).h });
             return;
         }
+        const clear = /** @type {HTMLElement | null} */ (target.closest('[data-tx-clear]'));
+        if (clear) {
+            const f = clear.dataset.txClear;
+            editText((t) => { t[f] = undefined; if (f === 'g1' || f === 'g2') { t.g1 = undefined; t.g2 = undefined; t.ga = undefined; } }, f);
+            return;
+        }
+        const alignBtn = /** @type {HTMLElement | null} */ (target.closest('[data-tx-align]'));
+        if (alignBtn) { editText((t) => { t.a = alignBtn.dataset.txAlign; }, 'a'); return; }
         const row = /** @type {HTMLElement | null} */ (target.closest('.le-item'));
         if (row) { select(row.dataset.key); return; }
         const action = /** @type {HTMLButtonElement | null} */ (target.closest('[data-a]'));
@@ -803,6 +1291,10 @@
             case 'hide': change(selected, { ...entryOf(selected), h: !entryOf(selected).h }); break;
             case 'reset': change(selected, { x: 0, y: 0, s: 1, h: false }); break;
             case 'undo': undo(); break;
+            case 'addText': addText(); break;
+            case 'previewFx': replayEntrance(selected); break;
+            case 'deleteText': deleteText(selected); break;
+            case 'resetText': editText((t) => { const keep = t.t; Object.keys(t).forEach((k) => delete t[k]); if (entryOf(selected).k && keep) t.t = keep; }, 'reset'); break;
             case 'resetAll':
                 if (!window.confirm(T.confirmReset)) return;
                 undoStack.push({ all: { ...layout } });
@@ -813,7 +1305,35 @@
         }
     });
 
+    // Text controls: every box applies as it is edited, not when it loses focus.
+    function onTextInput(ev) {
+        const node = /** @type {HTMLInputElement} */ (ev.target);
+        const field = node.dataset && node.dataset.tx;
+        if (!field || !selected) return;
+        const raw = node.value;
+        editText((t) => {
+            if (field === 't') { t.t = raw; return; }
+            if (['f', 'tt', 'en', 'lp'].includes(field)) { t[field] = raw || undefined; return; }
+            if (['c', 'oc', 'sc', 'gc'].includes(field)) { t[field] = raw; return; }
+            // a gradient is two colours: choosing one gives the other a starting value
+            if (field === 'g1' || field === 'g2') {
+                t[field] = raw;
+                if (!t.g1) t.g1 = '#ffffff';
+                if (!t.g2) t.g2 = '#ff8800';
+                return;
+            }
+            if (raw === '') { t[field] = undefined; return; }
+            const n = Number(raw);
+            if (Number.isFinite(n)) t[field] = field === 'w' ? n : n;
+        }, field);
+    }
+    panel.addEventListener('input', (ev) => {
+        const node = /** @type {HTMLElement} */ (ev.target);
+        if (node.dataset && node.dataset.tx && node.tagName !== 'SELECT') onTextInput(ev);
+    });
     panel.addEventListener('change', (ev) => {
+        const node = /** @type {HTMLElement} */ (ev.target);
+        if (node.dataset && node.dataset.tx) { onTextInput(ev); return; }
         const input = /** @type {HTMLInputElement} */ (ev.target);
         const f = input.dataset && input.dataset.f;
         if (!f || !selected) return;

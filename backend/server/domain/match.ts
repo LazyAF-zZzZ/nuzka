@@ -35,6 +35,8 @@ import {
   sanitizeTeamListStyle
 } from './settings';
 import type { Fonts, TeamListStyle } from './settings';
+import type { Broadcast } from './broadcast';
+import { defaultBroadcast, sanitizeBroadcast } from './broadcast';
 import {
   DEFAULT_OVERLAY_SIZE,
   THEME_DEFAULTS,
@@ -137,6 +139,8 @@ export interface GameState {
   draftShowTag: boolean;
   // พื้นผิวทับพื้นเดิมของแต่ละหน้า ดู sanitizeTextures (ตัวภาพอยู่ใน skin.slots.texture*)
   textures: ReturnType<typeof sanitizeTextures>;
+  // ฉากคั่นรายการ lower third และพื้นหลังเคลื่อนไหว ดู domain/broadcast.ts
+  broadcast: Broadcast;
 }
 
 export interface SlotOwner {
@@ -210,7 +214,8 @@ export const defaultState: GameState = {
   teamListColumns: TEAM_LIST_COLUMNS_DEFAULT,
   fonts: emptyFonts(),
   draftShowTag: false,
-  textures: {}
+  textures: {},
+  broadcast: defaultBroadcast()
 };
 
 export function isTeamKey(team: unknown): team is TeamKey {
@@ -379,6 +384,7 @@ export function sanitizeState(state: unknown): GameState {
     teamListColumns: sanitizeTeamListColumns(source.teamListColumns),
     fonts: sanitizeFonts(source.fonts),
     draftShowTag: sanitizeDraftShowTag(source.draftShowTag),
-    textures: sanitizeTextures(source.textures)
+    textures: sanitizeTextures(source.textures),
+    broadcast: sanitizeBroadcast(source.broadcast)
   });
 }

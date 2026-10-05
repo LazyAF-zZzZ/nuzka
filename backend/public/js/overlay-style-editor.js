@@ -20,7 +20,13 @@
         matchup: { colours: ['blue', 'red', 'accent', 'text', 'label'] },
         prev: { colours: ['blue', 'red', 'accent', 'text', 'label'], text: ['tournament', 'names'] },
         'team-card': { colours: ['blue', 'red', 'accent', 'text', 'label'] },
-        'team-drafts': { colours: ['blue', 'red', 'accent', 'text', 'label'] }
+        'team-drafts': { colours: ['blue', 'red', 'accent', 'text', 'label'] },
+        // ฉากคั่นรายการและชุดเดียวกัน (2026-10-01) อ่านสีจากธีมเดียวกับหน้าอื่น
+        // own: true = สีแยกรายหน้า (state.broadcast.colours) ไม่ใช้ธีมของแอพร่วมกับหน้าอื่น
+        scene: { colours: ['blue', 'red', 'accent', 'text'], own: true },
+        vs: { colours: ['blue', 'red', 'accent', 'text'], own: true },
+        'lower-third': { colours: ['accent', 'text'], own: true },
+        scoreboard: { colours: ['blue', 'red', 'accent', 'text'], own: true }
     };
 
     // ช่วงของค่าตัวเลข ต้องตรงกับ THEME_NUMBER_RANGE ใน server/domain/settings.ts
@@ -38,13 +44,19 @@
 
     const TEXT = {
         en: {
+            bgSec: 'Animated background', bgShow: 'Show the animated background',
+            bgHint: 'Off, this page stays transparent, so whatever is under it in OBS shows through. The look settings below can apply to this page or to every page.',
+            bgStyle: 'Style', bgPalette: 'Colours', bgQuality: 'Quality', bgSeed: 'New pattern',
+            bgStyles: { aurora: 'Aurora', bokeh: 'Bokeh', synthgrid: 'Synth grid', speedlines: 'Speed lines', hexpulse: 'Hex pulse', waves: 'Waves' },
+            bgThemePalette: 'App colours',
             fonts: 'Fonts', scope: 'Applies to', thisPage: 'This page', allPages: 'All pages',
             heading: 'Headings', name: 'Team and player names', number: 'Scores and timers', body: 'Everything else',
-            fontDefault: 'Default (Kanit)', imported: 'Imported', installed: 'Installed on this PC', noThai: '(no Thai)',
+            fontDefault: 'Default (Kanit)', bundled: 'Included with Nuzka', imported: 'Imported', installed: 'Installed on this PC', noThai: '(no Thai)',
             sameAsAll: 'All pages: {0}', importFont: 'Import font…', importing: 'Importing…', del: 'Delete',
             deleteFont: 'Delete {0}? Text using it goes back to Kanit on every page.',
             fontsHint: 'Fonts imported here are saved in Nuzka, so they need no installing. A font without Thai letters shows Thai names in Kanit.',
             colours: 'Colours', shared: 'Shared with other pages that use the same colour.',
+            ownHint: 'Only this page. Colours you have not changed follow the app colours.', followTheme: 'Use app colour', resetOwn: 'Reset this page\'s colours',
             blue: 'Blue team', red: 'Red team', text: 'Text', accent: 'Accent', label: 'Labels',
             sizes: 'Text and logo sizes', typeTournament: 'Tournament name', typeTitle: 'Match title', typeScore: 'Score',
             typeTimer: 'Timer', typePlayer: 'Player name', typeCaption: 'Labels (BAN, phase, VS)', logoSize: 'Logo size',
@@ -67,13 +79,19 @@
             blueScore: 'Blue score', redScore: 'Red score', bluePlayers: 'Blue players', redPlayers: 'Red players'
         },
         th: {
+            bgSec: 'พื้นหลังเคลื่อนไหว', bgShow: 'แสดงพื้นหลังเคลื่อนไหว',
+            bgHint: 'ปิดไว้หน้านี้จะโปร่งใส เห็นสิ่งที่อยู่ใต้มันใน OBS ส่วนค่าลักษณะด้านล่างจะใช้กับหน้านี้หรือทุกหน้าก็ได้',
+            bgStyle: 'สไตล์', bgPalette: 'สี', bgQuality: 'คุณภาพ', bgSeed: 'สุ่มลายใหม่',
+            bgStyles: { aurora: 'ออโรรา', bokeh: 'โบเก้', synthgrid: 'ตารางซินธ์', speedlines: 'เส้นความเร็ว', hexpulse: 'หกเหลี่ยมเต้น', waves: 'คลื่น' },
+            bgThemePalette: 'สีของแอพ',
             fonts: 'ฟอนต์', scope: 'ใช้กับ', thisPage: 'หน้านี้', allPages: 'ทุกหน้า',
             heading: 'หัวเรื่อง', name: 'ชื่อทีมและชื่อผู้เล่น', number: 'คะแนนและเวลา', body: 'ข้อความอื่นทั้งหมด',
-            fontDefault: 'ตามเดิม (Kanit)', imported: 'นำเข้า', installed: 'ลงไว้ในเครื่อง', noThai: '(ไม่มีภาษาไทย)',
+            fontDefault: 'ตามเดิม (Kanit)', bundled: 'มากับ Nuzka', imported: 'นำเข้า', installed: 'ลงไว้ในเครื่อง', noThai: '(ไม่มีภาษาไทย)',
             sameAsAll: 'ทุกหน้า: {0}', importFont: 'นำเข้าฟอนต์…', importing: 'กำลังนำเข้า…', del: 'ลบ',
             deleteFont: 'ลบ {0} ใช่ไหม ข้อความที่ใช้ฟอนต์นี้จะกลับเป็น Kanit ทุกหน้า',
             fontsHint: 'ฟอนต์ที่นำเข้าถูกเก็บไว้ใน Nuzka ไม่ต้องลงในเครื่อง ฟอนต์ที่ไม่มีภาษาไทย ชื่อภาษาไทยจะใช้ Kanit แทน',
             colours: 'สี', shared: 'ใช้ร่วมกับหน้าอื่นที่ใช้สีเดียวกัน',
+            ownHint: 'เฉพาะหน้านี้ สีที่ยังไม่ได้เปลี่ยนจะตามสีของแอพ', followTheme: 'ใช้สีของแอพ', resetOwn: 'คืนสีของหน้านี้',
             blue: 'ทีมน้ำเงิน', red: 'ทีมแดง', text: 'ตัวอักษร', accent: 'สีเน้น', label: 'ป้ายกำกับ',
             sizes: 'ขนาดตัวอักษรและโลโก้', typeTournament: 'ชื่อทัวร์นาเมนต์', typeTitle: 'ชื่อแมตช์', typeScore: 'คะแนน',
             typeTimer: 'นาฬิกา', typePlayer: 'ชื่อผู้เล่น', typeCaption: 'ป้ายกำกับ (BAN, เฟส, VS)', logoSize: 'ขนาดโลโก้',
@@ -98,6 +116,14 @@
     };
 
     const ROLES = ['heading', 'name', 'number', 'body'];
+    // ต้องตรงกับ BACKGROUND_STYLES / BACKGROUND_PALETTES ใน server/domain/broadcast.ts (เทสต์ตรวจ)
+    const BG_STYLES = ['aurora', 'bokeh', 'synthgrid', 'speedlines', 'hexpulse', 'waves'];
+    const BG_PALETTES = ['theme', 'neon-violet', 'cyber-teal', 'esports-red', 'royal-gold', 'deep-ocean', 'sunset-drive',
+        'toxic-lime', 'ice', 'magma', 'corporate-blue', 'pink-candy', 'emerald'];
+    // หน้าดราฟต์กับพิค/แบนเกมก่อนไม่มีพื้นหลังเคลื่อนไหว (ผู้ใช้ขอ 2026-10-05)
+    const NO_BACKGROUND = ['draft', 'prev'];
+    // ต้องตรงกับ @font-face ท้าย css/fonts.css (เทสต์ broadcast.test.ts ตรวจว่าไฟล์อยู่ครบ)
+    const BUNDLED_FONTS = ['Oxanium', 'Rajdhani'];
 
     /** @param {HTMLElement} box @param {{ scene: string, th: boolean }} ctx */
     function mount(box, ctx) {
@@ -270,6 +296,11 @@
                 const o = el('option', '', text); o.value = family; parent.appendChild(o);
             };
             add(sel, '', T.fontDefault);
+            // ฟอนต์ที่แถมมากับแอพ (public/css/fonts.css) เลือกได้เลยโดยไม่ต้องลงในเครื่อง
+            // เป็นลาตินล้วน ชื่อภาษาไทยจึงตกไปใช้ Kanit ตามสายเหมือนฟอนต์อื่นที่ไม่มีภาษาไทย
+            const gb = el('optgroup'); gb.label = T.bundled;
+            BUNDLED_FONTS.forEach((family) => add(gb, family, `${family} ${T.noThai}`));
+            sel.appendChild(gb);
             if (imported.length) {
                 const g = el('optgroup'); g.label = T.imported;
                 imported.forEach((f) => add(g, f.family, f.thai === false ? `${f.name} ${T.noThai}` : f.name));
@@ -330,6 +361,66 @@
             });
         });
 
+        // ---- animated background (2026-10-05)
+        //
+        // เปิด/ปิดเป็นรายหน้า (sceneBackgrounds[key].enabled) ปิด = โปร่งใส ส่วนลักษณะ (สไตล์ สี คุณภาพ ลาย) ตั้งให้หน้านี้
+        // หรือทุกหน้าก็ได้ เหมือนฟอนต์ ฉากคั่นรายการ (Starting/BRB/Ending) แยกกันสามฉาก ตามที่เปิดด้วย ?scene=
+        if (!NO_BACKGROUND.includes(ctx.scene)) {
+            const asked = new URLSearchParams(location.search).get('scene');
+            const bgKey = ctx.scene === 'scene' ? (['starting', 'brb', 'ending'].includes(asked || '') ? asked : 'starting') : ctx.scene;
+            let bgScope = 'page';
+            const bg = section(T.bgSec, T.bgHint);
+            const bgOn = /** @type {HTMLInputElement} */ (el('input'));
+            bgOn.type = 'checkbox';
+            bgOn.addEventListener('change', () => emit('updateBackground', { scene: bgKey, enabled: bgOn.checked }));
+            row(bg, T.bgShow, bgOn).classList.add('st-check');
+            const bgScopeSel = /** @type {HTMLSelectElement} */ (el('select', 'st-input'));
+            [['page', T.thisPage], ['all', T.allPages]].forEach(([value, label]) => {
+                const o = el('option', '', label); o.value = value; bgScopeSel.appendChild(o);
+            });
+            bgScopeSel.addEventListener('change', () => { bgScope = bgScopeSel.value; refresh(); });
+            row(bg, T.scope, bgScopeSel);
+            // ค่าที่ส่ง: หน้านี้ใส่ scene ทุกหน้าไม่ใส่ (เซิร์ฟเวอร์แยกกันด้วยการมี scene)
+            const sendLook = (patch) => emit('updateBackground', bgScope === 'page' ? { scene: bgKey, ...patch } : patch);
+            const look = () => {
+                const b = (state && state.broadcast) || {};
+                const own = (b.sceneBackgrounds && b.sceneBackgrounds[bgKey]) || {};
+                return bgScope === 'all' ? (b.background || {}) : Object.assign({}, b.background, own);
+            };
+            const bgSelect = (label, options, key) => {
+                const sel = /** @type {HTMLSelectElement} */ (el('select', 'st-input'));
+                options.forEach(([value, text]) => { const o = el('option', '', text); o.value = value; sel.appendChild(o); });
+                sel.addEventListener('change', () => sendLook({ [key]: sel.value }));
+                row(bg, label, sel);
+                updaters.push(() => { const v = look()[key]; if (v !== undefined && idle(sel)) sel.value = String(v); });
+            };
+            bgSelect(T.bgStyle, BG_STYLES.map((n) => [n, T.bgStyles[n]]), 'style');
+            bgSelect(T.bgPalette, BG_PALETTES.map((n) => [n, n === 'theme' ? T.bgThemePalette : n.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase())]), 'palette');
+            const quality = /** @type {HTMLInputElement} */ (el('input', 'st-range'));
+            quality.type = 'range'; quality.min = '25'; quality.max = '100'; quality.step = '5';
+            const qualityOut = el('span', 'st-value');
+            quality.addEventListener('input', () => {
+                qualityOut.textContent = quality.value + '%';
+                const q = Number(quality.value) / 100;
+                later('bg-q', () => sendLook({ quality: q }), 200);
+            });
+            row(bg, T.bgQuality, quality).appendChild(qualityOut);
+            updaters.push(() => {
+                const q = look().quality;
+                if (typeof q === 'number' && idle(quality)) { quality.value = String(Math.round(q * 100)); qualityOut.textContent = quality.value + '%'; }
+            });
+            const reroll = el('button', 'st-btn', T.bgSeed);
+            reroll.addEventListener('click', () => sendLook({ seed: Math.floor(Math.random() * 999999) }));
+            bg.appendChild(reroll);
+            updaters.push(() => {
+                const b = (state && state.broadcast) || {};
+                const own = (b.sceneBackgrounds && b.sceneBackgrounds[bgKey]) || {};
+                // ตรงกับ BACKGROUND_ON_BY_DEFAULT ฝั่งเซิร์ฟเวอร์
+                const on = typeof own.enabled === 'boolean' ? own.enabled : ['starting', 'brb', 'ending', 'vs'].includes(bgKey);
+                if (idle(bgOn)) bgOn.checked = on;
+            });
+        }
+
         // ---- colours
         const colourInput = (key, sec, label) => {
             const pick = /** @type {HTMLInputElement} */ (el('input', 'st-colour'));
@@ -351,7 +442,44 @@
                 }
             });
         };
-        if (page.colours.length) {
+        // สีแยกรายหน้า (หน้าใหม่ทั้งสี่): เขียน/ล้างที่ state.broadcast.colours[scene] ไม่ยุ่งกับธีมของแอพ
+        // ช่องแสดงสีที่ใช้จริง (ของหน้าถ้าตั้งไว้ ไม่งั้นสีธีม) และปุ่ม × คืนสีนั้นให้ตามธีม
+        const ownColourInput = (key, sec, label) => {
+            const pick = /** @type {HTMLInputElement} */ (el('input', 'st-colour'));
+            pick.type = 'color';
+            // จับค่าตอนเลือก ไม่ใช่ตอนตัวหน่วงทำงาน เหตุผลเดียวกับ colourInput ด้านบน
+            pick.addEventListener('input', () => {
+                const value = pick.value;
+                later('oc-' + key, () => emit('updateBroadcastColour', { scene: ctx.scene, key, value }));
+            });
+            const r = row(sec, label, pick);
+            const hex = el('code', 'st-hex');
+            const clear = el('button', 'st-btn small', '\u00d7');
+            clear.title = T.followTheme;
+            clear.addEventListener('click', () => emit('updateBroadcastColour', { scene: ctx.scene, key, value: '' }));
+            // แถวเป็นกริดสามช่อง (ป้าย ตัวเลือก ท้ายแถว) จึงรวมรหัสสีกับปุ่ม × ไว้ในช่องท้ายช่องเดียว
+            const tail = el('span', 'st-tail');
+            tail.style.cssText = 'display:flex;align-items:center;gap:6px';
+            tail.append(hex, clear);
+            r.appendChild(tail);
+            updaters.push(() => {
+                const mine = state && state.broadcast && state.broadcast.colours && state.broadcast.colours[ctx.scene];
+                const own = mine && mine[key];
+                const value = own || (state && state.theme && state.theme[key]);
+                if (typeof value === 'string') {
+                    if (idle(pick)) pick.value = value;
+                    hex.textContent = own ? value : value + ' \u00b7 ' + T.followTheme.toLowerCase();
+                }
+                clear.hidden = !own;
+            });
+        };
+        if (page.colours.length && page.own) {
+            const sec = section(T.colours, T.ownHint);
+            page.colours.forEach((key) => ownColourInput(key, sec, T[key]));
+            const resetOwn = el('button', 'st-btn danger', T.resetOwn);
+            resetOwn.addEventListener('click', () => emit('resetBroadcastColours', { scene: ctx.scene }));
+            sec.appendChild(resetOwn);
+        } else if (page.colours.length) {
             const sec = section(T.colours, T.shared);
             page.colours.forEach((key) => colourInput(key, sec, T[key]));
         }
@@ -440,7 +568,8 @@
 
         // ---- texture (ผู้ใช้ขอ 2026-09-30) ทุกหน้ามี ภาพอยู่ในช่อง skin ชื่อ texture<Scene>
         // ค่าวิธีปูไปที่ updateTexture ของหน้านี้เท่านั้น overlay-size.js เป็นคนปูจริง
-        {
+        // หน้าใหม่สี่หน้า (own) ไม่มีช่อง texture ในเซิร์ฟเวอร์ (TEXTURE_SCENES) จึงไม่แสดงช่องที่ใช้ไม่ได้
+        if (!page.own) {
             const slot = 'texture' + ctx.scene.replace(/(^|-)([a-z])/g, (_m, _d, c) => c.toUpperCase());
             const sec = section(T.texture, T.textureHint);
             const tex = () => (state && state.textures && state.textures[ctx.scene]) || {};
@@ -552,5 +681,20 @@
         window.addEventListener('focus', loadFonts);
     }
 
-    window.RovStyleEditor = { mount };
+    // The same font lists for the Text section of the layout tab (a single part's own font).
+    async function fontLists() {
+        let imported = [];
+        let installed = [];
+        try {
+            const [a, b] = await Promise.all([
+                fetch('/api/fonts').then((r) => r.json()),
+                fetch('/api/system-fonts').then((r) => r.json())
+            ]);
+            imported = a.fonts || [];
+            installed = b.fonts || [];
+        } catch { /* offline: the bundled fonts still work */ }
+        return { bundled: BUNDLED_FONTS, imported, installed };
+    }
+
+    window.RovStyleEditor = { mount, fontLists };
 })();

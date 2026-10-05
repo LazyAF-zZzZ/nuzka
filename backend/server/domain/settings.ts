@@ -155,7 +155,7 @@ export const FONT_ROLES: FontRole[] = ['heading', 'name', 'number', 'body'];
 
 export const FONT_SCENES = [
   'draft', 'teams', 'standings', 'result', 'analytics',
-  'matchup', 'prev', 'team-card', 'team-drafts'
+  'matchup', 'prev', 'team-card', 'team-drafts', 'scene', 'vs', 'lower-third', 'scoreboard'
 ] as const;
 
 export type FontChoices = Record<FontRole, string>;
@@ -379,7 +379,7 @@ export function sanitizeSfx(value: unknown): SfxLevels {
 export const CARRIED_OVER_KEYS = [
   'overlayVisible', 'overlaySize', 'theme', 'hotkeys', 'skin', 'sfx', 'globalHotkeys', 'swapSidesEachRound', 'layout', 'teamListPerSet',
   'teamListStyle', 'teamListScrollSpeed', 'teamListAutoText', 'teamListColumns', 'fonts',
-  'draftShowTag', 'textures'
+  'draftShowTag', 'textures', 'broadcast'
 ] as const;
 
 export type CarriedOverKey = typeof CARRIED_OVER_KEYS[number];

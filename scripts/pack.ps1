@@ -45,7 +45,7 @@ $uploadDirs = @('team-logos', 'skins', 'fonts')
 #
 # The overlays OBS loads are NOT here and must never be: overlay, overlay-1440, result,
 # overlay-prev, overlay-standings, overlay-matchup, overlay-team-drafts, overlay-team-card, overlay-teams,
-# overlay-analytics.
+# overlay-analytics, overlay-scene, overlay-vs, overlay-lower-third, overlay-scoreboard.
 #
 # Two more pages stay on purpose, because nothing replaced them:
 #   sfx-test.html  a sound check, a troubleshooting tool rather than an operator screen.
@@ -162,7 +162,8 @@ foreach ($name in $friendly.Keys) {
     $from = Join-Path $releases $name
     if (Test-Path $from) {
         $to = Join-Path $releases $friendly[$name]
-        Copy-Item $from $to -Force
+        if ($name -like "*Setup.exe") { & (Join-Path $PSScriptRoot "build-setup.ps1") -VelopackSetup $from -Output $to -Version $Version | Out-Null }
+        else { Copy-Item $from $to -Force }
         $friendlyFiles += $to
     }
 }

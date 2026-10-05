@@ -33,6 +33,18 @@ import {
 import { deepClone } from '../lib/json';
 import { patchLayout, resetSceneLayout } from '../domain/layout';
 import {
+  applyBackgroundPatch,
+  applyColourPatch,
+  resetColours,
+  sanitizeCountdown,
+  sanitizeLowerThird,
+  cardIndex,
+  emptyLowerThird,
+  LOWER_THIRD_MAX,
+  sanitizeSceneText,
+  countdownEndsAt
+} from '../domain/broadcast';
+import {
   sanitizeTeamListPerSet,
   sanitizeTeamListAutoText,
   sanitizeDraftShowTag,
@@ -418,6 +430,76 @@ export function registerHandlers(socket: Socket): void {
       if (Object.keys(page).length === 0) delete state.fonts.pages[sceneKey];
     }
 
+    emitState();
+  });
+
+  // พื้นหลังเคลื่อนไหวของฉากเต็มจอ ส่งมาเป็นก้อนบางส่วนได้ เช่น { style: 'waves' }
+  // รวมกับของเดิมแล้วกรองทั้งก้อน ค่าที่ใช้ไม่ได้ตกไปที่ค่าเริ่มต้น ไม่ใช่ค้างของเก่า
+  // scene: 'starting' | 'brb' | 'ending' | 'vs' = เฉพาะฉากนั้น, ไม่ส่งหรืออย่างอื่น = ทุกฉาก
+  // reset: true (คู่กับ scene) = ล้างค่าที่ตั้งแยกของฉากนั้น กลับไปใช้ตัวกลาง
+  controlEvent(socket, 'updateBackground', ({ scene, reset, ...patch }) => {
+    applyBackgroundPatch(getState().broadcast, scene, patch, reset === true);
+    emitState();
+  });
+
+  // นับถอยหลัง: seconds = เริ่มนับจากตอนนี้, ไม่ส่งมา = หยุด/ล้าง
+  controlEvent(socket, 'startCountdown', ({ seconds, label }) => {
+    const state = getState();
+    state.broadcast.countdown = sanitizeCountdown({
+      endsAt: countdownEndsAt(seconds, Date.now()),
+      label: label ?? state.broadcast.countdown.label
+    });
+    emitState();
+  });
+
+  controlEvent(socket, 'stopCountdown', () => {
+    const state = getState();
+    state.broadcast.countdown = sanitizeCountdown({ endsAt: null, label: state.broadcast.countdown.label });
+    emitState();
+  });
+
+  // lower third: ข้อความกับการขึ้น/ลงเป็นคำสั่งเดียวกัน ส่งมาเฉพาะที่เปลี่ยนก็ได้
+  // index: แถบที่เท่าไหร่ (เริ่ม 0 ไม่ส่งมา = แถบแรก) ดัชนีที่ไม่มีอยู่จริงไม่แก้อะไร
+  // สีของหน้าใหม่แยกรายหน้า: value เป็นสี hex หรือว่าง (ว่าง = กลับไปตามธีมของแอพ)
+  controlEvent(socket, 'updateBroadcastColour', ({ scene, key, value }) => {
+    if (!applyColourPatch(getState().broadcast, scene, key, value)) return;
+    emitState();
+  });
+
+  controlEvent(socket, 'resetBroadcastColours', ({ scene }) => {
+    if (!resetColours(getState().broadcast, scene)) return;
+    emitState();
+  });
+
+  controlEvent(socket, 'updateLowerThird', ({ index, ...patch }) => {
+    const cards = getState().broadcast.lowerThirds;
+    const at = cardIndex(index, cards.length);
+    if (at === null) return;
+    cards[at] = sanitizeLowerThird({ ...cards[at], ...patch });
+    emitState();
+  });
+
+  controlEvent(socket, 'addLowerThird', () => {
+    const cards = getState().broadcast.lowerThirds;
+    if (cards.length >= LOWER_THIRD_MAX) return;
+    cards.push(emptyLowerThird());
+    emitState();
+  });
+
+  // แถบสุดท้ายที่เหลือลบไม่ได้ (ต้องมีหนึ่งแถบเสมอ) จึงล้างข้อความแล้วเอาลง
+  controlEvent(socket, 'removeLowerThird', ({ index }) => {
+    const cards = getState().broadcast.lowerThirds;
+    const at = cardIndex(index, cards.length);
+    if (at === null || index === undefined) return;
+    if (cards.length === 1) cards[0] = emptyLowerThird();
+    else cards.splice(at, 1);
+    emitState();
+  });
+
+  // ข้อความหัวเรื่องของฉาก Starting soon / BRB / Ending ว่าง = ใช้ข้อความมาตรฐาน
+  controlEvent(socket, 'updateSceneText', (patch) => {
+    const state = getState();
+    state.broadcast.text = sanitizeSceneText({ ...state.broadcast.text, ...patch });
     emitState();
   });
 

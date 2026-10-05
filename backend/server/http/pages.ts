@@ -71,6 +71,13 @@ export const PAGES: Record<string, string> = {
   // การ์ดของทีมเดียว: สถิติ ฮีโร่ และผู้เล่น สำหรับช่วงพักก่อนเริ่มคู่
   // ตามฝั่งของคู่ที่ออกอากาศ (?side=blue|red) หรือระบุทีมเอง (?team=)
   '/overlay-team-card': 'overlay-team-card.html',
+  // ฉากเต็มจอคั่นรายการ (?scene=starting|brb|ending) กับหน้า VS ของสองทีม
+  // พื้นหลังเคลื่อนไหวจาก motion-core ตั้งค่าที่ state.broadcast (ดู domain/broadcast.ts)
+  '/overlay-scene': 'overlay-scene.html',
+  '/overlay-vs': 'overlay-vs.html',
+  // แถบชื่อผู้บรรยาย/แขก ขึ้น-ลงจากแผงควบคุม และสกอร์บอร์ดบนหัวจอ
+  '/overlay-lower-third': 'overlay-lower-third.html',
+  '/overlay-scoreboard': 'overlay-scoreboard.html',
   // ดราฟต์ของรอบก่อนหน้าในซีรีส์ที่กำลังคุมอยู่ พิคกับแบนอยู่ในกระดานเดียว
   //
   // เคยเป็นสองหน้าแยกกัน (/overlay-prev-picks กับ /overlay-prev-bans)

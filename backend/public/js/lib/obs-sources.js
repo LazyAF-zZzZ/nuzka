@@ -46,6 +46,13 @@
     // ?side= อยู่ในรายการ ไม่ใช่ให้คนเติมเอง เหตุผลเดียวกับ ?sfx=1
     { name: 'Team card, blue side', path: '/overlay-team-card', size: 'matches overlay size', query: ['side=blue'] },
     { name: 'Team card, red side', path: '/overlay-team-card', size: 'matches overlay size', query: ['side=red'] },
+    // ฉากคั่นรายการพื้นหลังเคลื่อนไหว (ขอ 2026-10-01) ?scene= อยู่ในรายการเหมือน ?side= ด้านบน
+    { name: 'Starting soon', path: '/overlay-scene', size: 'matches overlay size', query: ['scene=starting'] },
+    { name: 'Be right back', path: '/overlay-scene', size: 'matches overlay size', query: ['scene=brb'] },
+    { name: 'Ending', path: '/overlay-scene', size: 'matches overlay size', query: ['scene=ending'] },
+    { name: 'VS screen', path: '/overlay-vs', size: 'matches overlay size' },
+    { name: 'Lower third', path: '/overlay-lower-third', size: 'matches overlay size' },
+    { name: 'Scoreboard', path: '/overlay-scoreboard', size: 'matches overlay size' },
     // รายชื่อทีมของทัวร์นาเมนต์นี้ ต้องแนบ id ไปกับ URL ด้วย
     // ไม่งั้น overlay จะเดาเอาจากแมตช์ที่ออกอากาศ ซึ่งไม่ใช่สิ่งที่คนก๊อป URL
     // จากหน้าทัวร์นาเมนต์ตั้งใจ ส่วนหน้า Control ไม่มี id ให้แนบ การเดาจาก

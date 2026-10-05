@@ -29,6 +29,7 @@ public sealed class ControlState
     public bool SwapSides { get; private init; } = true;
     // The draft overlay shows each team's tag as a badge on its logo. Off unless the state says on.
     public bool ShowTags { get; private init; }
+    public BroadcastState Broadcast { get; private init; } = new();
     public IReadOnlyDictionary<string, double> Sfx { get; private init; } = new Dictionary<string, double>();
     public IReadOnlyDictionary<string, HotkeyBinding> Hotkeys { get; private init; } = new Dictionary<string, HotkeyBinding>();
 
@@ -57,6 +58,7 @@ public sealed class ControlState
             RoundsOnBoard = rounds?.Count(r => J.Int(r?["round"], 0) is var n && n > 0 && n < round) ?? 0,
             SwapSides = J.Bool(node["swapSidesEachRound"]) != false,
             ShowTags = J.Bool(node["draftShowTag"]) == true,
+            Broadcast = BroadcastState.From(node["broadcast"]),
             Sfx = ReadLevels(node["sfx"]),
             Hotkeys = ReadHotkeys(node["hotkeys"])
         };
@@ -81,6 +83,103 @@ public sealed class ControlState
         return bindings;
     }
 }
+
+// The break scenes, lower third and animated background (server/domain/broadcast.ts).
+public sealed class BroadcastState
+{
+    public string Style { get; private init; } = "aurora";
+    public string Palette { get; private init; } = "theme";
+    public int Seed { get; private init; } = 1;
+    public double Quality { get; private init; } = 0.75;
+    // Per-scene overrides ("starting", "brb", "ending", "vs"): only the keys that scene sets itself.
+    public IReadOnlyDictionary<string, SceneBackground> SceneBackgrounds { get; private init; } = new Dictionary<string, SceneBackground>();
+    // When the countdown reaches zero, as Unix milliseconds. Null = not running.
+    public long? CountdownEndsAt { get; private init; }
+    public string CountdownLabel { get; private init; } = "";
+    // The lower third cards, first one at the bottom of the stack. Always at least one.
+    public IReadOnlyList<LowerThirdState> LowerThirds { get; private init; } = [new LowerThirdState(false, "", "", "")];
+    public string StartingTitle { get; private init; } = "";
+    public string BrbTitle { get; private init; } = "";
+    public string BrbSubtitle { get; private init; } = "";
+    public string EndingTitle { get; private init; } = "";
+    public string EndingSubtitle { get; private init; } = "";
+
+    // The style, colours and quality a scene really uses: its own where set, the shared one otherwise.
+    // "all" is the shared background itself.
+    public (string Style, string Palette, double Quality) Effective(string scene)
+    {
+        if (!SceneBackgrounds.TryGetValue(scene, out var own)) return (Style, Palette, Quality);
+        return (own.Style ?? Style, own.Palette ?? Palette, own.Quality ?? Quality);
+    }
+
+    public bool HasOverride(string scene) => SceneBackgrounds.ContainsKey(scene);
+
+    private static Dictionary<string, SceneBackground> ReadSceneBackgrounds(JsonNode? node)
+    {
+        var result = new Dictionary<string, SceneBackground>();
+        foreach (var scene in new[] { "starting", "brb", "ending", "vs" })
+        {
+            if (node?[scene] is not JsonObject own) continue;
+            result[scene] = new SceneBackground(
+                J.Str(own["style"]),
+                J.Str(own["palette"]),
+                own["quality"] is JsonValue q && q.TryGetValue<double>(out var quality) ? Math.Clamp(quality, 0.25, 1) : null);
+        }
+        return result;
+    }
+
+    // The server keeps 1 to 4 cards. A state written before there were several holds one under "lowerThird".
+    private static List<LowerThirdState> ReadLowerThirds(JsonNode? node)
+    {
+        var cards = new List<LowerThirdState>();
+        if (node?["lowerThirds"] is JsonArray list)
+        {
+            foreach (var item in list.Take(4)) cards.Add(ReadCard(item));
+        }
+        else if (node?["lowerThird"] is { } legacy)
+        {
+            cards.Add(ReadCard(legacy));
+        }
+        if (cards.Count == 0) cards.Add(new LowerThirdState(false, "", "", ""));
+        return cards;
+    }
+
+    private static LowerThirdState ReadCard(JsonNode? card) => new(
+        J.Bool(card?["visible"]) == true,
+        J.Str(card?["name"]) ?? "",
+        J.Str(card?["title"]) ?? "",
+        J.Str(card?["handle"]) ?? "");
+
+    public static BroadcastState From(JsonNode? node)
+    {
+        var background = node?["background"];
+        var countdown = node?["countdown"];
+        var lowerThirds = ReadLowerThirds(node);
+        var text = node?["text"];
+        return new BroadcastState
+        {
+            Style = J.Str(background?["style"]) is { Length: > 0 } style ? style : "aurora",
+            Palette = J.Str(background?["palette"]) is { Length: > 0 } palette ? palette : "theme",
+            Seed = J.Int(background?["seed"], 1),
+            Quality = background?["quality"] is JsonValue q && q.TryGetValue<double>(out var quality)
+                ? Math.Clamp(quality, 0.25, 1) : 0.75,
+            SceneBackgrounds = ReadSceneBackgrounds(node?["sceneBackgrounds"]),
+            CountdownEndsAt = countdown?["endsAt"] is JsonValue e && e.TryGetValue<long>(out var ends) && ends > 0 ? ends : null,
+            CountdownLabel = J.Str(countdown?["label"]) ?? "",
+            LowerThirds = lowerThirds,
+            StartingTitle = J.Str(text?["startingTitle"]) ?? "",
+            BrbTitle = J.Str(text?["brbTitle"]) ?? "",
+            BrbSubtitle = J.Str(text?["brbSubtitle"]) ?? "",
+            EndingTitle = J.Str(text?["endingTitle"]) ?? "",
+            EndingSubtitle = J.Str(text?["endingSubtitle"]) ?? ""
+        };
+    }
+}
+
+// What one scene sets for itself; a null field follows the shared background.
+public sealed record LowerThirdState(bool Visible, string Name, string Title, string Handle);
+
+public sealed record SceneBackground(string? Style, string? Palette, double? Quality);
 
 public sealed class SideState
 {

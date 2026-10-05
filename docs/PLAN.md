@@ -8,7 +8,7 @@ session with no conversation history should be able to continue from here and
 
 ## 0. Where things stand
 
-**Last updated 2026-09-30: 3.2.2 released (see "3.2.2 released" below); 3.2.0 and 3.2.1 released the same day. The app is renamed **Nuzka** (§1). Supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
+**Last updated 2026-10-01: break scenes, lower third, VS, scoreboard and animated backgrounds added, UNRELEASED (see "Scenes" below). Before that 2026-09-30: 3.2.2 released (see "3.2.2 released" below); 3.2.0 and 3.2.1 released the same day. The app is renamed **Nuzka** (§1). Supporter keys S1-S3 done (§10), ready to ship together once the user has seen the watermark in OBS and chosen prices. Before that, 2026-09-27: S1, S2. Before that, 2026-09-14. M1 `e826fb3`, M2 `6f736b3`, M3 `ab3bdf8`, M4 `c3ac12a`, M5 `3fcb2a9`, M6 `c615d39`, M7 `79c5f41`, M8 `7e13667`, 3.0.6 and 3.0.7 in the commits after those, the flow and UI work in `83e558c`, 3.0.8 in `182ea91`.**
 
 | Area | State |
 |---|---|
@@ -35,6 +35,32 @@ changed** - it still says team A = blue - so draft capture, score sync and the p
 board, which all go through `orientationOf`, credit the right team exactly as they already did
 for a manual Switch Teams. Quick matches: `stepRound` swaps the two team objects on every step,
 and `restoreRound` places a filed draft by team name. Tested in `tests/side-swap.test.ts`.
+
+**Scenes: six new overlays and an animated background** (user's request 2026-10-01: "everything" from the
+`stock-studio` overlay pack; **not released, version not bumped**, so it is the user's call when it ships).
+New pages `/overlay-scene?scene=starting|brb|ending`, `/overlay-vs`, `/overlay-lower-third`,
+`/overlay-scoreboard`, each its own OBS source (both lists, web and desktop). Their data is one new
+state slice, `state.broadcast` (`domain/broadcast.ts`): `background` (style, palette, seed, quality),
+`countdown` (`endsAt` in ms plus a label), `lowerThird` (visible, name, title, handle) and `text` (the
+five scene headlines). It rides `CARRIED_OVER_KEYS`, so RESET MATCH and putting the next match on air leave
+it alone. Socket commands: `updateBackground` (optional `scene` = starting|brb|ending|vs, `reset` clears that scene's own choice), `startCountdown` (seconds from now), `stopCountdown`,
+`updateLowerThird`, `updateSceneText`; all merge a partial patch and re-sanitise the whole block. The
+countdown is stored as an **end time**, not seconds left, so every open copy computes the same clock from
+its own `Date.now()` and a page opened mid-countdown is right at once. Teams, scores and colours come from
+the live match **by screen side** (blue left, red right, so they swap every game with the rest of Nuzka), colours
+from `state.theme` (blue, red, accent, text). **The animated backgrounds are `public/js/lib/motion-core.js`,
+copied unchanged from stock-studio** (six styles, twelve palettes, seamless loop, drawn on a canvas at
+`quality` x 1920x1080); the `theme` palette is built from the app colours. `BACKGROUND_STYLES` and
+`BACKGROUND_PALETTES` must equal its `STYLES` and `PALETTES` keys, which `tests/broadcast.test.ts` checks by
+requiring the file. Oxanium and Rajdhani (OFL) are bundled and declared in `fonts.css`, listed under "Included with
+Nuzka" in the style editor's font boxes; Thai still falls through to Kanit. The pages join every existing
+system: layout editor scenes `scene`/`vs`/`lower-third`/`scoreboard` (`data-layout` parts, names in
+`overlay-layout.js`), style-editor colours, `FONT_SCENES`. **Desktop:** a "Scenes and lower third" card on the
+Control Panel (`BroadcastViewModel`, `Loc.Broadcast.cs`, `ControlState.Broadcast`). **Per-page colours (2026-10-02, 3.3.0-beta.5):** the four new pages (layout scenes `scene`, `vs`, `lower-third`, `scoreboard`; Starting soon / BRB / Ending share `scene`) no longer share the app theme's colours: `broadcast.colours[scene][blue|red|accent|text]` holds only the colours set on that page and the rest follow `state.theme`, so changing the app theme still moves a page nobody customised (`RovBroadcast.coloursFor` merges them; the same merged object feeds the `theme` background palette). Commands `updateBroadcastColour` (empty or invalid value clears) and `resetBroadcastColours`; unknown page or key is refused. In the style editor these pages have `own: true` and a per-row × and a reset button; **their Texture section is hidden** because `TEXTURE_SCENES` and the skin slots do not cover them (it used to show a section that did nothing). **Every other overlay still shares the app theme colours**: making all of them per-page was offered and not chosen. **Several lower thirds (2026-10-02, 3.3.0-beta.4):** `broadcast.lowerThirds` is a list of 1 to 4 cards (`LOWER_THIRD_MAX`), each `{visible, name, title, handle}`, replacing the single `lowerThird`; an older state file's single bar becomes card 1 (`sanitizeLowerThirds`). Commands: `updateLowerThird` (+ `index`, default 0), `addLowerThird`, `removeLowerThird` (the last card clears instead). `cardIndex` refuses `null`, `''`, `false` and non-integers instead of treating them as 0, or a stray command would edit card 1. The page builds one element per card in a column-reverse stack (card 1 at the bottom), each with its own hide timer; a hidden card is `display: none` after its fade so it takes no room. The layout editor sees the stack as `lower-third` and the cards as `card-1..4`. The Control Panel card shows one box per card with Show/Update, Hide and remove; typed text is never overwritten by a push. **Per-scene backgrounds (2026-10-02, 3.3.0-beta.3):** `broadcast.sceneBackgrounds[scene]` holds only the keys a scene sets itself; the page uses `{...background, ...override}` (`effectiveBackground` server side, `RovBroadcast.backgroundFor` in the page). Editing "all scenes" moves the shared one **and removes that key from every override**, same rule as fonts, or a scene that once had its own value would silently ignore it. The Control Panel card has an "Applies to" box. **BO and game** on the scoreboard, VS and scene tags are parsed from `[BO5]` at the end of `matchInfo.title` (the only place the best-of reaches overlay state), so a hand-typed quick match shows the game number only. Verified: 498 backend tests (was 492), `typecheck:web`,
+all six pages loaded in the Browser pane against a throwaway backend and the card rendered by `--snapshot` in
+both languages with a countdown running. **Not verified:** the look in OBS, and the buttons by clicking. **Left behind on
+purpose:** stock-studio's offline 4K render tools (`render.js`, `batch.js`, Adobe Stock CSV) and its separate
+`control.html` / `config.js` / localStorage layer, because Nuzka's Control Panel and state replace them.
 
 **3.1.2: Settings lost two sections** (user's request, 2026-09-16): "Your
 data" (the data and media folder paths with Open folder buttons) and "Bring your v2 data across"
@@ -375,6 +401,18 @@ docs/v2/            v2's plan, guide and notes, for reference
 | S5 | **Key shop**: Stripe (PromptPay + card) behind a Cloudflare Worker in `cloud/`; the app's Support → Get a key opens it (§10) | **built and tested locally 2026-09-28** (11 tests, fake Stripe); **not deployed**: waits for the user's Stripe and Cloudflare accounts |
 
 ## 8. Open items
+
+- **Scenes need the user's eyes in OBS** (2026-10-01). The six pages render correctly in the Browser pane, but
+  OBS caches CSS/JS hard and a canvas background costs real CPU in a browser source: check the cost on the
+  operator's machine (the **Quality** slider is the lever) and that a scene left off-screen does not stutter when
+  it is cut to. The Control Panel card has not been clicked through for real (`scripts/uia.ps1`).
+- **Ending's WINNER tag is "whoever leads on score"** because the overlay state holds no best-of. A series
+  that is level shows no tag; a series still in progress shows the leader. If that reads wrong on air, add
+  `bestOf` to the live match and compare against the wins needed.
+- **The countdown has no sound and does not cut the scene by itself.** At zero it reads LIVE NOW and stays.
+  OBS scene switching on zero (a Scene Collection hotkey or obs-websocket) is a separate feature.
+- **The three scene pages share one background canvas style but each page runs its own animation clock**, so cutting
+  between two of them restarts the motion. Fine for a cut; visible if two are layered.
 
 
 - **The installed copy was installed from the agent session, so it lives in a sandbox.**
@@ -862,6 +900,23 @@ repo called rov_overlay_v3**: that would break those redirects. The local folder
 
 ## 9. Traps already paid for
 
+- **`--ov-font-*` is always set, so it cannot tell you whether the operator picked a font** (2026-10-01).
+  `overlay-fonts.js` writes the Kanit stack into all four variables on load. A page whose own default face is
+  different (Oxanium here) cannot read "unset" from them. `RovBroadcast.applyFontMode` reads `state.fonts`
+  itself and toggles `bc-font-heading` / `bc-font-body` on `<body>`; the CSS only reaches for `--ov-font-*` then.
+- **Every broadcast page must join the layout editor, or three existing tests fail** (2026-10-01):
+  `data-layout-scene` on `<body>`, a `data-layout` part, and `overlay-style-editor.js` then `overlay-layout.js` as the
+  last two scripts (`layout.test.ts`). A page also needs an entry in the style editor's `PAGES` and a label in
+  `overlay-layout.js`, or its editor opens with a blank title. `MAX_SCENES` in `domain/layout.ts` is 20; scenes are 13.
+- **`media.test.ts` scans every `.js` for an `onerror` that sets `src`**, with a lazy regex ending at the first
+  line that is only `}`. An `onerror = () => { ... };` written on one line is followed by `img.src = url`, and the
+  regex swallows that line. Write the handler body on its own lines (`setLogo` in `overlay-broadcast.js`).
+- **WPF: a `ComboBox` whose selection arrives through `SelectedValue` can print the class name** (2026-10-01).
+  With `SelectedValue` ahead of `DisplayMemberPath` in the XAML the closed box showed
+  `RovOverlay.Desktop.ViewModels.SceneChoice`. Put `DisplayMemberPath` before `SelectedValue` and give the
+  item a `ToString()` that returns its label. The first snapshot caught it; no build error says so.
+- **A shell heredoc that contains Thai plus apostrophes can fail with "unexpected EOF"** and write nothing; the four
+  page scripts were written with the file tool instead. Check the file exists before assuming it was created.
 - **A layout group cannot clip its own contents** (2026-09-29). `#grid` on the team list carries
   `data-layout-items`, and `overlay-layout.js` adds `data-layout-overflow` to a group whenever a
   part sits outside it, which has `overflow: visible !important` waiting behind it. The scrolling
@@ -1221,3 +1276,99 @@ the cream face and the red crown cut out of the artwork (largest red shape in th
 the face flood-filled from its middle with its holes filled), the crown stacked just above,
 a 26 px dark outline round the face so it shows on light backgrounds, and the eyes grown
 by 11 px so they survive at 16 px. 32 px and up keep the full artwork (user's request).
+
+## Installer wizard (2026-10-05)
+
+`Nuzka-<channel>-Setup.exe` is no longer Velopack's bare splash. `scripts/build-setup.ps1` (called by
+`pack.ps1`) compiles `scripts/setup-wizard/Wizard.cs` into a small WPF wizard (Welcome, Select Destination
+Location with Browse, Installing, Finish with "Launch Nuzka"), dark gradient look modelled on the user's
+reference screenshot, and appends Velopack's own Setup.exe to it. The wizard extracts that and runs it with
+`--silent --installto <dir>`, so Update.exe and auto-update are unchanged. Cost: +0.5 MB.
+- Compiled with the .NET Framework `csc.exe` that ships with Windows (C# 5, no SDK/NuGet; no net48 reference
+  assemblies on this PC). Don't use `?.`, `$""`, `=>` members in that file.
+- Preview without installing: `publish\setup-wizard\NuzkaSetupWizard.exe --preview [--page N --snapshot <abs path>]`.
+- **Untested end to end**: never run an installer inside the agent session. The user must install the built
+  `Nuzka-win-Setup.exe` from Explorer and confirm: it installs, shortcuts appear, "Launch Nuzka" works, and
+  that a silent Velopack install does not already start the app itself (then Launch would open it twice).
+- Program Files is refused as a destination (per-user install, auto-update writes there).
+
+- 2026-10-05: wizard gained a License Agreement page (LICENSE.md embedded, plain text, Next disabled until accepted). Pages now: Welcome, License, Destination, Installing, Finish.
+
+- 2026-10-05: LICENSE (.md/.txt, root and backend/) now defines non-commercial: ads, donations, sponsors and entry fees (incl. prize pools funded by them) are allowed; charging for Nuzka itself is not.
+
+### Text styling and your own text in the overlay editor (2026-10-05, 3.3.0-beta.10, draft overlay first)
+
+User's request: every text part adjustable on every page, and text parts the operator can add on the edit screen.
+Answers: all four groups of settings, fixed text only for added text, draft overlay first.
+- **Storage:** inside the part's layout entry, `entry.tx` (`TextStyle` in `server/domain/layout.ts`: `t` wording, `f` font,
+  `z` px, `w` weight, `c` colour, `a` align, `ls` letter spacing, `tt` case, `oc`/`ow` outline, `sc`/`sb`/`sx`/`sy` shadow) and
+  `entry.k` for a part the operator added (`text-N`, up to 30). An entry with only `tx` or `k` is kept. Sanitised field by
+  field (fonts through `sanitizeFontFamily`, text cut at 200, control characters dropped by char code). No new socket event:
+  `updateLayout` carries it, so undo, reset-all and the OBS echo work as before.
+- **Applied by `overlay-layout.js` on every page that loads it, editor or not:** one generated `<style>` of
+  `[data-layout="k"], [data-layout="k"] * { ... !important }` rules, groups before their children so a part styled on its own
+  wins; wording sets `textContent` on parts with no child elements and puts it back (MutationObserver, microtask) when the
+  page rewrites it; the original is kept in `data-nz-orig` to restore. Custom parts are `.nz-custom-text` divs appended to
+  `[data-layout-host], .overlay-container` (the 1920x1080 stage, so 1440p scales them), centred by `translate: calc(-50% + x)`.
+- **Editor:** Layout tab, new Text section for any selected part (groups cascade to the text inside), **+ Add text** above the
+  parts list, Delete on added text. Fonts list shared with the Style tab through `RovStyleEditor.fontLists()`;
+  `overlay-fonts.js` now exposes `window.RovFonts` so a part's imported font gets its `@font-face`.
+- **Checked in the browser** on a throwaway backend (draft and 1440): add, style, reword a label, persist, OBS view, delete +
+  undo, reset all. 512 tests pass.
+- **Limits, on purpose:** alignment only shows on multi-line text or boxes wider than their letters; text the page fills in
+  itself (team names, timer) is reworded in Style/Control, though a style applies to it fine; font size is absolute px.
+- **Next:** other pages. A page needs `data-layout-host` on its 1080p stage (only `.overlay-container` is found today) and its
+  parts already have `data-layout` names; until then "+ Add text" is disabled there but styling existing parts works.
+
+**All pages (2026-10-05, 3.3.0-beta.11):** the first beta only found `.overlay-container`. `STAGES` in `overlay-layout.js` now lists every
+page's 1080p stage (`.result-container`, `.pv-stage`, `.st-stage`, `.mu-stage` incl. team drafts/team card, `.tl-stage`, `.an-stage`,
+`.bc-stage` for scene/vs/lower third/scoreboard), so text styling, wording and **+ Add text** work on all thirteen overlay pages. Each
+stage is 1920x1080 and (at 1440p) carries the page's own `scale(4/3)`, so added text scales with it. Checked in the browser on all
+twelve non-draft pages: text lands exactly at the stage centre; style and wording applied on four of them. `tests/layout.test.ts`
+now fails if a new page with a `data-layout-scene` has no stage in `STAGES` (or a `data-layout-host`). The "Next" item above is done.
+Not checked: a real 1440p render of each non-draft page (the draft was).
+
+### Animated background on every page, and an off switch (2026-10-05, 3.3.0-beta.12)
+
+User's request: the animated background can be disabled and left transparent, and every page that lacks it gets it, except the draft
+overlay and previous picks/bans.
+- **Server (`domain/broadcast.ts`):** `BACKGROUND_SCENES` now also lists `result, teams, standings, matchup, team-drafts, team-card,
+  analytics, lower-third, scoreboard` (page scene names; `starting|brb|ending` stay the three looks of /overlay-scene). `enabled` is
+  stored only in a scene's own override (`SceneBackground`), never globally, and "All pages" patches strip it, so one page's switch never
+  touches another. `effectiveBackground()` adds `enabled`, defaulting to `BACKGROUND_ON_BY_DEFAULT` (starting, brb, ending, vs: what
+  already had it). **Every other page defaults to OFF**, because they have always been transparent over the scene/game; turning them on
+  was a deliberate choice, and lower third and scoreboard in particular are strips over the game.
+- **Pages:** `overlay-broadcast.js` `createBackground` honours `enabled === false` (stops drawing, hides the canvas, sets
+  `body.nz-bg-off`, which hides `.bc-shade`); `backgroundFor` mirrors the server default. New `public/js/overlay-bg.js` (loaded, with
+  motion-core and overlay-broadcast, by the nine pages without their own canvas) adds a fixed full-page `#nz-bg` canvas at z-index -1, so
+  at 1440p it simply fills the 2560x1440 page. Draft and previous picks do not load it (a test says so).
+- **Editor:** Style tab, new **Animated background** section on every page except those two: Show checkbox (per page; for
+  /overlay-scene it follows `?scene=`), Applies to (This page / All pages), Style, Colours (palette), Quality, New pattern. The desktop
+  app's own background controls (BroadcastViewModel) are untouched and do not have the off switch yet.
+- Checked in the browser on a throwaway backend: standings off by default, on/off/style round-trip with the server, waves render behind
+  the stage; break scene on by default, off hides canvas and shade, only that one scene changes. Tests assert the editor's style/palette
+  lists equal the server's and that exactly the right pages load the script.
+
+### Bug: colours on Standings, Head to head, Team picks and Team card did nothing (2026-10-05, 3.3.0-beta.13)
+
+User: "team card red and blue doesn't work". Cause: the Style tab offers blue/red/accent/text/label on those four pages, but only `overlay.js`
+(draft) and `overlay-prev.js` ever copied `state.theme` into the `--ov-*` custom properties; the four pages kept the `:root` defaults in their
+CSS, so a colour set in the editor changed nothing (it was invisible since the Design screen moved into the editor). Fix: `overlay-fonts.js`
+(loaded by every broadcast page, already listening to `stateUpdate`) applies the theme colours, including `--ov-blue-rgb`/`--ov-red-rgb`, on
+the scenes in its `THEMED` list. A test in `broadcast.test.ts` derives the expected pages from the editor's page table, so a page given
+theme colours there without applying them fails. Checked in the browser on all four pages: setting blue/red/accent in the editor changes the
+page's variables. Not a fix for the side: `?side=blue|red` on Team card still follows the team on that side of the on-air match.
+
+### Text effects (2026-10-05, 3.3.0-beta.14)
+
+User asked for gradient fill, glow, entrance animation and looping effects as options on all text. Added to `TextStyle` (`g1`/`g2`/`ga` gradient,
+`gc`/`gs` glow, `en`/`ed`/`edl` entrance, `lp`/`lt` loop; entrances `fade up down left right pop blur`, loops `pulse shimmer float flicker`),
+sanitised in `domain/layout.ts` (a gradient needs both colours; timing is dropped without its effect).
+- **Rendering (`overlay-layout.js` `textRule`):** gradient = `background-clip: text` with a transparent fill on the part itself; a shadow or glow on
+  gradient text is a `drop-shadow` filter on the part (a text-shadow would show through the transparent letters), otherwise a text-shadow list (glow =
+  two zero-offset layers). Shimmer is a second moving gradient layer over the colour. Entrance uses fill-mode `backwards` (so it never pins a transform
+  afterwards); entrance and loop run together as a comma list. They use `transform`/`opacity`, so they compose with the layout's `translate`/`scale`.
+- **Editor:** Text section gets Gradient, Glow, Entrance (+ Preview button, which replays it) and Loop. **Limits:** an effect overrides any animation the
+  page already gave that part; the entrance plays on page load or Preview, not when OBS merely shows the scene (needs "Refresh browser when scene becomes
+  active"); a gradient on a part that holds other elements applies to the text inside as one fill.
+- Checked in the browser on a throwaway backend: all four on added text and on an existing part, clearing the gradient, reset, OBS view. Test added.

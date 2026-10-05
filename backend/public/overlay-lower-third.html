@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Nuzka Lower Third</title>
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/overlay-broadcast.css">
+</head>
+<body data-layout-scene="lower-third">
+    <!-- ขึ้น/ลงจากแผงควบคุม (state.broadcast.lowerThirds) แต่ละแถบแยกกัน ข้อความว่างทั้งสามช่อง = ไม่ขึ้น
+         แถบสร้างโดย overlay-lower-third.js ตามจำนวนใน state และซ้อนจากล่างขึ้นบน -->
+    <div class="bc-stage">
+        <div class="bc-lt-stack" data-layout="lower-third" data-layout-items="card" id="stack"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/lib/overlay-common.js"></script>
+    <script src="/js/lib/motion-core.js"></script>
+    <script src="/js/lib/overlay-broadcast.js"></script>
+    <!-- overlay-lower-third.js ประกาศ socket ไว้ ต้องมาก่อน overlay-size.js ที่ไปอ่านตัวนั้น -->
+    <script src="/js/overlay-lower-third.js"></script>
+    <script src="/js/overlay-bg.js"></script>
+    <script src="/js/overlay-size.js"></script>
+    <script src="/js/overlay-fonts.js"></script>
+    <script src="/js/overlay-style-editor.js"></script>
+    <script src="/js/overlay-layout.js"></script>
+</body>
+</html>
