@@ -1372,3 +1372,12 @@ sanitised in `domain/layout.ts` (a gradient needs both colours; timing is droppe
   page already gave that part; the entrance plays on page load or Preview, not when OBS merely shows the scene (needs "Refresh browser when scene becomes
   active"); a gradient on a part that holds other elements applies to the text inside as one fill.
 - Checked in the browser on a throwaway backend: all four on added text and on an existing part, clearing the gradient, reset, OBS view. Test added.
+
+### Release 3.3.0 (2026-10-05)
+
+Published as Latest: https://github.com/LazyAF-zZzZ/nuzka/releases/tag/v3.3.0 (commit `6d8969d`; `Nuzka-win-Setup.exe` has the new wizard, installers and
+update packages attached). Rolls up betas 3.3.0-beta.1 to 3.3.0-beta.14: the six broadcast pages, per-page colours, animated background on every
+page with an off switch, text styling and effects, custom text, the installer wizard and licence page, the clarified licence, and the colour fix on
+Standings / Head to head / Team picks & bans / Team card. Notes in `docs/release-notes/3.3.0.md`. 518 backend tests passed; the installer was NOT run
+end to end by Claude (rule: the user installs it from Explorer). **Not done:** the update notice in `notices.json` (push only after confirming the release
+installs and updates cleanly).
