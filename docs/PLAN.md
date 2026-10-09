@@ -1381,3 +1381,127 @@ page with an off switch, text styling and effects, custom text, the installer wi
 Standings / Head to head / Team picks & bans / Team card. Notes in `docs/release-notes/3.3.0.md`. 518 backend tests passed; the installer was NOT run
 end to end by Claude (rule: the user installs it from Explorer). **Not done:** the update notice in `notices.json` (push only after confirming the release
 installs and updates cleanly).
+
+### Operator UI polish: theme pass (2026-10-06, UNRELEASED)
+
+`desktop/RovOverlay.Desktop/Theme/Theme.xaml` only, plus swapping four hardcoded colours in views for brushes. No behaviour change.
+- **Tokens:** spacing (`Space1`-`Space5` doubles, `Pad1`-`Pad5` thicknesses) and type (`FontCaption` 11, `FontBody` 12.5, `FontHeading` 14, `FontTitle` 18). Nothing uses them yet; new and touched views should, and older views converge as they are touched.
+- **Brushes:** `OnGoldBrush` (#15120B, text on gold), `GoldHoverBrush`, `RedBorderBrush` replace literals in Theme, ControlView, HeroPickerView, MainWindow, TeamsView.
+- **Contrast:** `MutedColor` #7A808A -> #8A909A. The old value was 4.5:1 on Surface0 but about 3.7:1 on Surface3, under WCAG AA for 11px labels. Every muted label gets slightly lighter, which is intended.
+- **Keyboard focus:** a gold ring or bar now shows on the combo box, sidebar items, segmented control, plain radios, link buttons and list rows. Buttons, text boxes and checkboxes already had it.
+- **Checked:** builds clean; Home, Control and Teams rendered with `--snapshot` against a throwaway backend on port 3918 (stopped by PID). Keyboard focus visuals were NOT exercised by hand (a snapshot cannot Tab): worth one Tab-through by the user.
+- **Next:** empty states, on-air accent line, density of ControlView / TeamProfileView / TournamentView.
+
+### Operator UI polish: empty states (2026-10-06, UNRELEASED)
+
+New `Views/Controls/EmptyStateView` (icon, title, hint, optional primary action; set `ActionText` + `ActionCommand` together or neither). Replaces the one-line muted
+text on Home ("Create your first tournament", action New tournament), Teams (action New team), Draft history, Bracket and Analytics. History, Bracket and Analytics
+got an `EmptyTitle` property beside the existing `EmptyText` (which is now the hint), because their empty state has two causes ("nothing yet" vs "filter matches nothing")
+and the title differs. `Home.Empty` and `Teams.Empty` strings were split into `*.EmptyTitle` / `*.EmptyHint`, English and Thai; the Thai wording is Claude's, worth a read by a Thai speaker.
+Not touched: the "nothing matches your search" lines on Home and Teams (no next step to offer) and Tournament's inline empty lines (small, inside forms).
+Checked: builds clean; Home (EN and TH), Teams and Analytics rendered with `--snapshot` on a fresh throwaway backend. Draft history and Bracket empty states were NOT rendered (they need a tournament open).
+
+### Operator UI polish: on-air accent line (2026-10-06, UNRELEASED)
+
+`MainWindow.xaml`: a 2px gold line along the bottom of the title bar, bound to the same `BannerOnAir` as the ON AIR badge (the overlay is visible to viewers), fading in over 150 ms and out over 250 ms.
+Not hit-testable, so window dragging is unaffected. Checked: builds clean; Control snapshot on a throwaway backend shows the line while ON AIR. The off state (Banner > Hide) and the fade were NOT exercised: a snapshot is one frame.
+
+### Operator UI polish: Control density (2026-10-06, UNRELEASED)
+
+Control was already folding Team setup and Sound. The bulk was the Scenes card, with lower thirds, countdown, background (target, style, palette, reroll, quality) and five wording fields all open at once.
+Now: lower third and countdown stay open (used during the broadcast) with 1px dividers between them; the background and the scene wording sit under a new folded **Appearance** section
+(`BroadcastViewModel.ShowAppearance` / `ToggleAppearanceCommand`, strings `Scenes.Appearance` / `Scenes.AppearanceNote`, EN and TH), closed by default and not remembered between runs, like the other folds.
+The folded content moved verbatim (re-indented only); no bindings changed. Checked: builds clean; Control rendered at 1360x1700 on a throwaway backend with the section folded.
+The expanded state was NOT rendered (a snapshot cannot click): open Appearance once and confirm the style, palette, quality and wording fields all show and still save.
+Not done: the Draft timer card and the two side panels (already dense by design, and the live core of the screen), TeamProfileView and TournamentView.
+
+### Operator UI polish: team Statistics layout (2026-10-06, UNRELEASED)
+
+`TeamProfileView.xaml`, Statistics tab only. The tab was already split from Profile; the crowding was the hero tables: Picks, Bans and Banned-against sat three across, each with about 200 px of
+fixed number columns, leaving the hero name about 100 px at the 1040 px minimum window width. Now two to a row: Picks | Bans, then Banned against | Players, then Opponents full width.
+Card contents are unchanged; they only moved.
+**Trap (cost a repair):** the first scripted edit located each card's closing tag by a substring search, which also matched deeper-indented `</Border>` lines and cut the Players and Opponents cards short,
+and a regex meant for the opening tag stripped a `Grid.Column="1"` from two headers. The file had no git or backup, so the cards were rebuilt from the original text. Match closing tags on a newline-anchored,
+exact-indent string, or edit by hand, and check every header's Grid.Column afterwards.
+Checked: builds clean; Statistics tab rendered at 1040x1300 for a team with no games (all five cards in their empty state, headers aligned). NOT checked: the rows with real data (hero rows, opponent rows,
+player chips) since the throwaway backend has no finished drafts. Open a team with history and look at them once. Profile tab unchanged and not re-rendered.
+
+### Operator UI polish: Tournament density (2026-10-06, UNRELEASED)
+
+`TournamentView.xaml` and `TournamentViewModel.cs`. Teams, Details and the match session were already laid out sensibly, and Teams and Details already fold. The one large always-open block that is set up once rather than used
+during a match was **OBS sources for this tournament** (a row of URL boxes per source, plus a hint). It now folds like Details: `ObsOpen` / `ToggleObsCommand`, remembered between runs through
+`Settings.IsOpen/SetOpen` under the key `tournament.obs`, **closed by default**. The hint text moved inside the fold. Nothing else on the screen changed.
+Checked: builds clean; a tournament with two teams rendered at 1040x900 on a throwaway backend, OBS card folded. The unfolded state and the persistence were NOT exercised (a snapshot cannot click): open it once,
+confirm the links show and copy, close the app, reopen, and confirm it remembers.
+Edit method: exact, unique-match string replacements only, after the regex/index mishap recorded under "team Statistics layout" above.
+
+This completes the first density pass over the three big screens (Control, TeamProfile, Tournament). Still open from the UI list: spacing/type tokens are defined but unused by the views; contrast and focus work covered only the theme.
+
+### Operator UI polish: spacing tokens adopted, and an empty-state bug fixed (2026-10-06, UNRELEASED)
+
+**Tokens.** Surveyed the views before touching them: about 600 `Margin`/`Padding` attributes, almost all one-sided ("0,10,0,0", "8,0,0,0"); only about 14 are uniform. XAML cannot build a `Thickness` from the `Space*`
+numbers, and the spacing in use is 6/8/10/12/14 (14 alone 27 times), not the 4/8/12/16/24 scale the tokens were defined with. Chosen with the user: swap exact on-scale uniform values only, no visual change, and
+rewrite the comment in Theme.xaml to say all this. Done: `Padding="24"` -> `Pad5` (5 places), `Padding="16"` -> `Pad4` (2 places) in Bracket, DraftHistory, Home, MainWindow, TeamProfile, Teams, Tournament.
+`Space*`, `Pad1-3` and the `Font*` tokens remain defined and unused. Snapping the off-scale values was offered and declined: it would shift every screen 1-2 px and need a visual review of each.
+
+**Bug fixed (mine, from the empty-state work).** On Bracket and Draft history the `EmptyStateView` was a non-last child of a `DockPanel`, so it docked to the left edge instead of centring, and its hint ran to the
+content edge. Both views now put the empty state and the scroll area in one `Grid` cell. Found only because this pass rendered those two screens, which the empty-state entry above had said were unchecked.
+Lesson: any `Visibility`-switched sibling inside a `DockPanel` docks left unless it is the last child; use a `Grid`.
+Checked: builds clean; Home, Teams, Control, a tournament, Bracket (empty), Draft history (empty) and a team profile all rendered on a throwaway backend. NOT checked: Bracket and Draft history WITH data after the wrap
+(the `ScrollViewer` is now inside a `Grid`, which should not change it; the draw could not be driven from the test script). Open a drawn bracket and a tournament with drafts once.
+
+### Title-bar update pill says "Update" (2026-10-09, UNRELEASED)
+
+The gold pill in the title bar that appears when a downloaded update is ready showed the version ("v3.3.1"); it now says **Update** / **อัปเดต** (`Update.Button`, `MainWindow.xaml`). The version is still in the hover tooltip
+(`Updates.Status` = "Version X is ready...") and in the update dialog's title. The four strings that told the operator to press "the version number in the title bar" (`Update.Hint`, `Update.Ready`, `Update.ReadyToast`,
+`Update.LaterNote`, EN and TH) now say the Update button. Checked: builds clean. NOT rendered: the pill only exists while an update is downloaded and waiting, which a test backend cannot produce; see it at the next real update.
+The Thai wording is Claude's. The release notes and any published notice that say "version number in the title bar" would be stale; none were searched for.
+
+### 3.3.1-beta.1 built locally, NOT published (2026-10-09)
+
+`pack.ps1 -Version 3.3.1-beta.1 -Channel beta`, no `-Publish`: `releases/Nuzka-beta-Setup.exe` (125 MB) and `Nuzka-beta-Portable.zip`, plus the full and delta `.nupkg` (delta from 3.3.0-beta.14 is 1 MB).
+Carries everything from the 2026-10-06 UI polish entries and the Update-button label. Notes in `docs/release-notes/3.3.1-beta.1.md` (Thai first, as the others). The csproj and package.json still say 3.3.0 (pack passes the
+version to dotnet only).
+Not smoke-tested and not installed by Claude (rule: the user installs from Explorer). **The Update button cannot be seen from this build alone:** the feed is GitHub Releases only (`GithubSource`, no local feed), so an installed
+beta.1 shows the pill only once a newer beta is on GitHub. To see it: install beta.1, set Settings > update channel to beta, then publish a 3.3.1-beta.2 (`-Publish`, a public prerelease on the beta channel) and wait for the check or use Check now.
+
+### 3.3.1-beta.2 PUBLISHED as a GitHub pre-release (2026-10-09), for testing the Update button
+
+`pack.ps1 -Version 3.3.1-beta.2 -Channel beta -Publish`: https://github.com/LazyAF-zZzZ/nuzka/releases/tag/v3.3.1-beta.2, pre-release, not draft. Assets: full and delta `.nupkg`, `releases.beta.json`, `Nuzka-beta-Setup.exe`,
+`Nuzka-beta-Portable.zip`. Identical to beta.1 apart from the version. **Latest on the repo is still v3.3.0**; the stable channel does not see it. Only copies with Settings > update channel = beta are offered it.
+**Fix in `pack.ps1`:** the upload never passed `--pre`, so a published beta would have become the repo's Latest release and left the stable channel looking for its update files in a beta release. It now passes
+`--pre true` for the beta channel. Earlier betas were never published, so this had not bitten.
+**Consequence of packing beta.2 in the same `releases/` folder:** `releases/Nuzka-beta-Setup.exe` and the Portable zip are now the beta.2 build; the beta.1 installer file no longer exists locally
+(its `.nupkg` does). An installed beta.1 can still update to beta.2 by the delta. Someone without beta.1 installed needs a beta.3 to see the button: install beta.2, then publish beta.3.
+Notes `docs/release-notes/3.3.1-beta.2.md`. The git repo has uncommitted work, so the `v3.3.1-beta.2` tag on GitHub points at the last pushed commit, not at this build's source.
+
+**Update button confirmed by the user (2026-10-09):** installed 3.3.1-beta.1, switched Settings > Which versions to "Test versions too", pressed Check now, and the gold **Update** pill appeared in the title bar
+for 3.3.1-beta.2. First try failed only because the channel was still on "Finished versions". Not yet seen by the user: pressing the pill / the update dialog / installing it. The fold, focus-ring and empty-state work in the entries above is in the same
+beta.1 build, so it can be checked in that installed copy.
+
+### Operator UI: Valorant Tracker-inspired look, phase 1 (2026-10-09, UNRELEASED)
+
+User asked for the look of the Tracker Network "Valorant Tracker" Overwolf app (seen through computer use) in the **operator app only**, **keeping gold as the accent** (chosen over switching to red, which would have collided
+with red = red side and red = destructive). Logos, rank badges and artwork are not copied.
+`Theme.xaml` only, plus one view: surfaces re-tinted from neutral grey to blue-black (Bg #080C12 up to Surface3 #1E2B3A, borders #18222E / #293647, text and muted greys blue-shifted; Muted #8793A3 is 4.6:1 on Surface3, so
+the contrast fix holds); cards and buttons and inputs squared off (card radius 6 to 3, button and input 4 to 3); new `TabUnderline` RadioButton style (muted, white when active, 2px gold bar) used for the team page's Profile / Statistics.
+The segmented control stays for small in-card choices. No literal colours existed in the views, so nothing else needed touching.
+Checked: builds clean; Control, Teams, Home and a team's Statistics tab rendered on a throwaway backend. NOT done and NOT looked at: the other screens (Analytics, Settings, Guide, Support, Hotkeys, Bracket, dialogs), the
+overlays (out of scope), and how it reads for a long session. Candidate next steps if the user likes it: big-number stat tiles on Home and Analytics, a tinted hero card on the team page, underline tabs on other pages.
+Backups of the pre-change Theme.xaml and TeamProfileView.xaml are in the temp folder (`*.pre-navy.bak`, `*.pre-tabs.bak`); the repo has no commit of the earlier state.
+
+### Operator UI: Tracker-inspired look, phase 2 (2026-10-09, UNRELEASED)
+
+Asked to apply the same look to the other operator screens (overlays excluded). The palette and the squarer corners live in `Theme.xaml`, so they already reach every screen; this pass **checked each one** and added the one
+view-level piece that fits. Rendered on a throwaway backend at 1360x900 with nothing broken: Home, Analytics, Hotkeys, Guide, Support, Settings, a tournament, its Bracket (empty) and Draft history (empty); Control, Teams and
+a team's Statistics were checked in phase 1. Only the team page has page-level tabs, so it is the only place for `TabUnderline`; the Home All/Active/Finished switch and the Settings choices stay segmented (they filter
+or toggle inside a page).
+New `CardHero` style (Card fill with a gold tint fading out over the first ~45%), used on the two cards about what is live: Home "On air now" and the tournament's "Match session". Gold on one or two cards per page only.
+NOT checked: the dialogs (confirm, update) and the Support/Settings screens scrolled below the fold; screens with real data (analytics rows, bracket cards, drafts, hotkey conflicts) since the throwaway backend has none.
+The red "another program is holding this key" lines on Hotkeys in the snapshot are the user's own running Nuzka holding the keys, not a style problem. Not done from the earlier list: big-number stat tiles on Home/Analytics
+(they need real data to judge).
+
+### 3.3.1-beta.3 PUBLISHED as a GitHub pre-release (2026-10-09)
+
+`pack.ps1 -Version 3.3.1-beta.3 -Channel beta -Publish` (user's request). Pre-release, Latest still v3.3.0. Carries the Tracker-inspired navy theme, tabs and hero cards (phase 1 and 2 entries above) on top of beta.2.
+Notes: `docs/release-notes/3.3.1-beta.3.md`. Not installed or smoke-tested by Claude. As before, the GitHub tag points at the last pushed commit, not at this uncommitted source; the installers carry the right code.

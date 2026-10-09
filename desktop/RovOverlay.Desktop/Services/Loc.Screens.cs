@@ -144,7 +144,8 @@ public sealed partial class Loc
         ["Teams.InTournaments"] = "{0} tournaments",
         ["Teams.InOneTournament"] = "1 tournament",
         ["Teams.Record"] = "{0} W – {1} L",
-        ["Teams.Empty"] = "No teams yet. Create one here, or from inside a tournament.",
+        ["Teams.EmptyTitle"] = "No teams yet",
+        ["Teams.EmptyHint"] = "Create a team here, or from inside a tournament. Every tournament shares the same teams.",
         ["Teams.NoMatch"] = "Nothing matches \"{0}\".",
         ["Teams.Foot"] = "Teams here are shared by every tournament. Editing a roster changes the team everywhere from then on; matches already played keep the roster they were played with.",
 
@@ -335,7 +336,8 @@ public sealed partial class Loc
         ["Teams.InTournaments"] = "{0} ทัวร์นาเมนต์",
         ["Teams.InOneTournament"] = "1 ทัวร์นาเมนต์",
         ["Teams.Record"] = "ชนะ {0} – แพ้ {1}",
-        ["Teams.Empty"] = "ยังไม่มีทีม สร้างที่นี่ หรือสร้างจากในทัวร์นาเมนต์ก็ได้",
+        ["Teams.EmptyTitle"] = "ยังไม่มีทีม",
+        ["Teams.EmptyHint"] = "สร้างทีมที่นี่ หรือสร้างจากในทัวร์นาเมนต์ก็ได้ ทุกทัวร์นาเมนต์ใช้ทีมชุดเดียวกัน",
         ["Teams.NoMatch"] = "ไม่มีทีมที่ตรงกับ \"{0}\"",
         ["Teams.Foot"] = "ทีมในทะเบียนใช้ร่วมกันทุกทัวร์นาเมนต์ แก้รายชื่อผู้เล่นแล้วมีผลทุกที่นับจากนี้ ส่วนแมตช์ที่แข่งไปแล้วยังเก็บรายชื่อตอนที่แข่งไว้",
 

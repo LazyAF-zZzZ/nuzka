@@ -1,0 +1,37 @@
+<UserControl x:Class="RovOverlay.Desktop.Views.Controls.EmptyStateView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <!-- What a list or page shows when there is nothing in it: say what it is for, then offer the
+         one thing to do next. Set ActionText and ActionCommand together; without them it is a
+         plain message (used for "nothing matches your search", where there is no next step). -->
+    <StackPanel MaxWidth="400">
+        <Border Width="56" Height="56" CornerRadius="28" HorizontalAlignment="Center"
+                Background="{StaticResource Surface2Brush}" BorderBrush="{StaticResource BorderStrongBrush}" BorderThickness="1">
+            <TextBlock Style="{StaticResource Icon}" Text="{Binding Glyph, ElementName=Root}" FontSize="22"
+                       Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center"/>
+        </Border>
+        <TextBlock Text="{Binding Title, ElementName=Root}" Margin="0,16,0,0" HorizontalAlignment="Center" TextAlignment="Center"
+                   TextWrapping="Wrap" FontSize="{StaticResource FontHeading}" FontWeight="SemiBold"
+                   Foreground="{StaticResource TextBrush}"/>
+        <TextBlock Text="{Binding Hint, ElementName=Root}" Margin="0,6,0,0" HorizontalAlignment="Center" TextAlignment="Center"
+                   TextWrapping="Wrap" Foreground="{StaticResource Muted2Brush}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        <Button Style="{StaticResource PrimaryButton}" Margin="0,18,0,0" HorizontalAlignment="Center" MinWidth="140"
+                Command="{Binding ActionCommand, ElementName=Root}" Visibility="{Binding ActionCommand, ElementName=Root, Converter={StaticResource NullToVis}}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="11" Margin="0,0,7,0"/>
+                <TextBlock Text="{Binding ActionText, ElementName=Root}"/>
+            </StackPanel>
+        </Button>
+    </StackPanel>
+</UserControl>

@@ -148,6 +148,7 @@ public sealed class TournamentViewModel : ObservableObject, IClosablePage
 {
     private const string DetailsFold = "tournament.details";
     private const string TeamsFold = "tournament.teams";
+    private const string ObsFold = "tournament.obs";
     private static readonly string[] StandingsFormats = ["round_robin", "group_stage"];
 
     private readonly AppServices _s;
@@ -167,6 +168,7 @@ public sealed class TournamentViewModel : ObservableObject, IClosablePage
     private int _fBestOf = 3;
     private bool _detailsOpen;
     private bool _teamsOpen;
+    private bool _obsOpen;
     private bool _addOpen;
     private TeamChoice? _pick;
 
@@ -185,6 +187,7 @@ public sealed class TournamentViewModel : ObservableObject, IClosablePage
         _id = id;
         _detailsOpen = services.Settings.IsOpen(DetailsFold, false);
         _teamsOpen = services.Settings.IsOpen(TeamsFold, true);
+        _obsOpen = services.Settings.IsOpen(ObsFold, false);
 
         BackCommand = new RelayCommand(shell.Back);
         SaveDetailsCommand = new AsyncRelayCommand(SaveDetailsAsync, () => _t is not null && FName.Trim().Length > 0);
@@ -197,6 +200,7 @@ public sealed class TournamentViewModel : ObservableObject, IClosablePage
         DeleteCommand = new AsyncRelayCommand(DeleteAsync);
         ToggleDetailsCommand = new RelayCommand(() => DetailsOpen = !DetailsOpen);
         ToggleTeamsCommand = new RelayCommand(() => TeamsOpen = !TeamsOpen);
+        ToggleObsCommand = new RelayCommand(() => ObsOpen = !ObsOpen);
         ToggleAddCommand = new RelayCommand(() =>
         {
             AddOpen = !AddOpen;
@@ -225,6 +229,7 @@ public sealed class TournamentViewModel : ObservableObject, IClosablePage
     public ICommand RevertCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand ToggleDetailsCommand { get; }
+    public ICommand ToggleObsCommand { get; }
     public ICommand ToggleTeamsCommand { get; }
     public ICommand ToggleAddCommand { get; }
     public ICommand CloseAddCommand { get; }
@@ -309,6 +314,16 @@ public sealed class TournamentViewModel : ObservableObject, IClosablePage
         set
         {
             if (Set(ref _teamsOpen, value)) _s.Settings.SetOpen(TeamsFold, value);
+        }
+    }
+
+    // Folded by default: these links are copied into OBS once per event, not used during a match.
+    public bool ObsOpen
+    {
+        get => _obsOpen;
+        set
+        {
+            if (Set(ref _obsOpen, value)) _s.Settings.SetOpen(ObsFold, value);
         }
     }
 

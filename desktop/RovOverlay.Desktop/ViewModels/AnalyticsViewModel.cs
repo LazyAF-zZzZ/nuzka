@@ -128,6 +128,8 @@ public sealed class AnalyticsViewModel : ObservableObject, IClosablePage
     public bool AllDecided => _summary is not null && _summary.Games == _summary.DecidedGames;
     public bool IsEmpty => _loaded && Rows.Count == 0;
 
+    public string EmptyTitle => Loc.T(HasGames ? "Analytics.NoHeroTitle" : "Analytics.EmptyTitle");
+
     public string EmptyText
     {
         get
@@ -222,7 +224,7 @@ public sealed class AnalyticsViewModel : ObservableObject, IClosablePage
         foreach (var name in new[]
                  {
                      nameof(GamesText), nameof(HeroesSeenText), nameof(DecidedText), nameof(HasGames),
-                     nameof(AllDecided), nameof(IsEmpty), nameof(EmptyText)
+                     nameof(AllDecided), nameof(IsEmpty), nameof(EmptyText), nameof(EmptyTitle)
                  })
             OnPropertyChanged(name);
     }

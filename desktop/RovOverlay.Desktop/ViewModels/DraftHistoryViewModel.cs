@@ -71,6 +71,7 @@ public sealed class DraftHistoryViewModel : ObservableObject, IClosablePage
     public string ErrorText { get => _errorText; private set => Set(ref _errorText, value); }
     public bool IsEmpty => Games.Count == 0;
 
+    public string EmptyTitle => Loc.T(_games.Count == 0 ? "Drafts.NoneTitle" : "Drafts.NoMatchTitle");
     public string EmptyText => _games.Count == 0 ? Loc.T("Drafts.None") : Loc.T("Drafts.NoMatch");
 
     public string CountText => Games.Count != _games.Count
@@ -162,7 +163,7 @@ public sealed class DraftHistoryViewModel : ObservableObject, IClosablePage
             });
         }
 
-        foreach (var name in new[] { nameof(CountText), nameof(IsEmpty), nameof(EmptyText) }) OnPropertyChanged(name);
+        foreach (var name in new[] { nameof(CountText), nameof(IsEmpty), nameof(EmptyText), nameof(EmptyTitle) }) OnPropertyChanged(name);
     }
 
     private static string Name(DraftSide side) => string.IsNullOrWhiteSpace(side.Name) ? "—" : side.Name;

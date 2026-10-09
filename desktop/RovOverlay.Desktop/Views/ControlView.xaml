@@ -339,7 +339,7 @@
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Is1080}" Value="True">
                                                         <Setter Property="Background" Value="{StaticResource GoldBrush}"/>
-                                                        <Setter Property="Foreground" Value="#15120B"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource OnGoldBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -352,7 +352,7 @@
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Is1440}" Value="True">
                                                         <Setter Property="Background" Value="{StaticResource GoldBrush}"/>
-                                                        <Setter Property="Foreground" Value="#15120B"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource OnGoldBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -369,7 +369,7 @@
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding BannerOn}" Value="True">
                                                         <Setter Property="Background" Value="{StaticResource GoldBrush}"/>
-                                                        <Setter Property="Foreground" Value="#15120B"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource OnGoldBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -381,7 +381,7 @@
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding BannerOn}" Value="False">
                                                         <Setter Property="Background" Value="{StaticResource RedBrush}"/>
-                                                        <Setter Property="Foreground" Value="#15120B"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource OnGoldBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -530,7 +530,7 @@
                                                         <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsCurrent}" Value="True">
-                                                                <Setter Property="Foreground" Value="#15120B"/>
+                                                                <Setter Property="Foreground" Value="{StaticResource OnGoldBrush}"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -638,7 +638,8 @@
                                 ToolTip="{svc:T Scenes.AddCardTip}"/>
 
                         <!-- Countdown -->
-                        <DockPanel Margin="0,16,0,0">
+                        <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,14,0,0"/>
+                        <DockPanel Margin="0,10,0,0">
                             <TextBlock DockPanel.Dock="Right" Text="{Binding CountdownText}" Style="{StaticResource MonoText}" FontSize="16"
                                        VerticalAlignment="Center"/>
                             <TextBlock Text="{svc:T Scenes.Countdown}" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -666,71 +667,82 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Background -->
-                        <DockPanel Margin="0,16,0,0">
-                            <ComboBox DockPanel.Dock="Right" Width="170" ItemsSource="{Binding Targets}" DisplayMemberPath="Label"
-                                      SelectedValuePath="Key" SelectedValue="{Binding Target, Mode=TwoWay}" ToolTip="{svc:T Scenes.TargetTip}"/>
-                            <TextBlock DockPanel.Dock="Right" Text="{svc:T Scenes.Applies}" Style="{StaticResource FieldLabel}" Margin="0,0,8,0"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{svc:T Scenes.Background}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <!-- Appearance (folded: background and wording are set once per event) -->
+                        <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,14,0,0"/>
+                        <DockPanel Margin="0,10,0,0">
+                            <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Command="{Binding ToggleAppearanceCommand}"
+                                    Content="{Binding ShowAppearance, Converter={StaticResource FoldGlyph}}"/>
+                            <TextBlock DockPanel.Dock="Right" Text="{svc:T Scenes.AppearanceNote}" FontSize="11" Margin="0,0,10,0"
+                                       Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{svc:T Scenes.Appearance}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </DockPanel>
-                        <Button Style="{StaticResource GhostButton}" Content="{svc:T Scenes.UseShared}" Command="{Binding UseSharedCommand}"
-                                HorizontalAlignment="Left" Margin="0,6,0,0" Padding="12,0"
-                                Visibility="{Binding TargetHasOverride, Converter={StaticResource BoolToVis}}"/>
-                        <Grid Margin="0,6,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.Style}"/>
-                                <ComboBox ItemsSource="{Binding Styles}" DisplayMemberPath="Label" SelectedValuePath="Key"
-                                          SelectedValue="{Binding Style, Mode=TwoWay}"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.Palette}"/>
-                                <ComboBox ItemsSource="{Binding Palettes}" DisplayMemberPath="Label" SelectedValuePath="Key"
-                                          SelectedValue="{Binding Palette, Mode=TwoWay}"/>
-                            </StackPanel>
-                            <Button Grid.Column="4" Style="{StaticResource GhostButton}" Content="{svc:T Scenes.Reroll}" Command="{Binding RerollCommand}"
-                                    ToolTip="{svc:T Scenes.RerollTip}" VerticalAlignment="Bottom" Padding="14,0"/>
-                        </Grid>
-                        <Grid Margin="0,8,0,0" ToolTip="{svc:T Scenes.QualityTip}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="90"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="52"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{svc:T Scenes.Quality}" VerticalAlignment="Center"/>
-                            <Slider Grid.Column="1" Minimum="25" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
-                                    Value="{Binding Quality}" VerticalAlignment="Center" Margin="6,0"/>
-                            <TextBlock Grid.Column="2" Text="{Binding QualityText}" TextAlignment="Right" VerticalAlignment="Center"
-                                       Style="{StaticResource MonoText}" Foreground="{StaticResource Muted2Brush}"/>
-                        </Grid>
+                        <StackPanel Visibility="{Binding ShowAppearance, Converter={StaticResource BoolToVis}}">
+                            <!-- Background -->
+                            <DockPanel Margin="0,10,0,0">
+                                <ComboBox DockPanel.Dock="Right" Width="170" ItemsSource="{Binding Targets}" DisplayMemberPath="Label"
+                                          SelectedValuePath="Key" SelectedValue="{Binding Target, Mode=TwoWay}" ToolTip="{svc:T Scenes.TargetTip}"/>
+                                <TextBlock DockPanel.Dock="Right" Text="{svc:T Scenes.Applies}" Style="{StaticResource FieldLabel}" Margin="0,0,8,0"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{svc:T Scenes.Background}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </DockPanel>
+                            <Button Style="{StaticResource GhostButton}" Content="{svc:T Scenes.UseShared}" Command="{Binding UseSharedCommand}"
+                                    HorizontalAlignment="Left" Margin="0,6,0,0" Padding="12,0"
+                                    Visibility="{Binding TargetHasOverride, Converter={StaticResource BoolToVis}}"/>
+                            <Grid Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.Style}"/>
+                                    <ComboBox ItemsSource="{Binding Styles}" DisplayMemberPath="Label" SelectedValuePath="Key"
+                                              SelectedValue="{Binding Style, Mode=TwoWay}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.Palette}"/>
+                                    <ComboBox ItemsSource="{Binding Palettes}" DisplayMemberPath="Label" SelectedValuePath="Key"
+                                              SelectedValue="{Binding Palette, Mode=TwoWay}"/>
+                                </StackPanel>
+                                <Button Grid.Column="4" Style="{StaticResource GhostButton}" Content="{svc:T Scenes.Reroll}" Command="{Binding RerollCommand}"
+                                        ToolTip="{svc:T Scenes.RerollTip}" VerticalAlignment="Bottom" Padding="14,0"/>
+                            </Grid>
+                            <Grid Margin="0,8,0,0" ToolTip="{svc:T Scenes.QualityTip}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="52"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{svc:T Scenes.Quality}" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="25" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+                                        Value="{Binding Quality}" VerticalAlignment="Center" Margin="6,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding QualityText}" TextAlignment="Right" VerticalAlignment="Center"
+                                           Style="{StaticResource MonoText}" Foreground="{StaticResource Muted2Brush}"/>
+                            </Grid>
 
-                        <!-- Scene wording (folded: set once per event) -->
-                        <DockPanel Margin="0,14,0,0">
-                            <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Command="{Binding ToggleTextsCommand}"
-                                    Content="{Binding ShowTexts, Converter={StaticResource FoldGlyph}}"/>
-                            <TextBlock DockPanel.Dock="Right" Text="{svc:T Scenes.TextsNote}" FontSize="11" Margin="0,0,10,0"
-                                       Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"
-                                       Visibility="{Binding ShowTexts, Converter={StaticResource BoolToVis}}"/>
-                            <TextBlock Text="{svc:T Scenes.Texts}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        </DockPanel>
-                        <StackPanel Visibility="{Binding ShowTexts, Converter={StaticResource BoolToVis}}" Margin="0,6,0,0">
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.StartingTitle}"/>
-                            <TextBox Text="{Binding StartingTitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="40"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.BrbTitle}" Margin="0,8,0,4"/>
-                            <TextBox Text="{Binding BrbTitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="40"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.BrbSubtitle}" Margin="0,8,0,4"/>
-                            <TextBox Text="{Binding BrbSubtitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="60"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.EndingTitle}" Margin="0,8,0,4"/>
-                            <TextBox Text="{Binding EndingTitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="40"/>
-                            <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.EndingSubtitle}" Margin="0,8,0,4"/>
-                            <TextBox Text="{Binding EndingSubtitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="60"/>
+                            <!-- Scene wording (folded: set once per event) -->
+                            <DockPanel Margin="0,14,0,0">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Command="{Binding ToggleTextsCommand}"
+                                        Content="{Binding ShowTexts, Converter={StaticResource FoldGlyph}}"/>
+                                <TextBlock DockPanel.Dock="Right" Text="{svc:T Scenes.TextsNote}" FontSize="11" Margin="0,0,10,0"
+                                           Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"
+                                           Visibility="{Binding ShowTexts, Converter={StaticResource BoolToVis}}"/>
+                                <TextBlock Text="{svc:T Scenes.Texts}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </DockPanel>
+                            <StackPanel Visibility="{Binding ShowTexts, Converter={StaticResource BoolToVis}}" Margin="0,6,0,0">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.StartingTitle}"/>
+                                <TextBox Text="{Binding StartingTitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="40"/>
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.BrbTitle}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding BrbTitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="40"/>
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.BrbSubtitle}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding BrbSubtitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="60"/>
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.EndingTitle}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding EndingTitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="40"/>
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="{svc:T Scenes.EndingSubtitle}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding EndingSubtitle, UpdateSourceTrigger=PropertyChanged}" MaxLength="60"/>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Border>

@@ -55,6 +55,7 @@ public sealed class BroadcastViewModel : ObservableObject
     private string _palette = "theme";
     private int _quality = 75;
     private bool _showTexts;
+    private bool _showAppearance;
     private string _countdownText = "";
 
     public BroadcastViewModel(Action<string, object?> emit)
@@ -71,6 +72,7 @@ public sealed class BroadcastViewModel : ObservableObject
         RerollCommand = new RelayCommand(() => Send("seed", Random.Shared.Next(1, 999999)));
         UseSharedCommand = new RelayCommand(() => _emit("updateBackground", new { scene = _target, reset = true }));
         ToggleTextsCommand = new RelayCommand(() => ShowTexts = !ShowTexts);
+        ToggleAppearanceCommand = new RelayCommand(() => ShowAppearance = !ShowAppearance);
 
         Loc.Instance.Changed += OnLanguageChanged;
         RefreshCountdown();
@@ -86,6 +88,7 @@ public sealed class BroadcastViewModel : ObservableObject
     public ICommand RerollCommand { get; }
     public ICommand UseSharedCommand { get; }
     public ICommand ToggleTextsCommand { get; }
+    public ICommand ToggleAppearanceCommand { get; }
 
     // ---- lower third ------------------------------------------------------
 
@@ -238,6 +241,10 @@ public sealed class BroadcastViewModel : ObservableObject
     public string QualityText => $"{_quality}%";
 
     // ---- scene wording ----------------------------------------------------
+
+    // Folded by default: the background and the wording are set once per event, while the lower
+    // third and the countdown above are used during the broadcast.
+    public bool ShowAppearance { get => _showAppearance; set => Set(ref _showAppearance, value); }
 
     public bool ShowTexts { get => _showTexts; set => Set(ref _showTexts, value); }
 

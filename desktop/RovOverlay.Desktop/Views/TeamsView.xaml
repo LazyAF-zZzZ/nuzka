@@ -33,7 +33,7 @@
         </DockPanel>
 
         <!-- New team -->
-        <Border Grid.Row="1" Style="{StaticResource Card}" Padding="16" Margin="0,14,0,0"
+        <Border Grid.Row="1" Style="{StaticResource Card}" Padding="{StaticResource Pad4}" Margin="0,14,0,0"
                 Visibility="{Binding CreateOpen, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <ctl:NewTeamFormView DataContext="{Binding NewTeam}"/>
@@ -58,7 +58,7 @@
 
         <!-- Bulk bar: only while something is ticked -->
         <Border Grid.Row="3" CornerRadius="6" Padding="14,8" Margin="0,0,0,10" Background="{StaticResource RedSoftBrush}"
-                BorderBrush="#5A3134" BorderThickness="1" Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+                BorderBrush="{StaticResource RedBorderBrush}" BorderThickness="1" Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
             <DockPanel LastChildFill="False">
                 <TextBlock Text="{Binding SelectedText}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 <Button DockPanel.Dock="Right" Style="{StaticResource DangerButton}" Content="{Binding DeleteSelectedText}"
@@ -121,8 +121,9 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <TextBlock Text="{svc:T Teams.Empty}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Foreground="{StaticResource MutedBrush}" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+                <ctl:EmptyStateView Glyph="&#xE716;" Title="{svc:T Teams.EmptyTitle}" Hint="{svc:T Teams.EmptyHint}"
+                                    ActionText="{svc:T Teams.New}" ActionCommand="{Binding ToggleCreateCommand}"
+                                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
                 <TextBlock Text="{Binding NoMatchText}" HorizontalAlignment="Center" VerticalAlignment="Center"
                            Foreground="{StaticResource MutedBrush}" Visibility="{Binding NoMatches, Converter={StaticResource BoolToVis}}"/>
             </Grid>

@@ -75,7 +75,7 @@
                                             </Trigger>
                                             <Trigger Property="IsSelected" Value="True">
                                                 <Setter TargetName="Bd" Property="Background" Value="{StaticResource GoldBrush}"/>
-                                                <Setter Property="Foreground" Value="#15120B"/>
+                                                <Setter Property="Foreground" Value="{StaticResource OnGoldBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>

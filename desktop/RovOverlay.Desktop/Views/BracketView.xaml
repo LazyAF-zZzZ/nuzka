@@ -1,9 +1,10 @@
 <UserControl x:Class="RovOverlay.Desktop.Views.BracketView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:RovOverlay.Desktop.Views.Controls"
              xmlns:svc="clr-namespace:RovOverlay.Desktop.Services">
     <Grid>
-        <Border Style="{StaticResource Card}" Width="480" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center"
+        <Border Style="{StaticResource Card}" Width="480" Padding="{StaticResource Pad5}" HorizontalAlignment="Center" VerticalAlignment="Center"
                 Visibility="{Binding NotFound, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <TextBlock Style="{StaticResource PageTitle}" Text="{svc:T Tour.NotFound}"/>
@@ -71,128 +72,161 @@
                 </StackPanel>
             </Border>
 
-            <TextBlock Text="{Binding EmptyText}" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center"
-                       VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="420" TextAlignment="Center"
-                       Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+            <!-- One cell for both: as DockPanel children the empty state docked to the left edge. -->
+            <Grid>
+                <ctl:EmptyStateView Glyph="&#xE8FD;" Title="{Binding EmptyTitle}" Hint="{Binding EmptyText}"
+                                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
 
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                          Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisInv}}">
-                <!-- Centred, so a two-team event is not one card in the corner of an empty
-                     page. Once the bracket is bigger than the window the ScrollViewer takes
-                     over and the alignment stops mattering. -->
-                <ItemsControl ItemsSource="{Binding Sections}" Margin="20,16,20,24" Focusable="False"
-                              HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="0,0,0,28">
-                                <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding Title}" Margin="0,0,0,8"
-                                           Visibility="{Binding ShowTitle, Converter={StaticResource BoolToVis}}"/>
-                                <Canvas Width="{Binding Width}" Height="{Binding Height}" HorizontalAlignment="Left">
-                                    <!-- Connectors first, so cards sit on top of them -->
-                                    <ItemsControl ItemsSource="{Binding Lines}" Focusable="False">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Polyline Points="{Binding Points}" Stroke="{StaticResource BorderStrongBrush}"
-                                                          StrokeThickness="1" SnapsToDevicePixels="True"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisInv}}">
+                    <!-- Centred, so a two-team event is not one card in the corner of an empty
+                         page. Once the bracket is bigger than the window the ScrollViewer takes
+                         over and the alignment stops mattering. -->
+                    <ItemsControl ItemsSource="{Binding Sections}" Margin="20,16,20,24" Focusable="False"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,28">
+                                    <TextBlock Style="{StaticResource SectionTitle}" Text="{Binding Title}" Margin="0,0,0,8"
+                                               Visibility="{Binding ShowTitle, Converter={StaticResource BoolToVis}}"/>
+                                    <Canvas Width="{Binding Width}" Height="{Binding Height}" HorizontalAlignment="Left">
+                                        <!-- Connectors first, so cards sit on top of them -->
+                                        <ItemsControl ItemsSource="{Binding Lines}" Focusable="False">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Polyline Points="{Binding Points}" Stroke="{StaticResource BorderStrongBrush}"
+                                                              StrokeThickness="1" SnapsToDevicePixels="True"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
 
-                                    <!-- Round titles -->
-                                    <ItemsControl ItemsSource="{Binding Columns}" Focusable="False">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemContainerStyle>
-                                            <Style TargetType="ContentPresenter">
-                                                <Setter Property="Canvas.Left" Value="{Binding X}"/>
-                                                <Setter Property="Canvas.Top" Value="0"/>
-                                            </Style>
-                                        </ItemsControl.ItemContainerStyle>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Text}" Width="{Binding Width}" FontSize="10.5" FontWeight="SemiBold"
-                                                           Foreground="{StaticResource MutedBrush}" TextAlignment="Center"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                        <!-- Round titles -->
+                                        <ItemsControl ItemsSource="{Binding Columns}" Focusable="False">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemContainerStyle>
+                                                <Style TargetType="ContentPresenter">
+                                                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                                                    <Setter Property="Canvas.Top" Value="0"/>
+                                                </Style>
+                                            </ItemsControl.ItemContainerStyle>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Text}" Width="{Binding Width}" FontSize="10.5" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource MutedBrush}" TextAlignment="Center"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
 
-                                    <!-- Matches -->
-                                    <ItemsControl ItemsSource="{Binding Cards}" Focusable="False">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemContainerStyle>
-                                            <Style TargetType="ContentPresenter">
-                                                <Setter Property="Canvas.Left" Value="{Binding X}"/>
-                                                <Setter Property="Canvas.Top" Value="{Binding Y}"/>
-                                            </Style>
-                                        </ItemsControl.ItemContainerStyle>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Width="210" Height="56" CornerRadius="5" BorderThickness="1"
-                                                        Background="{StaticResource Surface1Brush}" Cursor="Hand"
-                                                        ToolTip="{svc:T Bracket.OnAirTip}">
-                                                    <!-- The whole card takes the operator to the Control Panel. A double
-                                                         click, not a single one, because the score boxes live in here and
-                                                         a stray click while typing a result must not change what is on air.
-                                                         A TextBox handles its own double click, so typing is unaffected. -->
-                                                    <Border.InputBindings>
-                                                        <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenCommand}"/>
-                                                    </Border.InputBindings>
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsComplete}" Value="True">
-                                                                    <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}"/>
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding IsBye}" Value="True">
-                                                                    <Setter Property="Opacity" Value="0.55"/>
-                                                                </DataTrigger>
-                                                                <!-- The match on air owns the gold -->
-                                                                <DataTrigger Binding="{Binding IsLive}" Value="True">
-                                                                    <Setter Property="BorderBrush" Value="{StaticResource GoldBrush}"/>
-                                                                    <Setter Property="Background" Value="{StaticResource GoldSoftBrush}"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <Grid>
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="*"/>
-                                                            <RowDefinition Height="*"/>
-                                                        </Grid.RowDefinitions>
-                                                        <!-- The play button gets a column of its own. Overlaid on the rows it
-                                                             sat on top of the score boxes, so a playable match could be put
-                                                             on air but not scored. -->
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="34"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <Border Grid.Row="0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
-                                                            <Grid Margin="8,0,6,0">
+                                        <!-- Matches -->
+                                        <ItemsControl ItemsSource="{Binding Cards}" Focusable="False">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemContainerStyle>
+                                                <Style TargetType="ContentPresenter">
+                                                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                                                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                                                </Style>
+                                            </ItemsControl.ItemContainerStyle>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Width="210" Height="56" CornerRadius="5" BorderThickness="1"
+                                                            Background="{StaticResource Surface1Brush}" Cursor="Hand"
+                                                            ToolTip="{svc:T Bracket.OnAirTip}">
+                                                        <!-- The whole card takes the operator to the Control Panel. A double
+                                                             click, not a single one, because the score boxes live in here and
+                                                             a stray click while typing a result must not change what is on air.
+                                                             A TextBox handles its own double click, so typing is unaffected. -->
+                                                        <Border.InputBindings>
+                                                            <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenCommand}"/>
+                                                        </Border.InputBindings>
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsComplete}" Value="True">
+                                                                        <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding IsBye}" Value="True">
+                                                                        <Setter Property="Opacity" Value="0.55"/>
+                                                                    </DataTrigger>
+                                                                    <!-- The match on air owns the gold -->
+                                                                    <DataTrigger Binding="{Binding IsLive}" Value="True">
+                                                                        <Setter Property="BorderBrush" Value="{StaticResource GoldBrush}"/>
+                                                                        <Setter Property="Background" Value="{StaticResource GoldSoftBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="*"/>
+                                                                <RowDefinition Height="*"/>
+                                                            </Grid.RowDefinitions>
+                                                            <!-- The play button gets a column of its own. Overlaid on the rows it
+                                                                 sat on top of the score boxes, so a playable match could be put
+                                                                 on air but not scored. -->
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="34"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Border Grid.Row="0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                                                                <Grid Margin="8,0,6,0">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="18"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="38"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Text="{Binding SeedA}" FontSize="10" Foreground="{StaticResource MutedBrush}"
+                                                                               VerticalAlignment="Center"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding TeamAName}" VerticalAlignment="Center"
+                                                                               TextTrimming="CharacterEllipsis" FontSize="12">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding ATbd}" Value="True">
+                                                                                        <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+                                                                                        <Setter Property="FontStyle" Value="Italic"/>
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding AWon}" Value="True">
+                                                                                        <Setter Property="Foreground" Value="{StaticResource GoldBrush}"/>
+                                                                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                    <TextBox Grid.Column="2" Text="{Binding ScoreA, UpdateSourceTrigger=PropertyChanged}"
+                                                                             MaxLength="2" FontSize="12" MinHeight="22" Padding="2,0"
+                                                                             HorizontalContentAlignment="Center"
+                                                                             Visibility="{Binding Playable, Converter={StaticResource BoolToVis}}"/>
+                                                                </Grid>
+                                                            </Border>
+                                                            <Grid Grid.Row="1" Margin="8,0,6,0">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="18"/>
                                                                     <ColumnDefinition Width="*"/>
                                                                     <ColumnDefinition Width="38"/>
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Text="{Binding SeedA}" FontSize="10" Foreground="{StaticResource MutedBrush}"
+                                                                <TextBlock Text="{Binding SeedB}" FontSize="10" Foreground="{StaticResource MutedBrush}"
                                                                            VerticalAlignment="Center"/>
-                                                                <TextBlock Grid.Column="1" Text="{Binding TeamAName}" VerticalAlignment="Center"
+                                                                <TextBlock Grid.Column="1" Text="{Binding TeamBName}" VerticalAlignment="Center"
                                                                            TextTrimming="CharacterEllipsis" FontSize="12">
                                                                     <TextBlock.Style>
                                                                         <Style TargetType="TextBlock">
                                                                             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
                                                                             <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding ATbd}" Value="True">
+                                                                                <DataTrigger Binding="{Binding BTbd}" Value="True">
                                                                                     <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
                                                                                     <Setter Property="FontStyle" Value="Italic"/>
                                                                                 </DataTrigger>
-                                                                                <DataTrigger Binding="{Binding AWon}" Value="True">
+                                                                                <DataTrigger Binding="{Binding BWon}" Value="True">
                                                                                     <Setter Property="Foreground" Value="{StaticResource GoldBrush}"/>
                                                                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                                                                 </DataTrigger>
@@ -200,62 +234,31 @@
                                                                         </Style>
                                                                     </TextBlock.Style>
                                                                 </TextBlock>
-                                                                <TextBox Grid.Column="2" Text="{Binding ScoreA, UpdateSourceTrigger=PropertyChanged}"
+                                                                <TextBox Grid.Column="2" Text="{Binding ScoreB, UpdateSourceTrigger=PropertyChanged}"
                                                                          MaxLength="2" FontSize="12" MinHeight="22" Padding="2,0"
                                                                          HorizontalContentAlignment="Center"
                                                                          Visibility="{Binding Playable, Converter={StaticResource BoolToVis}}"/>
                                                             </Grid>
-                                                        </Border>
-                                                        <Grid Grid.Row="1" Margin="8,0,6,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="18"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="38"/>
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="{Binding SeedB}" FontSize="10" Foreground="{StaticResource MutedBrush}"
-                                                                       VerticalAlignment="Center"/>
-                                                            <TextBlock Grid.Column="1" Text="{Binding TeamBName}" VerticalAlignment="Center"
-                                                                       TextTrimming="CharacterEllipsis" FontSize="12">
-                                                                <TextBlock.Style>
-                                                                    <Style TargetType="TextBlock">
-                                                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding BTbd}" Value="True">
-                                                                                <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
-                                                                                <Setter Property="FontStyle" Value="Italic"/>
-                                                                            </DataTrigger>
-                                                                            <DataTrigger Binding="{Binding BWon}" Value="True">
-                                                                                <Setter Property="Foreground" Value="{StaticResource GoldBrush}"/>
-                                                                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </TextBlock.Style>
-                                                            </TextBlock>
-                                                            <TextBox Grid.Column="2" Text="{Binding ScoreB, UpdateSourceTrigger=PropertyChanged}"
-                                                                     MaxLength="2" FontSize="12" MinHeight="22" Padding="2,0"
-                                                                     HorizontalContentAlignment="Center"
-                                                                     Visibility="{Binding Playable, Converter={StaticResource BoolToVis}}"/>
+                                                            <!-- Take this match to the Control Panel. It was a 10px ghost icon and
+                                                                 nobody found it; it is the most important thing on the card. -->
+                                                            <Button Grid.RowSpan="2" Grid.Column="1" Style="{StaticResource PrimaryButton}" Content="&#xE768;"
+                                                                    FontFamily="{StaticResource IconFont}"
+                                                                    HorizontalAlignment="Center" VerticalAlignment="Center" Width="28" Height="28"
+                                                                    FontSize="12" Padding="0" Command="{Binding OpenCommand}"
+                                                                    ToolTip="{svc:T Bracket.OnAirTip}"
+                                                                    Visibility="{Binding Playable, Converter={StaticResource BoolToVis}}"/>
                                                         </Grid>
-                                                        <!-- Take this match to the Control Panel. It was a 10px ghost icon and
-                                                             nobody found it; it is the most important thing on the card. -->
-                                                        <Button Grid.RowSpan="2" Grid.Column="1" Style="{StaticResource PrimaryButton}" Content="&#xE768;"
-                                                                FontFamily="{StaticResource IconFont}"
-                                                                HorizontalAlignment="Center" VerticalAlignment="Center" Width="28" Height="28"
-                                                                FontSize="12" Padding="0" Command="{Binding OpenCommand}"
-                                                                ToolTip="{svc:T Bracket.OnAirTip}"
-                                                                Visibility="{Binding Playable, Converter={StaticResource BoolToVis}}"/>
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Canvas>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Canvas>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </DockPanel>
     </Grid>
 </UserControl>

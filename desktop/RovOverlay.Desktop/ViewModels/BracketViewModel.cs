@@ -197,6 +197,7 @@ public sealed class BracketViewModel : ObservableObject, IClosablePage
 
     public bool HasMatches => _matches.Count > 0;
     public bool IsEmpty => _matches.Count == 0;
+    public string EmptyTitle => Loc.T(_t is not null && _t.TeamCount < 2 ? "Bracket.NeedTeamsTitle" : "Bracket.NothingDrawnTitle");
     public string EmptyText => _t is not null && _t.TeamCount < 2 ? Loc.T("Bracket.NeedTeams") : Loc.T("Bracket.NothingDrawn");
     public string DrawLabel => Loc.T(HasMatches ? "Bracket.DrawAgain" : "Bracket.Draw");
     public string DrawTip => Loc.T(HasMatches ? "Bracket.DrawAgainTip" : "Bracket.DrawTip");
@@ -257,7 +258,7 @@ public sealed class BracketViewModel : ObservableObject, IClosablePage
         foreach (var name in new[]
                  {
                      nameof(Title), nameof(IsActive), nameof(StatusText), nameof(SeriesText), nameof(TeamsText),
-                     nameof(PlayedText), nameof(AllPlayed), nameof(HasMatches), nameof(IsEmpty), nameof(EmptyText),
+                     nameof(PlayedText), nameof(AllPlayed), nameof(HasMatches), nameof(IsEmpty), nameof(EmptyText), nameof(EmptyTitle),
                      nameof(DrawLabel), nameof(DrawTip)
                  })
             OnPropertyChanged(name);
