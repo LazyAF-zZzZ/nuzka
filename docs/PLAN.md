@@ -1525,3 +1525,13 @@ NOT checked: a real Stripe checkout for the new plans (test mode first, per `clo
 **Tags (2026-10-09).** `v3.3.1-beta.3` was moved to `5f08fc6`, the commit matching its build (built 22:12, committed 22:18, only PLAN.md edited between). `v3.3.1-beta.2` was left on `1f59418` on purpose:
 it was built from an intermediate working tree (UI polish and the Update label, before the navy theme, tabs and hero cards) that was never committed, so no commit matches it and its "source code" zip is stale.
 The installers and update packages on both releases carry the right code. `main` is pushed (`b9a0b93`).
+
+### 3.3.1 built locally, NOT published, waiting on the key shop (2026-10-09)
+
+User asked to make the latest beta a full version **including the new supporter prices**. Versions bumped to 3.3.1 (csproj, backend package.json and lock), notes `docs/release-notes/3.3.1.md` (Thai first), 518 backend tests pass,
+`pack.ps1 -Version 3.3.1` built `releases/Nuzka-win-Setup.exe` (125 MB) and the full and delta `.nupkg` (delta from 3.3.0 is 1 MB). Contents = beta.3 plus the supporter plans (commit `b9a0b93`).
+**Gate before publishing: the live shop must be the new worker.** Checked 2026-10-09: `GET /buy` on `nuzka-keys.nuzka.workers.dev` still redirects straight to a Stripe checkout (old worker, no chooser), so it has NOT been deployed.
+(That check created one real unpaid checkout session; nothing charged, it expires in 24 hours. Do not poke `/buy` on the old worker again.) `wrangler` is not installed or logged in on this PC, so the maker deploys from `cloud/`
+(`npx wrangler deploy`). After deploying, `/buy?lang=en` returns the chooser page (HTTP 200, contains `plan=quarter`) instead of a redirect; only then publish: push `main` first (GitHub makes the tag from the default branch),
+then `pack.ps1 -Version 3.3.1 -Publish`, then a heads-up in `notices.json` once the release is confirmed to install and update cleanly.
+Still unverified: a real Stripe checkout for each new plan (test mode, `cloud/README.md` step 3); pressing the Update pill and installing (only the pill appearing was seen); the user's own smoke of the exact Setup.exe.
