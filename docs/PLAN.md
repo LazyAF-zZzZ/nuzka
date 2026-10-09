@@ -1535,3 +1535,13 @@ User asked to make the latest beta a full version **including the new supporter 
 (`npx wrangler deploy`). After deploying, `/buy?lang=en` returns the chooser page (HTTP 200, contains `plan=quarter`) instead of a redirect; only then publish: push `main` first (GitHub makes the tag from the default branch),
 then `pack.ps1 -Version 3.3.1 -Publish`, then a heads-up in `notices.json` once the release is confirmed to install and update cleanly.
 Still unverified: a real Stripe checkout for each new plan (test mode, `cloud/README.md` step 3); pressing the Update pill and installing (only the pill appearing was seen); the user's own smoke of the exact Setup.exe.
+
+### Release 3.3.1 (2026-10-09)
+
+Published as Latest, stable channel: https://github.com/LazyAF-zZzZ/nuzka/releases/tag/v3.3.1 (commit `c0aad3f`, tag target `main`, pushed first). The exact files built and tested locally were uploaded, not rebuilt, because `pack.ps1` refuses to
+repack a version that is already in `releases/`: `vpk upload github --channel win --tag v3.3.1 --publish true --pre false`, then the Nuzka-named Setup and Portable added with `gh release upload` and the pack-id-named
+copies removed, as `pack.ps1 -Publish` does. Assets: full and delta `.nupkg` (delta from 3.3.0 is 1 MB), `releases.win.json`, `RELEASES`, `Nuzka-win-Setup.exe`, `Nuzka-win-Portable.zip`; sizes match the local build.
+Contents: the supporter plans (1 month ฿159, 3 months ฿430, 1 year ฿1,650), the Tracker-inspired navy theme, empty states, folds, tabs and hero cards, the Update button label, focus rings. Notes `docs/release-notes/3.3.1.md`.
+Before publishing: the live key shop was confirmed to be the new worker (`/buy` returns the plan chooser, HTTP 200, all three plans and the savings) after the maker deployed it. 518 backend tests and 20 shop tests passed.
+**Not done:** the update notice in `notices.json` (push only after confirming 3.3.1 installs and updates cleanly from 3.3.0); the user's smoke of the exact Setup.exe; a real Stripe checkout for each new plan was asked for
+but not seen by Claude; pressing the Update pill and installing has still only been seen as far as the pill appearing. The beta releases (`v3.3.1-beta.2`, `beta.3`) remain published as pre-releases on the beta channel.
