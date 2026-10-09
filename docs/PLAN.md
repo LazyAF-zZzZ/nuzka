@@ -1521,3 +1521,7 @@ paying ฿159 or ฿430 gets 403. Sessions from before plans (no `metadata.plan`
 **Order of release matters:** deploy the worker first (`npx wrangler deploy` in `cloud/`, the maker's own terminal), then ship the app. A new app against the old worker would open a checkout that ignores the plan and sells
 1 month for ฿159. The reverse (new worker, old app) is safe: old apps open `/buy` with no plan and now land on the chooser.
 NOT checked: a real Stripe checkout for the new plans (test mode first, per `cloud/README.md` step 3, card 4242 4242 4242 4242, once per plan); the chooser on a phone; how PromptPay behaves for ฿1,650.
+
+**Tags (2026-10-09).** `v3.3.1-beta.3` was moved to `5f08fc6`, the commit matching its build (built 22:12, committed 22:18, only PLAN.md edited between). `v3.3.1-beta.2` was left on `1f59418` on purpose:
+it was built from an intermediate working tree (UI polish and the Update label, before the navy theme, tabs and hero cards) that was never committed, so no commit matches it and its "source code" zip is stale.
+The installers and update packages on both releases carry the right code. `main` is pushed (`b9a0b93`).
