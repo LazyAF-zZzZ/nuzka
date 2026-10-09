@@ -1549,3 +1549,7 @@ but not seen by Claude; pressing the Update pill and installing has still only b
 **3.3.1 update notice pushed (2026-10-09, user's request).** `notices.json` gained `update-3-3-1` (Thai and English, level info, link to the release), `minVersion` 3.2.0 to `maxVersion` 3.3.0 inclusive, so it reaches
 3.2.x and 3.3.0 but not 3.3.1 or its betas, and expires 2026-11-30. The text says to update "from the button in the title bar (it shows the version number)" because those apps still show the version on that button.
 It was pushed before the user had confirmed 3.3.1 installs and updates cleanly from 3.3.0, at their instruction. There is still no 3.3.0 notice in the feed (it was never pushed), so people on 3.2.x get 3.3.1's text only.
+
+**3.3.1-beta.2 release deleted (2026-10-09, user's request).** `gh release delete v3.3.1-beta.2 --cleanup-tag`: the pre-release and its tag are gone from GitHub (the tag was the one left on `1f59418`, a commit that never matched its build).
+beta.3 and 3.3.1 are untouched; Latest is still v3.3.1; `releases.beta.json` on beta.3 still reads. A copy still installed on beta.2 updates to beta.3 by the delta as before. Someone going straight from beta.1 to beta.3 may now download the
+full package instead of a delta chain, since the beta.2 delta file is gone. The beta.2 packages remain in the local `releases/` folder (gitignored) if it ever needs republishing.
