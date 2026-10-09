@@ -4,9 +4,9 @@ main = "src/worker.js"
 compatibility_date = "2026-09-01"
 
 [vars]
-PRICE_SATANG = "15900"   # ฿159.00
-MONTHS = "1"
-PRODUCT_NAME = "Nuzka supporter, 1 month"
+PRICE_SATANG = "15900"          # ฿159.00, 1 month
+PRICE_QUARTER_SATANG = "43000"  # ฿430.00, 3 months
+PRICE_YEAR_SATANG = "165000"    # ฿1,650.00, 1 year
 
 # Secrets, set with `npx wrangler secret put <NAME>`, never written here:
 #   STRIPE_SECRET_KEY   sk_test_... while testing, sk_live_... for real payments

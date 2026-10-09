@@ -56,8 +56,13 @@ works, swap in the **live** key with `npx wrangler secret put STRIPE_SECRET_KEY`
 
 ## Running it
 
-- **Price**: `PRICE_SATANG` in `wrangler.toml` (15900 = ฿159), then `npx wrangler deploy`.
-  Keep `SupporterOffer.MonthlyPrice` in the app the same, since that is only the label.
+- **Prices**: `PRICE_SATANG` (1 month, 15900 = ฿159), `PRICE_QUARTER_SATANG` (3 months, 43000 = ฿430)
+  and `PRICE_YEAR_SATANG` (1 year, 165000 = ฿1,650) in `wrangler.toml`, then `npx wrangler deploy`.
+  Keep `SupporterOffer.MonthlyPrice`, `QuarterlyPrice` and `YearlyPrice` in the app the same, since those
+  are only labels; the shop's plan page (`/buy`, what **Get a key** opens) shows the live prices and
+  the savings, worked out from them. How long each plan lasts is fixed in `PLANS` in `src/worker.js`,
+  not a setting, so a key's length always follows from the plan that was paid for.
+  Adding a plan means adding it to `PLANS` and `wrangler.toml`, the wording in `src/pages.js`, and a test.
 - **Refund or a leaked key**: find the payment's Checkout Session id (`cs_live_...`) in the
   Stripe dashboard, run `node backend/tools/supporter-keys.js shop-id cs_live_...`, and put
   the id it prints in `revoked-keys.json`.

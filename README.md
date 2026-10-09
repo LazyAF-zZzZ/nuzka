@@ -17,10 +17,10 @@ A **supporter key** removes the watermark and helps pay for new features and upd
 
 | | |
 |---|---|
-| **Price** | ฿159 a month |
+| **Price** | ฿159 for 1 month, ฿430 for 3 months, ฿1,650 for 1 year |
 | **What you get** | No watermark on any overlay, and your name shown as the supporter in the app |
 | **How to buy** | In Nuzka: **Support → Get a key**. Pay with PromptPay or a card on Stripe's secure page; the key appears straight away. Paste it in the app. |
-| **How long** | One month from the day you pay. The app reminds you 7 days before it runs out; after that the watermark comes back and everything else keeps working. Buy again to renew. |
+| **How long** | The plan you pick (1 month, 3 months or 1 year) from the day you pay. The app reminds you 7 days before it runs out; after that the watermark comes back and everything else keeps working. Buy again to renew. |
 | **Where it works** | On your own PCs. The key is checked on the PC, so a broadcast never depends on the internet. Please do not share it: a shared key can be switched off. |
 
 **Payments** are handled by [Stripe](https://stripe.com). Nuzka never sees your card or

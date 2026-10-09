@@ -21,7 +21,13 @@ const TEXT = {
     badLink: 'This link is not complete. Open the page Stripe sent you to after paying.',
     stripeDown: 'Could not reach the payment service. Please try again in a minute.',
     help: 'Paid but no key? Keep your Stripe receipt and contact the maker of Nuzka.',
-    home: 'Nuzka supporter keys. Buy one from inside the app: <b>Support</b> → <b>Get a key</b>.'
+    home: 'Nuzka supporter keys. Buy one from inside the app: <b>Support</b> → <b>Get a key</b>.',
+    chooseTitle: 'Choose how long to support Nuzka',
+    chooseIntro: 'You pay once for the time you pick. Your key works until it runs out and nothing renews by itself.',
+    planName: { month: '1 month', quarter: '3 months', year: '1 year' },
+    perMonth: (baht) => `about ${baht} a month`,
+    save: (baht) => `save ${baht}`,
+    choose: 'Choose'
   },
   th: {
     title: 'คีย์ผู้สนับสนุน Nuzka',
@@ -41,7 +47,13 @@ const TEXT = {
     badLink: 'ลิงก์นี้ไม่ครบ เปิดหน้าที่ Stripe พามาหลังชำระเงิน',
     stripeDown: 'ติดต่อระบบชำระเงินไม่ได้ ลองใหม่อีกครั้งในอีกสักครู่',
     help: 'จ่ายแล้วแต่ไม่ได้คีย์? เก็บใบเสร็จจาก Stripe ไว้ แล้วติดต่อผู้พัฒนา Nuzka',
-    home: 'คีย์ผู้สนับสนุน Nuzka ซื้อได้จากในแอป: <b>สนับสนุน</b> → <b>รับคีย์</b>'
+    home: 'คีย์ผู้สนับสนุน Nuzka ซื้อได้จากในแอป: <b>สนับสนุน</b> → <b>รับคีย์</b>',
+    chooseTitle: 'เลือกระยะเวลาที่จะสนับสนุน Nuzka',
+    chooseIntro: 'จ่ายครั้งเดียวตามระยะเวลาที่เลือก คีย์ใช้ได้จนหมดอายุ และไม่ต่ออายุเอง',
+    planName: { month: '1 เดือน', quarter: '3 เดือน', year: '1 ปี' },
+    perMonth: (baht) => `เฉลี่ยเดือนละ ${baht}`,
+    save: (baht) => `ประหยัด ${baht}`,
+    choose: 'เลือก'
   }
 };
 
@@ -85,6 +97,14 @@ ${refresh ? `<meta http-equiv="refresh" content="${refresh}">` : ''}
   button { margin-top:12px; background:var(--gold); color:#1a1408; border:0; border-radius:7px; padding:10px 18px;
            font:600 14px "Segoe UI", system-ui, sans-serif; cursor:pointer; }
   .small { font-size:12.5px; }
+  .plans { display:grid; gap:10px; margin-top:18px; }
+  a.plan { display:flex; align-items:center; justify-content:space-between; gap:12px; text-decoration:none; color:var(--text);
+           background:#0f131a; border:1px solid var(--line); border-radius:9px; padding:14px 16px; }
+  a.plan:hover, a.plan:focus-visible { border-color:var(--gold); outline:none; }
+  .plan .what { font-weight:600; }
+  .plan .note { color:var(--muted); font-size:12.5px; margin-top:2px; }
+  .plan .price { font-weight:700; font-size:18px; color:var(--gold); white-space:nowrap; }
+  .plan .save { color:var(--gold); }
 </style>
 </head>
 <body><main><div class="brand">NUZKA</div>${inner}</main></body>
@@ -127,6 +147,32 @@ export function cancelledPage(lang) {
 export function errorPage(lang, reason) {
   const t = TEXT[lang];
   return layout(lang, t.title, `<h1>${t.errorTitle}</h1><p>${t[reason] || t.stripeDown}</p><p class="small">${t.help}</p>`);
+}
+
+// ฿1,650 from 165000 satang. Whole baht: every plan price is a round number of baht.
+function baht(satang) {
+  return '฿' + Math.round(satang / 100).toLocaleString('en-US');
+}
+
+// The plan chooser. Savings are worked out from the live prices against paying month by month,
+// so they stay true when a price changes and never need editing here.
+export function planPage(lang, plans) {
+  const t = TEXT[lang];
+  const month = plans.find((p) => p.months === 1);
+  const rows = plans.map((plan) => {
+    let note = '';
+    if (plan.months > 1) {
+      const saved = month ? month.price * plan.months - plan.price : 0;
+      const parts = [t.perMonth(baht(plan.price / plan.months))];
+      if (saved > 0) parts.push(`<span class="save">${escapeHtml(t.save(baht(saved)))}</span>`);
+      note = `<div class="note">${parts.join(' · ')}</div>`;
+    }
+    return `<a class="plan" href="/buy?plan=${escapeHtml(plan.id)}&amp;lang=${lang}">
+  <span><span class="what">${escapeHtml(t.planName[plan.id] || plan.id)}</span>${note}</span>
+  <span class="price">${escapeHtml(baht(plan.price))}</span>
+</a>`;
+  }).join('\n');
+  return layout(lang, t.title, `<h1>${t.chooseTitle}</h1><p>${t.chooseIntro}</p><div class="plans">\n${rows}\n</div>`);
 }
 
 export function homePage(lang) {

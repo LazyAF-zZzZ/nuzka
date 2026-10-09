@@ -22,7 +22,7 @@ const SIGNING_KEY_PEM = pem('PRIVATE KEY', await crypto.subtle.exportKey('pkcs8'
 const PUBLIC_KEY_PEM = pem('PUBLIC KEY', await crypto.subtle.exportKey('spki', pair.publicKey));
 backend.useVerifyKeyForTests(PUBLIC_KEY_PEM);
 
-const env = { STRIPE_SECRET_KEY: 'sk_test_fake', SIGNING_KEY_PEM, PRICE_SATANG: '15900', MONTHS: '1' };
+const env = { STRIPE_SECRET_KEY: 'sk_test_fake', SIGNING_KEY_PEM };
 const SESSION = 'cs_test_a1B2c3D4e5F6g7H8i9J0';
 const PAID_AT = Date.parse('2026-10-05T20:00:00+07:00') / 1000;
 
@@ -133,9 +133,9 @@ test('Stripe down: an apology page, and Stripe\'s own message stays out of it', 
   assert.ok(!(await reply.text()).includes('API Key'));
 });
 
-test('/buy asks Stripe for a ฿159 PromptPay-or-card payment and sends the buyer there', async () => {
+test('/buy with a plan asks Stripe for a ฿159 PromptPay-or-card payment and sends the buyer there', async () => {
   const calls = [];
-  const reply = await get('/buy?lang=th', fakeStripe(paidSession(), calls));
+  const reply = await get('/buy?plan=month&lang=th', fakeStripe(paidSession(), calls));
   assert.strictEqual(reply.status, 303);
   assert.strictEqual(reply.headers.get('Location'), 'https://checkout.stripe.com/c/pay/' + SESSION);
 
@@ -147,9 +147,104 @@ test('/buy asks Stripe for a ฿159 PromptPay-or-card payment and sends the buye
   assert.strictEqual(sent.get('line_items[0][price_data][currency]'), 'thb');
   assert.strictEqual(sent.get('line_items[0][price_data][unit_amount]'), '15900');
   assert.strictEqual(sent.get('metadata[product]'), PRODUCT);
+  assert.strictEqual(sent.get('metadata[plan]'), 'month');
+  assert.strictEqual(sent.get('metadata[months]'), '1');
   assert.strictEqual(sent.get('custom_fields[0][key]'), 'keyname');
   assert.strictEqual(sent.get('locale'), 'th');
   assert.strictEqual(sent.get('success_url'), 'https://keys.example/done?session_id={CHECKOUT_SESSION_ID}&lang=th');
+});
+
+// ---- plans: 1 month ฿159, 3 months ฿430, 1 year ฿1,650 ----
+
+const PLAN_SESSIONS = {
+  month: { satang: 15900, months: 1, expires: '2026-11-05' },
+  quarter: { satang: 43000, months: 3, expires: '2027-01-05' },
+  year: { satang: 165000, months: 12, expires: '2027-10-05' }
+};
+
+test('/buy with no plan, or one we do not sell, shows the chooser and never calls Stripe', async () => {
+  for (const path of ['/buy', '/buy?lang=th', '/buy?plan=', '/buy?plan=lifetime', '/buy?plan=YEAR']) {
+    const calls = [];
+    const reply = await get(path, fakeStripe(paidSession(), calls));
+    assert.strictEqual(reply.status, 200, path);
+    assert.strictEqual(calls.length, 0, path + ' must not create a payment');
+    const html = await reply.text();
+    for (const plan of Object.keys(PLAN_SESSIONS)) assert.ok(html.includes('plan=' + plan), path + ' offers ' + plan);
+  }
+});
+
+test('the chooser shows the three prices, and savings worked out from them', async () => {
+  const en = await (await get('/buy?lang=en', fakeStripe(null))).text();
+  assert.ok(en.includes('฿159') && en.includes('฿430') && en.includes('฿1,650'));
+  // 3 months: 3 x 159 = 477, so 430 saves 47. A year: 12 x 159 = 1908, so 1,650 saves 258.
+  assert.ok(en.includes('save ฿47'), 'quarter saving');
+  assert.ok(en.includes('save ฿258'), 'year saving');
+  assert.ok(en.includes('about ฿143 a month') && en.includes('about ฿138 a month'));
+  const th = await (await get('/buy?lang=th', fakeStripe(null))).text();
+  assert.ok(th.includes('3 เดือน') && th.includes('1 ปี') && th.includes('ประหยัด ฿258'));
+  assert.ok(th.includes('plan=year&amp;lang=th'), 'links carry the language');
+});
+
+test('each plan asks Stripe for its own amount, name and length', async () => {
+  for (const [id, want] of Object.entries(PLAN_SESSIONS)) {
+    const calls = [];
+    const reply = await get('/buy?plan=' + id, fakeStripe(paidSession(), calls));
+    assert.strictEqual(reply.status, 303, id);
+    const sent = new URLSearchParams(calls[0].init.body);
+    assert.strictEqual(sent.get('line_items[0][price_data][unit_amount]'), String(want.satang), id);
+    assert.strictEqual(sent.get('metadata[plan]'), id);
+    assert.strictEqual(sent.get('metadata[months]'), String(want.months), id);
+    assert.ok(sent.get('line_items[0][price_data][product_data][name]').startsWith('Nuzka supporter'), id);
+  }
+});
+
+test('a paid 3-month or 1-year session gives a key of that length, and the app accepts it', async () => {
+  for (const id of ['quarter', 'year']) {
+    const want = PLAN_SESSIONS[id];
+    const session = paidSession({ amount_total: want.satang, metadata: { product: PRODUCT, plan: id, months: String(want.months) } });
+    const key = keyIn(await (await get(`/done?session_id=${SESSION}`, fakeStripe(session))).text());
+    const check = backend.readKey(key);
+    assert.ok(check.ok, id + ': ' + check.problem);
+    assert.strictEqual(check.claims.expires, want.expires, id);
+    assert.ok(backend.checkKey(key, Date.parse(want.expires + 'T23:59:00+07:00')).ok, id + ' valid on its last day');
+    assert.ok(!backend.checkKey(key, Date.parse(want.expires + 'T23:59:00+07:00') + 2 * 60 * 1000).ok, id + ' over the next day');
+  }
+});
+
+test('a cheap payment cannot be passed off as a longer plan', async () => {
+  // Someone tampers with nothing Stripe holds, so the realistic risk is our own bookkeeping:
+  // a session that names the year but only paid for a month, or the quarter price.
+  for (const [plan, paid] of [['year', 15900], ['year', 43000], ['quarter', 15900], ['year', 164999]]) {
+    const session = paidSession({ amount_total: paid, metadata: { product: PRODUCT, plan, months: '12' } });
+    const reply = await get(`/done?session_id=${SESSION}`, fakeStripe(session));
+    assert.strictEqual(reply.status, 403, `${plan} for ${paid}`);
+    assert.ok(!keyIn(await reply.text()));
+  }
+});
+
+test('the length comes from the plan, not from the months written in the session', async () => {
+  const session = paidSession({ amount_total: 15900, metadata: { product: PRODUCT, plan: 'month', months: '12' } });
+  const key = keyIn(await (await get(`/done?session_id=${SESSION}`, fakeStripe(session))).text());
+  assert.strictEqual(backend.readKey(key).claims.expires, '2026-11-05', 'a month, whatever the metadata says');
+});
+
+test('an unknown plan in a session is refused', async () => {
+  const session = paidSession({ amount_total: 999999, metadata: { product: PRODUCT, plan: 'lifetime', months: '12' } });
+  assert.strictEqual((await get(`/done?session_id=${SESSION}`, fakeStripe(session))).status, 403);
+});
+
+test('sessions made before there were plans still give their 1-month key', async () => {
+  const legacy = paidSession({ metadata: { product: PRODUCT, months: '1' } });
+  const reply = await get(`/done?session_id=${SESSION}`, fakeStripe(legacy));
+  assert.strictEqual(reply.status, 200);
+  assert.strictEqual(backend.readKey(keyIn(await reply.text())).claims.expires, '2026-11-05');
+});
+
+test('a price can be changed with a variable, and a bad one is an error, not a free key', async () => {
+  const reply = await handle(new Request('https://keys.example/buy?plan=year'), { ...env, PRICE_YEAR_SATANG: '99000' }, fakeStripe(paidSession(), []));
+  assert.strictEqual(reply.status, 303);
+  const bad = await handle(new Request('https://keys.example/buy?plan=year'), { ...env, PRICE_YEAR_SATANG: '12.5' }, fakeStripe(paidSession(), []));
+  assert.strictEqual(bad.status, 502, 'refused, not charged at some default');
 });
 
 test('Thai pages are Thai, with Buddhist-era dates', async () => {

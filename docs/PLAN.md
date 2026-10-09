@@ -1505,3 +1505,19 @@ The red "another program is holding this key" lines on Hotkeys in the snapshot a
 
 `pack.ps1 -Version 3.3.1-beta.3 -Channel beta -Publish` (user's request). Pre-release, Latest still v3.3.0. Carries the Tracker-inspired navy theme, tabs and hero cards (phase 1 and 2 entries above) on top of beta.2.
 Notes: `docs/release-notes/3.3.1-beta.3.md`. Not installed or smoke-tested by Claude. As before, the GitHub tag points at the last pushed commit, not at this uncommitted source; the installers carry the right code.
+
+### Supporter plans: 3 months ฿430 and 1 year ฿1,650 (2026-10-09, NOT deployed, NOT released)
+
+User asked for two more prices beside ฿159 a month. Code and tests done; **the live shop has not been touched**.
+**Worker (`cloud/`).** `PLANS` in `src/worker.js`: `month` 1 month ฿159, `quarter` 3 months ฿430, `year` 12 months ฿1,650. Prices come from `PRICE_SATANG`, `PRICE_QUARTER_SATANG`, `PRICE_YEAR_SATANG`
+(defaults the same, `wrangler.toml` lists them); `MONTHS` and `PRODUCT_NAME` are gone. `/buy` with no or an unknown `plan` shows a chooser page (`planPage` in `src/pages.js`, Thai and English, savings and
+per-month figures worked out from the live prices: ฿47 and ฿258 saved, about ฿143 and ฿138 a month); `/buy?plan=...` makes the Stripe session with `metadata.plan`. Stripe prices are inline `price_data`, so nothing to
+set up in the Stripe dashboard.
+**The rule that matters:** at `/done` the key's length comes from the plan's table entry, never from the `months` in the session, and `amount_total` must cover that plan's price. A session naming the year but
+paying ฿159 or ฿430 gets 403. Sessions from before plans (no `metadata.plan`) are the 1-month plan, so every key already sold can still be recovered. 20 shop tests pass (9 new: chooser, each plan's amount, 3-month and
+1-year keys accepted by the app's own verifier with the right expiry and last-day behaviour, underpayment refused, tampered months ignored, unknown plan refused, legacy sessions, price change by variable, bad price is an error).
+**App.** `SupporterOffer`: `QuarterlyPrice` ฿430, `YearlyPrice` ฿1,650 (was empty, so the Yearly row had been hidden). Support screen shows Monthly / Quarterly / Yearly; **Get a key** no longer carries "· ฿159"
+(`Support.BuyPrice` removed) and opens the shop's chooser, so the amount charged is always the shop's. Step 1 text mentions choosing a plan. README price and duration rows updated, `cloud/README.md` explains how prices work.
+**Order of release matters:** deploy the worker first (`npx wrangler deploy` in `cloud/`, the maker's own terminal), then ship the app. A new app against the old worker would open a checkout that ignores the plan and sells
+1 month for ฿159. The reverse (new worker, old app) is safe: old apps open `/buy` with no plan and now land on the chooser.
+NOT checked: a real Stripe checkout for the new plans (test mode first, per `cloud/README.md` step 3, card 4242 4242 4242 4242, once per plan); the chooser on a phone; how PromptPay behaves for ฿1,650.

@@ -103,6 +103,7 @@ public sealed class SupportViewModel : ObservableObject
         Loc.Instance.Changed += () =>
         {
             OnPropertyChanged(nameof(MonthlyPrice));
+            OnPropertyChanged(nameof(QuarterlyPrice));
             OnPropertyChanged(nameof(YearlyPrice));
             OnPropertyChanged(nameof(BuyText));
         };
@@ -112,18 +113,19 @@ public sealed class SupportViewModel : ObservableObject
     public ICommand BuyCommand { get; }
 
     public string MonthlyPrice => Price(SupporterOffer.MonthlyPrice, "Support.PerMonth");
+    public string QuarterlyPrice => Price(SupporterOffer.QuarterlyPrice, "Support.PerQuarter");
     public string YearlyPrice => Price(SupporterOffer.YearlyPrice, "Support.PerYear");
 
     // With only a monthly price set, "Yearly: coming soon" beside a real number reads as
-    // a promise, so the yearly row stays out until it has a price. Before any price is
-    // set, both rows show "coming soon" together.
+    // a promise, so a longer plan's row stays out until it has a price. Before any price is
+    // set, all rows show "coming soon" together.
+    public bool ShowQuarterly => SupporterOffer.QuarterlyPrice.Length > 0 || SupporterOffer.MonthlyPrice.Length == 0;
     public bool ShowYearly => SupporterOffer.YearlyPrice.Length > 0 || SupporterOffer.MonthlyPrice.Length == 0;
     private static string Price(string value, string per) =>
         value.Length > 0 ? $"{value} {Loc.T(per)}" : Loc.T("Support.PriceSoon");
 
     // Until the shop is deployed the button is there but disabled, and says so.
     public bool CanBuy => SupporterOffer.ShopUrl.Length > 0;
-    public string BuyText => CanBuy
-        ? (SupporterOffer.MonthlyPrice.Length > 0 ? Loc.F("Support.BuyPrice", SupporterOffer.MonthlyPrice) : Loc.T("Support.Buy"))
-        : Loc.T("Support.BuySoon");
+    // No price on the button: there are three, and the shop's page is where the buyer picks one.
+    public string BuyText => CanBuy ? Loc.T("Support.Buy") : Loc.T("Support.BuySoon");
 }
