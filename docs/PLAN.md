@@ -1545,3 +1545,7 @@ Contents: the supporter plans (1 month ฿159, 3 months ฿430, 1 year ฿1,650)
 Before publishing: the live key shop was confirmed to be the new worker (`/buy` returns the plan chooser, HTTP 200, all three plans and the savings) after the maker deployed it. 518 backend tests and 20 shop tests passed.
 **Not done:** the update notice in `notices.json` (push only after confirming 3.3.1 installs and updates cleanly from 3.3.0); the user's smoke of the exact Setup.exe; a real Stripe checkout for each new plan was asked for
 but not seen by Claude; pressing the Update pill and installing has still only been seen as far as the pill appearing. The beta releases (`v3.3.1-beta.2`, `beta.3`) remain published as pre-releases on the beta channel.
+
+**3.3.1 update notice pushed (2026-10-09, user's request).** `notices.json` gained `update-3-3-1` (Thai and English, level info, link to the release), `minVersion` 3.2.0 to `maxVersion` 3.3.0 inclusive, so it reaches
+3.2.x and 3.3.0 but not 3.3.1 or its betas, and expires 2026-11-30. The text says to update "from the button in the title bar (it shows the version number)" because those apps still show the version on that button.
+It was pushed before the user had confirmed 3.3.1 installs and updates cleanly from 3.3.0, at their instruction. There is still no 3.3.0 notice in the feed (it was never pushed), so people on 3.2.x get 3.3.1's text only.

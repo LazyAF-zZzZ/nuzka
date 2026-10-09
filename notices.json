@@ -1,5 +1,21 @@
 [
   {
+    "id": "update-3-3-1",
+    "level": "info",
+    "title": {
+      "th": "Nuzka 3.3.1 พร้อมแล้ว",
+      "en": "Nuzka 3.3.1 is ready"
+    },
+    "body": {
+      "th": "ใหม่ใน 3.3.1: แพ็กเกจผู้สนับสนุนเพิ่มเป็น 3 เดือน ฿430 และ 1 ปี ฿1,650 (รายเดือน ฿159 เหมือนเดิม) โทนสีใหม่เป็นน้ำเงินเข้ม หน้าที่ยังไม่มีข้อมูลบอกว่าต้องทำอะไรต่อ เส้นสีทองใต้แถบด้านบนตอนที่ overlay ขึ้นจอ พับเก็บส่วนที่ตั้งครั้งเดียวในหน้าคุมงานและหน้าทัวร์นาเมนต์ได้ อัปเดตได้ที่ปุ่มบนแถบด้านบน (ตอนนี้แสดงเลขเวอร์ชัน) ตอนที่ไม่ได้ออกอากาศ",
+      "en": "New in 3.3.1: supporter plans now include 3 months for ฿430 and 1 year for ฿1,650 (monthly is still ฿159), a new deep-navy look, pages with nothing in them say what to do next, a gold line under the title bar while the overlay is on air, and the set-once parts of the Control Panel and tournament page fold away. Update from the button in the title bar (it shows the version number) when you are not on air."
+    },
+    "url": "https://github.com/LazyAF-zZzZ/nuzka/releases/tag/v3.3.1",
+    "minVersion": "3.2.0",
+    "maxVersion": "3.3.0",
+    "expires": "2026-11-30T00:00:00Z"
+  },
+  {
     "id": "update-3-2-2",
     "level": "info",
     "title": {
