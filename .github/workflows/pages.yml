@@ -1,4 +1,4 @@
-# Publishes site/ (the landing page) to https://lazyaf-zzzzz.github.io/nuzka/.
+# Publishes site/ (the landing page) to https://lazyaf-zzzz.github.io/nuzka/.
 # Only site/ is uploaded, so docs/PLAN.md and the rest of the repo never become web pages.
 name: Landing page
 

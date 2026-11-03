@@ -403,7 +403,7 @@ docs/v2/            v2's plan, guide and notes, for reference
 ## 8. Open items
 
 - **Landing page so Google can find Nuzka** (2026-11-03). `site/` is a one-page Thai/English site, published by
-  `.github/workflows/pages.yml` to `https://lazyaf-zzzzz.github.io/nuzka/` (only `site/` is uploaded, so this plan
+  `.github/workflows/pages.yml` to `https://lazyaf-zzzz.github.io/nuzka/` (only `site/` is uploaded, so this plan
   never becomes a web page; the key shop stays `noindex` on purpose). Still to do by the user: add the URL in
   Google Search Console and press "Request indexing", fill the repo's About box (description, topics, website),
   and link the site from ROV Facebook groups or a YouTube video. Prices on the page are copied from the README:

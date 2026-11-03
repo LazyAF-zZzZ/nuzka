@@ -6,7 +6,7 @@ Free draft pick/ban overlays and tournament management for Arena of Valor (RoV),
 A Windows app: run the draft from its control panel, and OBS shows the overlays as browser
 sources. Formerly **ROV Overlay Tool v3**.
 
-**Website:** [lazyaf-zzzzz.github.io/nuzka](https://lazyaf-zzzzz.github.io/nuzka/)
+**Website:** [lazyaf-zzzz.github.io/nuzka](https://lazyaf-zzzz.github.io/nuzka/)
 
 **Download:** get **Nuzka-win-Setup.exe** from the latest release on the
 [Releases](https://github.com/LazyAF-zZzZ/nuzka/releases) page. The app updates itself after that.
