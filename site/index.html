@@ -76,12 +76,21 @@
   table { border-collapse: collapse; margin-top: 20px; width: 100%; max-width: 560px; }
   td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
   td:last-child { text-align: right; font-weight: 600; }
+  .shots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 24px; }
+  .shots .wide { grid-column: 1 / -1; }
+  figure { margin: 0; }
+  figure a { display: block; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  figure a:hover { border-color: var(--muted); }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { margin-top: 8px; font-size: 15px; }
+  figcaption .en { font-size: 14px; }
+  h3.sub { margin-top: 36px; }
   footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
   footer p { margin: 0 0 10px; }
   @media (max-width: 760px) {
     .hero { grid-template-columns: 1fr; padding-top: 40px; }
     .hero img { width: 160px; order: -1; }
-    .grid { grid-template-columns: 1fr; }
+    .grid, .shots { grid-template-columns: 1fr; }
     header nav a.gh { display: none; }
   }
 </style>
@@ -92,6 +101,7 @@
     <img src="favicon.png" alt="" width="36" height="36">
     <strong>Nuzka</strong>
     <nav>
+      <a href="#screenshots">ภาพตัวอย่าง</a>
       <a href="#features">ฟีเจอร์</a>
       <a href="#support">คีย์ผู้สนับสนุน</a>
       <a class="gh" href="https://github.com/LazyAF-zZzZ/nuzka">GitHub</a>
@@ -110,6 +120,58 @@
     </div>
     <img src="logo.png" alt="Nuzka logo" width="512" height="512">
   </div>
+
+  <section id="screenshots">
+    <h2>ภาพตัวอย่าง</h2>
+    <p class="en">Screenshots. Click any image to see it full size. Teams and players are made up for the demo.</p>
+    <div class="shots">
+      <figure class="wide">
+        <a href="shots/draft.jpg"><img src="shots/draft.jpg" alt="Draft pick/ban overlay with both teams' picks, bans, logos and score" width="1600" height="400"></a>
+        <figcaption>โอเวอร์เลย์แบน/พิค ระหว่างดราฟต์ <span class="en">· Draft pick/ban overlay</span></figcaption>
+      </figure>
+      <figure>
+        <a href="shots/result.jpg"><img src="shots/result.jpg" alt="Full-screen draft result for both teams" width="1280" height="720" loading="lazy"></a>
+        <figcaption>สรุปผลดราฟต์เต็มจอ <span class="en">· Draft result</span></figcaption>
+      </figure>
+      <figure>
+        <a href="shots/vs.jpg"><img src="shots/vs.jpg" alt="VS screen with both team logos" width="1280" height="720" loading="lazy"></a>
+        <figcaption>หน้า VS ก่อนเริ่มเกม <span class="en">· VS screen</span></figcaption>
+      </figure>
+      <figure>
+        <a href="shots/team-card.jpg"><img src="shots/team-card.jpg" alt="Team card with record, most picked heroes and each player's favourites" width="1280" height="720" loading="lazy"></a>
+        <figcaption>การ์ดทีม สถิติและฮีโร่ประจำตัว <span class="en">· Team card</span></figcaption>
+      </figure>
+      <figure>
+        <a href="shots/scene.jpg"><img src="shots/scene.jpg" alt="Starting soon scene with a countdown" width="1280" height="720" loading="lazy"></a>
+        <figcaption>ฉากเริ่มเร็วๆ นี้ พร้อมนับถอยหลัง <span class="en">· Starting soon scene</span></figcaption>
+      </figure>
+      <figure>
+        <a href="shots/analytics.jpg"><img src="shots/analytics.jpg" alt="Hero presence board with pick, ban and win rates" width="1280" height="720" loading="lazy"></a>
+        <figcaption>สถิติฮีโร่ขึ้นจอ <span class="en">· Hero stats board</span></figcaption>
+      </figure>
+      <figure>
+        <a href="shots/standings.jpg"><img src="shots/standings.jpg" alt="League standings table" width="1280" height="720" loading="lazy"></a>
+        <figcaption>ตารางคะแนน <span class="en">· Standings</span></figcaption>
+      </figure>
+    </div>
+
+    <h3 class="sub">ตัวโปรแกรม</h3>
+    <p class="en">The app</p>
+    <div class="shots">
+      <figure class="wide">
+        <a href="shots/app-control.jpg"><img src="shots/app-control.jpg" alt="Control Panel with both teams, picks, bans and the draft timer" width="1280" height="800" loading="lazy"></a>
+        <figcaption>แผงควบคุม <span class="en">· Control Panel</span></figcaption>
+      </figure>
+      <figure>
+        <a href="shots/app-bracket.jpg"><img src="shots/app-bracket.jpg" alt="Tournament bracket with scores" width="1280" height="800" loading="lazy"></a>
+        <figcaption>สายการแข่งขัน <span class="en">· Bracket</span></figcaption>
+      </figure>
+      <figure>
+        <a href="shots/app-stats.jpg"><img src="shots/app-stats.jpg" alt="Pick and ban statistics table" width="1280" height="800" loading="lazy"></a>
+        <figcaption>สถิติพิคและแบน <span class="en">· Pick/ban stats</span></figcaption>
+      </figure>
+    </div>
+  </section>
 
   <section id="features">
     <h2>ทำอะไรได้บ้าง</h2>
